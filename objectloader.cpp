@@ -19,22 +19,24 @@
 #include "debug.h"
 #include "accelerationstruct.h"
 
+      #include <sys/types.h>
+       #include <sys/stat.h>
+       #include <unistd.h>
 ObjectLoader::ObjectLoader()
 {
 }
 
 
-ObjectLoader::~ObjectLoader()
-{
+ObjectLoader::~ObjectLoader() {
 }
 
 
-bool ObjectLoader::loadMonkey(char* filename, AccelerationStruct *tl) {
+bool ObjectLoader::loadOBJ(const std::string& filename, AccelerationStruct *tl) {
     std::cout << "Loading monkey.." << std::endl;
     std::vector<std::string> file;
     std::string line;
     file.clear();
-    std::ifstream infile (filename, std::ios_base::in);
+    std::ifstream infile (filename.c_str(), std::ios_base::in);
     while (getline(infile, line, '\n'))  {
         file.push_back (line);
     }
@@ -146,4 +148,43 @@ bool ObjectLoader::loadMonkey(char* filename, AccelerationStruct *tl) {
     std::cout << "Scene boundaries x(min:" << boundings[0]  << ",max:" << boundings[1]  << ") y(min:" << boundings[2]  << ",max:" << boundings[3]  << ") z(min:" << boundings[4]  << ",max:" << boundings[5]  << ")" << std::endl;
     tl->setBounds(boundings);
     return true;
+}
+
+bool ObjectLoader::loadRA2(const std::string& filename, AccelerationStruct *tl) {
+    FILE *fp;
+    
+    struct stat buf;
+    stat(filename.c_str(), &buf);
+    unsigned int trianglecount = buf.st_size / 36;
+    
+    ra2_chunk *currentchunk = new ra2_chunk[trianglecount];
+    /* Open an existing binary file for reading.      */
+    if (( fp = fopen ( filename.c_str(), "rb" ) ) == NULL ){
+        printf ( "Cannot open file\n" );
+        exit ( 1 );
+    }
+
+    fread ( currentchunk, trianglecount, sizeof(ra2_chunk), fp );
+    std::cout << "Read " << trianglecount << " triangles";
+    fclose ( fp );
+    
+    fliess boundings[6] = {UNENDLICH, -UNENDLICH, UNENDLICH, -UNENDLICH, UNENDLICH, -UNENDLICH};
+    for ( unsigned int i = 0; i < trianglecount; ++i) {
+      Vector3D p[] = {Vector3D(currentchunk[i][0]), Vector3D(currentchunk[i][1]), Vector3D(currentchunk[i][2])};
+      for (unsigned char pi = 0; pi < 3; ++pi)
+        for (unsigned char c = 0; c < 3; ++c) 
+          if ( p[pi][c] < boundings[2*c] )
+             boundings[2*c] = p[pi][c];
+          else if ( p[pi][c] > boundings[2*c+1] )
+             boundings[2*c+1] = p[pi][c];
+      tl->addTriangle(Triangle(p[0], p[1], p[2]));
+    }
+    std::cout << "Scene boundaries x(min:" << boundings[0]  << ",max:" << boundings[1]  << ") y(min:" << boundings[2]  << ",max:" << boundings[3]  << ") z(min:" << boundings[4]  << ",max:" << boundings[5]  << ")" << std::endl;
+    tl->setBounds(boundings);
+    
+    delete[] currentchunk;
+    
+    return 0;
+
+
 }

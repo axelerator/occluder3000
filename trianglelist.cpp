@@ -21,7 +21,7 @@ Trianglelist::~Trianglelist() {}
 
 
 const RGBvalue Trianglelist::trace ( Ray& r, unsigned int depth ) {
-    IntersectionResult ir ( true );
+    IntersectionResult ir;
 
     fliess zvalue = 10000.0;
     fliess currentZ;
@@ -29,8 +29,7 @@ const RGBvalue Trianglelist::trace ( Ray& r, unsigned int depth ) {
     Vector3D poi;
     Vector3D finalPoi;
     for ( std::vector<Triangle>::iterator it = triangles.begin(); it!=triangles.end(); ++it ) {
-        ( *it ).intersection ( r,ir );
-        if ( ir.intersect() ) {
+        if ( ( *it ).intersect( r,ir )) {
             poi = ir.calcPOI();
             currentZ = ( poi - r.getStart() ).lengthSquare();
             if (currentZ > 0 && currentZ < zvalue ) {

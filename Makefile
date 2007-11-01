@@ -21,7 +21,7 @@ OPTIMIZATION = -O2 -march=$(ARCH) -falign-functions=4 -ffast-math -fforce-addr -
 
 CPPFLAGS = -I./
 ifeq ($(ENVIR),DEBUG)
-	CFLAGS = -g -ggdb -Wall -Wextra -Wno-unused-parameter -ansi -pedantic
+	CFLAGS = -ggdb -Wall -Wextra -Wno-unused-parameter -ansi -pedantic
 else
 CFLAGS = $(OPTIMIZATION) -Wall -Wextra -Werror -Wno-unused-parameter -ansi -pedantic
 endif
@@ -37,7 +37,8 @@ LDFLAGS          = $(LDFLAGS_COMMON) $(LDFLAGS_$(OS))
 # Linker libraries
 XLIBS            = -lXmu -lXi -lX11
 GLLIBS           = -lGLEW -lGLU -lGL -lSDL
-LDLIBS           = $(GLLIBS) $(XLIBS) -lm -lboost_regex -lboost_thread
+#LDLIBS           = $(GLLIBS) $(XLIBS) -lm -lboost_regex -lboost_thread -lSDL_ttf
+LDLIBS           = $(GLLIBS) -lm -lboost_regex -lboost_thread -lSDL_ttf
 ifeq ($(findstring Linux,$(shell uname -s)),Linux)
   OS = LINUX
   ifeq ($(shell uname -m),x86_64)

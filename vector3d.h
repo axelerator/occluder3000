@@ -26,6 +26,8 @@ class Fliess {
     static fliess (*abs)(fliess) ;
     static fliess (*ceil)(fliess);
     static fliess (*floor)(fliess);
+    static fliess (*max)(fliess, fliess);
+    static fliess (*min)(fliess, fliess);
 };
 
 /**

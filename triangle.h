@@ -23,10 +23,11 @@ class Triangle
   public:
     Triangle(const Vector3D& v1, const Vector3D& v2, const Vector3D& v3);
     Triangle(const Vector3D& v1, const Vector3D& v2, const Vector3D& v3, const Vector3D& vn1, const Vector3D& vn2, const Vector3D& vn3);    
-    void intersection(const Ray& r, IntersectionResult& ir) const;
+    bool intersect(const Ray& r, IntersectionResult& ir) const;
     const PhongMaterial& getMaterial() const { return mat; }
     Vector3D getNormalAt(const IntersectionResult& ir) const;
     const Vector3D& getPoint(unsigned int i) const;
+    const Vector3D& getCenter() const { return center; }
     ~Triangle();
   private:
     Vector3D p[3];
@@ -36,6 +37,7 @@ class Triangle
     Vector3D nu;
     Vector3D nv;
     Vector3D n[3];
+    Vector3D center;
 };
 
 #endif

@@ -5,10 +5,9 @@
 #include <iostream>
 #include <sys/time.h>
 #include <time.h>
+// #include <SDL/SDL_ttf.h>
+#include <SDL/SDL.h>
 
-
-
-#include "SDL/SDL.h"
 #include "vector3d.h"
 #include "ray.h"
 #include "triangle.h"
@@ -16,6 +15,7 @@
 #include <boost/regex.hpp>
 #include "accelerationstruct.h"
 #include "trianglelist.h"
+#include "bihlist.h"
 #include "debug.h"
 #include "regulargrid.h"
 #include "camera.h"
@@ -66,14 +66,26 @@ public:
 
 unsigned char Tile::bytesPerPixel = 3;
 SDL_Rect Tile::completeRect = {0,0,Tile::width,Tile::height};
-unsigned int Tile::width = 40;
-unsigned int Tile::height = 40;
+unsigned int Tile::width = 320;
+unsigned int Tile::height = 240;
 
 SDL_Surface *screen;
 float *output;
 unsigned char *result = 0;
 char done = 0;
 
+SDL_Color fontcolor = {255, 255, 0, 255};
+SDL_Color fontbgcolor = {0, 0, 0, 255};
+
+// TTF_Font* loadfont(char* file, int ptsize) {
+//   TTF_Font* tmpfont;
+//   tmpfont = TTF_OpenFont(file, ptsize);
+//   if (tmpfont == 0){
+//     std::cerr << "Unable to load font:" << file << " " <<  TTF_GetError() << std::endl;
+//     // Handle the error here.
+//   }
+//   return tmpfont;
+// }
 
 void userEvents() {
      // Poll for events, and handle the ones we care about.
@@ -206,7 +218,7 @@ void renderr(AccelerationStruct *tl, const Camera& cam, Tile &t) {
 
     // Calculate the color for every single pixel
     Ray currentRay;
-    IntersectionResult ir(true);
+    IntersectionResult ir();
 //     {{
 //     int x = 113;
 //     int y = 144;
@@ -240,7 +252,9 @@ void renderr(AccelerationStruct *tl, const Camera& cam, Tile &t) {
 void printUsage() {
       std::cout << "Usage: pmrrt OBJ-FILE [OPTIONS]\n\n";
       std::cout << "\tOptions:\n\t\t -p, --profile\t\t render only one frame for profiling" << std::endl;
-      std::cout << "\tOptions:\n\t\t -r, --resolution <width>x<height>\t\t render with the given screen resolution" << std::endl;
+      std::cout << "\t\t\t -r, --resolution <width>x<height>\t\t render with the given screen resolution" << std::endl;
+      std::cout << "\t\t\t -as={grid,bih}\t\t Use regular grid or bih-tree to acellerate rendering" << std::endl;
+
 }
 
 // Entry point
@@ -248,7 +262,7 @@ int main(int argc, char *argv[]) {
     bool profile = false;
     int width = 320;
     int height = 240;
-    
+    int accellStruc = 0;
     
     
     if (argc < 2) {
@@ -259,7 +273,11 @@ int main(int argc, char *argv[]) {
       int currArg = 1;
       while (++currArg < argc) {
         std::string arg(argv[currArg]);
-        if (arg == "-p" || arg == "--profile" )
+        if (arg == "-as=grid" )
+          accellStruc = 1;
+        else if (arg == "-as=bih" )
+          accellStruc = 2;
+        else if (arg == "-p" || arg == "--profile" )
           profile = true;
         else if (( arg == "-r" ) || (arg == "resolution") ) {
           if ( currArg+1 >= argc) {
@@ -282,14 +300,19 @@ int main(int argc, char *argv[]) {
         
       }
     }
-    if (argc > 2)
-      profile = ! ( strcmp("-p", argv[2]) && strcmp("--profile", argv[2]));
+
 
     // Initialize SDL's subsystems - in this case, only video.
     if ( SDL_Init(SDL_INIT_VIDEO) < 0 ) {
         fprintf(stderr, "Unable to init SDL: %s\n", SDL_GetError());
         exit(1);
     }
+
+//     if (TTF_Init() == -1) {
+//       printf("Unable to initialize SDL_ttf: %s \n", TTF_GetError());
+//       exit(1);
+//     }
+//     TTF_Font *font =  loadfont("sfd/FreeMono.ttf", 12);
 
     // Register SDL_Quit to be called at exit; makes sure things are
     // cleaned up when we quit.
@@ -308,6 +331,7 @@ int main(int argc, char *argv[]) {
     RGBvalue cred(0.6, 0.2, 0.2);
     RGBvalue cgreen(0.2, 0.6, 0.2);
     RGBvalue cblue(0.2, 0.2, 0.6);
+    RGBvalue cwhite(1.0, 1.0, 1.0);
     
     Light red(Vector3D(-2.0, 3.0,  1.0), cred);
     Light blue(Vector3D(0.0, -1.0, 3.0), cblue);
@@ -316,30 +340,50 @@ int main(int argc, char *argv[]) {
     scene.addLight(blue);
     scene.addLight(green);
 
-//     AccelerationStruct *structure =  new Trianglelist(scene);
-    AccelerationStruct *structure =  new RegularGrid(scene, 0.2);
-    ObjectLoader::loadMonkey(argv[1], structure);
+//     Light white(Vector3D(1.0, 1.0, 1.0), cwhite);
+//     scene.addLight(white);
 
+     AccelerationStruct *structure = 0;
+     switch (accellStruc) {
+      case 0: structure = new Trianglelist(scene);break;
+      case 1: structure = new RegularGrid(scene, 0.2);break;
+      case 2: structure = new BihList(scene);break;
+     }
+     
+    std::string filename(argv[1]);
+    if ( filename.find(".obj") != std::string::npos)
+      ObjectLoader::loadOBJ(filename, structure);
+    else if ( filename.find(".ra2") != std::string::npos)
+      ObjectLoader::loadRA2(filename, structure);
+    else
+      std::cerr << "Unknown file extension";
 
     std::cout << "Triangles in scene: " << structure->getTriangleCount() << std::endl;
     std::cout << "constructing acceleration structure" << std::endl;
     
     structure->construct();
     
-    std::cout << " (done in )";
+    std::cout << " done \n";
     Vector3D position(-0.5001, 0.25001, 4.1);
     Vector3D target (0.0);
     Vector3D lookUp (0.0, 1.0, 0.0);
     
-    Camera cam(position, target, lookUp, 1.5, width, height);
+    Camera cam(position, target, lookUp, 1.0, width, height);
     
 
-    std::cout << "done rendering" << std::endl;
+    std::cout << "start rendering..." << std::endl;
     // Main loop: loop forever.
     fliess angle = 0;
+//     SDL_Surface *text = 0;
+    
+    time_t start = time(0);
+    
+
+    unsigned int frame = 0;
+    char fpsstr[32];
     while (!profile && !done) {
         // Render stuff
-    cam.setPosition(Vector3D(sin(angle)*(4.1+sin(angle)), 0.25, cos(angle)*(4.1+sin(angle))));
+    cam.setPosition(Vector3D(sin(angle)*(3.1), 0.25, cos(angle)*(3.1)));
     unsigned int txmax = width / Tile::getWidth();
     unsigned int tymax = height / Tile::getHeight();
     for (unsigned int tx = 0; tx < txmax; ++tx)
@@ -349,8 +393,22 @@ int main(int argc, char *argv[]) {
         SDL_BlitSurface(tile.getSurface(), &Tile::getCompleteTileRect(), screen, &(tile.getRect()));
         SDL_UpdateRect(screen, tile.getRect().x,tile.getRect().y,tile.getRect().w,tile.getRect().h);
     }
+
     userEvents();
     angle += 0.1;
+    ++frame;
+    sprintf(fpsstr, "%f2", (float)frame/(time(0) - start) );
+    SDL_WM_SetCaption(fpsstr, 0);
+
+//     text = TTF_RenderText_Shaded(font, fpsstr.c_str(), fontcolor, fontbgcolor);
+//     SDL_Rect r = {0,0,text->w, text->h};
+//     SDL_BlitSurface(text, &r, screen, &r);
+//     SDL_UpdateRect(screen, 0, 0, r.w, r.h);
+//     SDL_FreeSurface(text);
+    
     }
+    
+//     if(font)
+//       TTF_CloseFont(font);
     return 0;
 }

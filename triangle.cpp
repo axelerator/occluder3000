@@ -12,7 +12,7 @@
 #include "triangle.h"
 #include "ray.h"
 Triangle::Triangle(const Vector3D& v1, const Vector3D& v2, const Vector3D& v3):
- u(v2-v1), v(v3-v1), nu(0.0, 0.0, 0.0), nv(0.0, 0.0, 0.0) {
+ u(v2-v1), v(v3-v1), nu(0.0, 0.0, 0.0), nv(0.0, 0.0, 0.0), center(v1 + 0.33*u + 0.33*v) {
   p[0] = v1;
   p[1] = v2;
   p[2] = v3;
@@ -23,7 +23,7 @@ Triangle::Triangle(const Vector3D& v1, const Vector3D& v2, const Vector3D& v3):
 }
 
 Triangle::Triangle(const Vector3D& v1, const Vector3D& v2, const Vector3D& v3, const Vector3D& vn1, const Vector3D& vn2, const Vector3D& vn3):
- u(v2-v1), v(v3-v1), nu(vn2-vn1), nv(vn3-vn1) {
+ u(v2-v1), v(v3-v1), nu(vn2-vn1), nv(vn3-vn1), center(v1 + 0.33*u + 0.33*v) {
   p[0] = v1;
   p[1] = v2;
   p[2] = v3;
@@ -45,7 +45,7 @@ Triangle::Triangle(const Vector3D& v1, const Vector3D& v2, const Vector3D& v3, c
           dest[1]=v1[1]-v2[1]; \
           dest[2]=v1[2]-v2[2]; 
 
-//#define TEST_CULL 1
+#define TEST_CULL 1
 
 
 int
@@ -119,35 +119,57 @@ intersect_triangle(const fliess orig[3], const fliess dir[3],
 }
 
 
-void Triangle::intersection(const Ray& r, IntersectionResult& ir) const {
-/*  Vector3D pvec = r.getDirection() % v;
-  fliess det = u * pvec;
-  if ( Fliess::abs(det) < EPSILON )
-    return Vector3D::undefined();
-  fliess inv_det = 1.0 / det;
-  Vector3D tvec = r.getStart() - p[0];
-  fliess up = (tvec * pvec) * inv_det;
-  if (up < 0.0 || up > 1.0)
-    return Vector3D::undefined();
-  Vector3D qvec = tvec % u;
-  fliess vp = (r.getDirection() * qvec) * inv_det;
-  if ( vp < 0.0 || up+vp > 1.0 )
-    return Vector3D::undefined();
-  
-  return p[0] + up*u +vp *v;
-*/
-
+bool Triangle::intersect(const Ray& r, IntersectionResult& ir) const {
+//   fliess tvec[3], pvec[3], qvec[3];
+//   fliess det,inv_det;
+//   
+//   
+//   /* find vectors for two edges sharing vert0 */
+//   SUB(ir.e1.value, p[1].value, p[0].value);
+//   SUB(ir.e2.value, p[2].value, p[0].value);
+//   
+//   /* begin calculating determinant - also used to calculate U parameter */
+//   CROSS(pvec, r.getDirection().value, ir.e2.value);
+//   
+//   /* if determinant is near zero, ray lies in plane of triangle */
+//   det = DOT(ir.e1.value, pvec);
+//   
+//   if (det > -EPSILON && det < EPSILON) {
+//     ir.setIntersection(false);  
+//     return ;
+//   }
+//   inv_det = 1.0f / det;
+//   
+//   /* calculate distance from vert0 to ray origin */
+//   SUB(tvec, r.getStart().value, p[0].value);
+//   
+//   /* calculate U parameter and test bounds */
+//   ir.u = DOT(tvec, pvec) * inv_det;
+//   if (ir.u < 0.0 || ir.u > 1.0) {
+//     ir.setIntersection(false);  
+//     return ;
+//   }
+//   
+//   /* prepare to test V parameter */
+//   CROSS(qvec, tvec, ir.e1);
+//   
+//   /* calculate V parameter and test bounds */
+//   ir.v = DOT(r.getDirection().value, qvec) * inv_det;
+//   if (ir.v < 0.0 || ir.v + ir.v > 1.0) {
+//     ir.setIntersection(false);
+//     return;
+//   }
+//   /* calculate t, ray intersects triangle */
+//   ir.t = DOT(ir.e2, qvec) * inv_det;
+//   ir.setIntersection(true);
+//   ir.orig =  this->p[0];
 if ( intersect_triangle(r.getStart().value, r.getDirection().value ,
                   this->p[0].value,this->p[1].value, this->p[2].value,
                   &(ir.t), &(ir.u), &(ir.v), ir.e1.value, ir.e2.value)) {
-// if ( intersect_triangle(r.getStart().value, r.getDirection().value ,
-//                   this->p[2].value,this->p[1].value, this->p[0].value,
-//                   &(ir.t), &(ir.u), &(ir.v), ir.e1.value, ir.e2.value)) {
-  ir.setIntersection(true);
   ir.orig =  this->p[0];
-  }
-else
-  ir.setIntersection(false);
+  return true;
+} else
+  return false;
 }
 
 Vector3D Triangle::getNormalAt(const IntersectionResult& ir) const {

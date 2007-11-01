@@ -19,23 +19,20 @@
 */
 class IntersectionResult {
 public:
-    IntersectionResult(bool didInterersect);
     IntersectionResult();
     IntersectionResult(const IntersectionResult& ir);
     IntersectionResult& operator=(const IntersectionResult& v);
     
-    bool intersect() const { return didInterersect; }
     ~IntersectionResult();
-    void setIntersection(bool intersected) { didInterersect = intersected; }
     
     const Vector3D& calcPOI() ;
     const Vector3D& getPOI() const { return poi;}
     Vector3D e1, e2;
     fliess u,v,t;
     Vector3D orig;
-    private:
+    unsigned int triangleIdx;
     
-      bool didInterersect;
+    private:
       Vector3D poi;
 };
 

@@ -16,6 +16,8 @@
 fliess (*Fliess::abs)(fliess) = fabsf;
 fliess (*Fliess::ceil)(fliess) = ceilf;
 fliess (*Fliess::floor)(fliess) = floorf;
+fliess (*Fliess::max)(fliess, fliess) = fmaxf;
+fliess (*Fliess::min)(fliess, fliess) = fminf;
 
 /**
  * Create a zero vector.

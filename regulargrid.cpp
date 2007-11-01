@@ -72,10 +72,10 @@ const RGBvalue RegularGrid::trace ( Ray& r, unsigned int depth ) {
     unsigned int gridIdx = currentVox[2] * slabSize // slabs in z-direction
                            + currentVox[1] * cellCount[0] // + y-count rows
                            + currentVox[0];
-    IntersectionResult ir ( true ); // will store hit info for triangles in current voxel and ray
+    IntersectionResult ir; // will store hit info for triangles in current voxel and ray
     fliess zBuffer = UNENDLICH;
     const Triangle *hitTriangle = 0;
-    IntersectionResult closestRi( true );
+    IntersectionResult closestRi;
     fliess tMax[3]; // these values indicate how much we can travel through the current Voxel
     //  into direction of one component until we hit the next voxel in that direction.
     // (in units of the direction vector of r)
@@ -105,35 +105,10 @@ const RGBvalue RegularGrid::trace ( Ray& r, unsigned int depth ) {
         }
 
         if ( grid[gridIdx] ) {
-//             std::vector<int>::const_iterator iter;
-//             for (iter = grid[gridIdx]->begin() ; iter != grid[gridIdx]->end() ; ++iter ) {
-//                 const Triangle& currTri = triangles[*iter];
-//                 currTri.intersection (voxelRay, ir );
-//                 if ( ir.intersect() ) {
-//                     fliess currZ = ( ir.calcPOI() - position ).length();
-//                     // determine if the intersection is in the current voxel
-//                     if ( (currZ < zBuffer) && ((currZ * t_invert) < smallestT) ) {
-//                         zBuffer = currZ;
-//                         hitTriangle = & (currTri);
-//                         closestRi = ir;
-//                     }
-//                 }
-//             }
-
-
-#ifndef ALL
-          std::vector<int>::const_iterator iter;
+         std::vector<int>::const_iterator iter;
           for (iter =  grid[gridIdx]->begin() ; iter != grid[gridIdx]->end() ; ++iter ) {
           const Triangle& currTri = triangles[*iter];
-          currTri.intersection (voxelRay, ir );
-#endif
-#ifdef ALL
-           for ( std::vector<Triangle>::iterator iter = triangles.begin(); iter!=triangles.end(); ++iter ) {
-               const currTri& = *iter;
-               ( *currTri ).intersection (voxelRay, ir );
-#endif
-              
-              if ( ir.intersect() ) {
+              if ( currTri.intersect(voxelRay, ir ) ) {
                   fliess currentZ = ( ir.calcPOI() - r.getStart() ).lengthSquare();
                   if ( currentZ < zBuffer ) {
                       zBuffer = currentZ;
@@ -148,10 +123,7 @@ const RGBvalue RegularGrid::trace ( Ray& r, unsigned int depth ) {
             // proceed to next voxel
              currentVox[component] += step[component];
             position += r.getDirection() * smallestT;
-            
-           // std::cout << "->" << currentVox[0] << "|" << currentVox[1]  << "|" << currentVox[2];
         }
-    //std::cout << "\n";
     } // end of incremental phase of voxel traversal
 
     if ( hitTriangle != 0 )  {

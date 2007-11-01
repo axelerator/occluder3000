@@ -30,6 +30,7 @@ public:
     unsigned int getTriangleCount() const { return triangles.size(); }
     void setBounds(fliess* newBounds);
     virtual void construct() = 0;
+    const Triangle& getTriangle(unsigned int idx) const { return triangles[idx]; }
 
 protected:
     std::vector<Triangle> triangles;

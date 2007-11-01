@@ -11,21 +11,17 @@
 //
 #include "intersectionresult.h"
 
-IntersectionResult::IntersectionResult(bool didInterersect):
-didInterersect(didInterersect)
-{
+IntersectionResult::IntersectionResult(){
 }
 
+IntersectionResult::~IntersectionResult(){
+}
 IntersectionResult::IntersectionResult(const IntersectionResult& ir):
-didInterersect(ir.intersect()), poi(ir.getPOI()) {}
+poi(ir.getPOI()) {}
 
 
-IntersectionResult::~IntersectionResult()
-{
-}
 
 IntersectionResult& IntersectionResult::operator=(const IntersectionResult& v) {
-  this->didInterersect = v.intersect();
   this->poi = v.getPOI();
   return (*this);
 }
