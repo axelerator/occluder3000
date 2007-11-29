@@ -23,6 +23,7 @@ class RGBvalue
     RGBvalue(const RGBvalue& copy);
     const float* getRGB() const { return rgb ;}
     void add(float r, float g, float b);
+    void set(float r, float g, float b) {rgb[0] = r; rgb[1] = g; rgb[2] = b;}
     ~RGBvalue();
   private:
   float rgb[3];

@@ -11,6 +11,7 @@
 //
 #include "triangle.h"
 #include "ray.h"
+#include "radianceray.h"
 Triangle::Triangle(const Vector3D& v1, const Vector3D& v2, const Vector3D& v3):
  u(v2-v1), v(v3-v1), nu(0.0, 0.0, 0.0), nv(0.0, 0.0, 0.0), center(v1 + 0.33*u + 0.33*v) {
   p[0] = v1;
@@ -120,49 +121,6 @@ intersect_triangle(const fliess orig[3], const fliess dir[3],
 
 
 bool Triangle::intersect(const Ray& r, IntersectionResult& ir) const {
-//   fliess tvec[3], pvec[3], qvec[3];
-//   fliess det,inv_det;
-//   
-//   
-//   /* find vectors for two edges sharing vert0 */
-//   SUB(ir.e1.value, p[1].value, p[0].value);
-//   SUB(ir.e2.value, p[2].value, p[0].value);
-//   
-//   /* begin calculating determinant - also used to calculate U parameter */
-//   CROSS(pvec, r.getDirection().value, ir.e2.value);
-//   
-//   /* if determinant is near zero, ray lies in plane of triangle */
-//   det = DOT(ir.e1.value, pvec);
-//   
-//   if (det > -EPSILON && det < EPSILON) {
-//     ir.setIntersection(false);  
-//     return ;
-//   }
-//   inv_det = 1.0f / det;
-//   
-//   /* calculate distance from vert0 to ray origin */
-//   SUB(tvec, r.getStart().value, p[0].value);
-//   
-//   /* calculate U parameter and test bounds */
-//   ir.u = DOT(tvec, pvec) * inv_det;
-//   if (ir.u < 0.0 || ir.u > 1.0) {
-//     ir.setIntersection(false);  
-//     return ;
-//   }
-//   
-//   /* prepare to test V parameter */
-//   CROSS(qvec, tvec, ir.e1);
-//   
-//   /* calculate V parameter and test bounds */
-//   ir.v = DOT(r.getDirection().value, qvec) * inv_det;
-//   if (ir.v < 0.0 || ir.v + ir.v > 1.0) {
-//     ir.setIntersection(false);
-//     return;
-//   }
-//   /* calculate t, ray intersects triangle */
-//   ir.t = DOT(ir.e2, qvec) * inv_det;
-//   ir.setIntersection(true);
-//   ir.orig =  this->p[0];
 if ( intersect_triangle(r.getStart().value, r.getDirection().value ,
                   this->p[0].value,this->p[1].value, this->p[2].value,
                   &(ir.t), &(ir.u), &(ir.v), ir.e1.value, ir.e2.value)) {
@@ -172,7 +130,32 @@ if ( intersect_triangle(r.getStart().value, r.getDirection().value ,
   return false;
 }
 
+bool Triangle::intersect(RadianceRay& r) const {
+fliess t,u,v;
+Vector3D e1,e2;
+if ( intersect_triangle(r.getStart().value, r.getDirection().value ,
+                  this->p[0].value,this->p[1].value, this->p[2].value,
+                  &t, &u, &v, e1.value, e2.value)) {
+  Intersection current(this, this->p[0] + (u * e1) + (v * e2), r.getStart());
+  if ( current < r.getClosestIntersection() ) {
+    current.e1 = e1;
+    current.e2 = e2;
+    current.u = u;
+    current.v = v;
+    r.setClosestIntersection(current);
+  }
+
+
+  return true;
+} else
+  return false;
+}
+
 Vector3D Triangle::getNormalAt(const IntersectionResult& ir) const {
+  return Vector3D(n[0] + (nu * ir.u) + (nv * ir.v));
+}
+
+Vector3D Triangle::getNormalAt(const Intersection& ir) const {
   return Vector3D(n[0] + (nu * ir.u) + (nv * ir.v));
 }
 

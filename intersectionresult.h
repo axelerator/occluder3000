@@ -27,11 +27,14 @@ public:
     
     const Vector3D& calcPOI() ;
     const Vector3D& getPOI() const { return poi;}
+    fliess calcDistance(const Vector3D& from) { return insersDistance = (poi - from).length();}
+    fliess getDistance() {return insersDistance;}
     Vector3D e1, e2;
     fliess u,v,t;
     Vector3D orig;
     unsigned int triangleIdx;
-    
+    fliess insersDistance;
+    bool intersectedAtAll;
     private:
       Vector3D poi;
 };

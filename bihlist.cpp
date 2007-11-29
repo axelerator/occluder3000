@@ -21,8 +21,6 @@ BihList::~BihList() {
     free(triangleIndices);
   }
 }
-const RGBvalue recurse ( Ray& r, unsigned int depth ) {
-}
 
 const RGBvalue BihList::trace ( Ray& r, unsigned int depth ) {
 
@@ -96,11 +94,11 @@ const RGBvalue BihList::trace ( Ray& r, unsigned int depth ) {
       }
       // compute intersection with near split
       tNear = ( node->planes[near] - r.getStart().value[axis] ) * inv_direction.value[axis];
+      tFar = ( node->planes[far] - r.getStart().value[axis] )  * inv_direction.value[axis];
       tempNode.nextLeft = node->nextLeft;
       tempNode.axis &= ~3;
       if ( tNear <= tmin ) { //Near side intersected?
         // compute intersection with far split
-        tFar = ( node->planes[far] - r.getStart().value[axis] )  * inv_direction.value[axis];
         if ( tFar >= tmax ) { //Both sides intersected
           stack = new Stacknode ( Fliess::max ( tNear,tmax ), tmax, tempNode.nextLeft + far, stack );
         }

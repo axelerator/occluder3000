@@ -17,13 +17,13 @@ ifeq ($(shell uname -m),i686)
 	ARCH = pentium3
 endif
 
-OPTIMIZATION = -O2 -march=$(ARCH) -falign-functions=4 -ffast-math -fforce-addr -fprefetch-loop-arrays -funroll-loops -fomit-frame-pointer
+OPTIMIZATION = -O3 -march=$(ARCH) -falign-functions=4 -ffast-math -fforce-addr -fprefetch-loop-arrays -funroll-loops -fomit-frame-pointer
 
 CPPFLAGS = -I./
 ifeq ($(ENVIR),DEBUG)
 	CFLAGS = -ggdb -Wall -Wextra -Wno-unused-parameter -ansi -pedantic
 else
-CFLAGS = $(OPTIMIZATION) -Wall -Wextra -Werror -Wno-unused-parameter -ansi -pedantic
+CFLAGS = $(OPTIMIZATION) -Wall -Wextra -Werror -Wno-unused-parameter -ansi -pedantic -DNDEBUG=true
 endif
 #CFLAGS = -ggdb -Wall -Wextra -Werror -Wno-unused-parameter -ansi -pedantic
 
@@ -38,7 +38,7 @@ LDFLAGS          = $(LDFLAGS_COMMON) $(LDFLAGS_$(OS))
 XLIBS            = -lXmu -lXi -lX11
 GLLIBS           = -lGLEW -lGLU -lGL -lSDL
 #LDLIBS           = $(GLLIBS) $(XLIBS) -lm -lboost_regex -lboost_thread -lSDL_ttf
-LDLIBS           = $(GLLIBS) -lm -lboost_regex -lboost_thread -lSDL_ttf
+LDLIBS           = $(GLLIBS) -lm -lboost_regex
 ifeq ($(findstring Linux,$(shell uname -s)),Linux)
   OS = LINUX
   ifeq ($(shell uname -m),x86_64)

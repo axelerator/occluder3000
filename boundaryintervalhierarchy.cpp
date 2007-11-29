@@ -11,7 +11,6 @@
 //
 #include "boundaryintervalhierarchy.h"
 #include <assert.h>
-#define NDEBUG
 
 BoundaryIntervalHierarchy::BoundaryIntervalHierarchy ( const Scene& scene )
     : AccelerationStruct ( scene ) {}

@@ -11,7 +11,7 @@
 //
 #include "intersectionresult.h"
 
-IntersectionResult::IntersectionResult(){
+IntersectionResult::IntersectionResult() : intersectedAtAll(false) {
 }
 
 IntersectionResult::~IntersectionResult(){
@@ -22,7 +22,7 @@ poi(ir.getPOI()) {}
 
 
 IntersectionResult& IntersectionResult::operator=(const IntersectionResult& v) {
-  this->poi = v.getPOI();
+  memcpy(this, &v, sizeof(IntersectionResult));
   return (*this);
 }
 
