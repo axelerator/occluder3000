@@ -1,8 +1,8 @@
 /********************************************************/
 /* AABB-triangle overlap test code                      */
 /* by Tomas Akenine-Möller                              */
-/* Function: int triBoxOverlap(fliess boxcenter[3],      */
-/*          fliess boxhalfsize[3],fliess triverts[3][3]); */
+/* Function: int triBoxOverlap(float boxcenter[3],      */
+/*          float boxhalfsize[3],float triverts[3][3]); */
 /* History:                                             */
 /*   2001-03-05: released the code in its first version */
 /*   2001-06-18: changed the order of the tests, faster */
@@ -41,10 +41,10 @@
   if(x2<min) min=x2;\
   if(x2>max) max=x2;
 
-int planeBoxOverlap(const fliess normal[3],const  fliess vert[3],const  fliess maxbox[3])	// -NJMP-
+int planeBoxOverlap(const float normal[3],const  float vert[3],const  float maxbox[3])	// -NJMP-
 {
   int q;
-  fliess vmin[3],vmax[3],v;
+  float vmin[3],vmax[3],v;
   for(q=X;q<=Z;q++)
   {
     v=vert[q];					// -NJMP-
@@ -112,7 +112,7 @@ int planeBoxOverlap(const fliess normal[3],const  fliess vert[3],const  fliess m
 	rad = fa * boxhalfsize[X] + fb * boxhalfsize[Y];   \
 	if(min>rad || max<-rad) return 0;
 
-int triBoxOverlap(const fliess boxcenter[3],const fliess boxhalfsize[3], const Triangle& tri)
+int triBoxOverlap(const float boxcenter[3],const float boxhalfsize[3], const Triangle& tri)
 {
 
   /*    use separating axis theorem to test overlap between triangle and box */
@@ -122,10 +122,10 @@ int triBoxOverlap(const fliess boxcenter[3],const fliess boxhalfsize[3], const T
   /*    2) normal of the triangle */
   /*    3) crossproduct(edge from tri, {x,y,z}-directin) */
   /*       this gives 3x3=9 more tests */
-   fliess v0[3],v1[3],v2[3];
-//   fliess axis[3];
-   fliess min,max,p0,p1,p2,rad,fex,fey,fez;		// -NJMP- "d" local variable removed
-   fliess normal[3],e0[3],e1[3],e2[3];
+   float v0[3],v1[3],v2[3];
+//   float axis[3];
+   float min,max,p0,p1,p2,rad,fex,fey,fez;		// -NJMP- "d" local variable removed
+   float normal[3],e0[3],e1[3],e2[3];
 
    /* This is the fastest branch on Sun */
    /* move everything so that the boxcenter is in (0,0,0) */
@@ -140,23 +140,23 @@ int triBoxOverlap(const fliess boxcenter[3],const fliess boxhalfsize[3], const T
 
    /* Bullet 3:  */
    /*  test the 9 tests first (this was faster) */
-   fex = Fliess::abs(e0[X]);
-   fey = Fliess::abs(e0[Y]);
-   fez = Fliess::abs(e0[Z]);
+   fex = fabs(e0[X]);
+   fey = fabs(e0[Y]);
+   fez = fabs(e0[Z]);
    AXISTEST_X01(e0[Z], e0[Y], fez, fey);
    AXISTEST_Y02(e0[Z], e0[X], fez, fex);
    AXISTEST_Z12(e0[Y], e0[X], fey, fex);
 
-   fex = Fliess::abs(e1[X]);
-   fey = Fliess::abs(e1[Y]);
-   fez = Fliess::abs(e1[Z]);
+   fex = fabs(e1[X]);
+   fey = fabs(e1[Y]);
+   fez = fabs(e1[Z]);
    AXISTEST_X01(e1[Z], e1[Y], fez, fey);
    AXISTEST_Y02(e1[Z], e1[X], fez, fex);
    AXISTEST_Z0(e1[Y], e1[X], fey, fex);
 
-   fex = Fliess::abs(e2[X]);
-   fey = Fliess::abs(e2[Y]);
-   fez = Fliess::abs(e2[Z]);
+   fex = fabs(e2[X]);
+   fey = fabs(e2[Y]);
+   fez = fabs(e2[Z]);
    AXISTEST_X2(e2[Z], e2[Y], fez, fey);
    AXISTEST_Y1(e2[Z], e2[X], fez, fex);
    AXISTEST_Z12(e2[Y], e2[X], fey, fex);

@@ -43,7 +43,7 @@ class BihList : public AccelerationStruct {
       };
     };
     typedef struct BihNode BihNode;
-    void subdivide ( BihNode *thisNode, unsigned int start, unsigned int end, const fliess *currBounds, unsigned int depth );
+    void subdivide ( BihNode *thisNode, unsigned int start, unsigned int end, const float *currBounds, unsigned int depth );
 
     
     unsigned int *triangleIndices; // array of triangleIndices on which the in place sorting will happen
@@ -53,9 +53,9 @@ class BihList : public AccelerationStruct {
 
   class Stacknode {
     public:
-    Stacknode(fliess n, fliess f, BihNode *nd, Stacknode *p) : tmin(n), tmax(f), node(nd), prev(p) {}
-    fliess tmin;
-    fliess tmax;
+    Stacknode(float n, float f, BihNode *nd, Stacknode *p) : tmin(n), tmax(f), node(nd), prev(p) {}
+    float tmin;
+    float tmax;
     BihNode *node;
     Stacknode *prev;
   };

@@ -155,31 +155,63 @@ void renderr ( AccelerationStruct *tl, const Camera& cam, GLubyte *mem ) {
   projPlaneU = u / resolution[0];
   projPlaneV = v / resolution[1];
 
-  Vector3D projectPoint;
+  Vector3D projectPoint(projOrigin);
   Vector3D currentU;
   Vector3D currentV;
 
   // Calculate the color for every single pixel
   Ray currentRay;
 
-  unsigned int stride = resolution[0] * 3;
-  unsigned int offset = 0;
-  for ( unsigned int y = 0 ; y < resolution[1] ; ++y ) {
-    for ( unsigned int x = 0; x < resolution[0]; ++x ) {
-      // Calculate the current ray based on the current pixel and the camera
-      currentU = projPlaneU * ( x );
-      currentV = projPlaneV * ( y );
-      projectPoint = projOrigin + currentU + currentV;
+//   int range[4] = { 135, 145, 155, 160};
+//   unsigned int range[4] = { 0, 1000, 0, 1000};
+  
 
-      currentRay.setDirection ( ( projectPoint - position ).normal() );
-      currentRay.setStart ( projectPoint );
-      const float *rgb = tl->trace ( currentRay ).getRGB();
-      mem[offset + 3*x] = ( Uint8 ) ( rgb[0]*255 );
-      mem[offset + 3*x+1] = ( Uint8 ) ( rgb[1]*255 );
-      mem[offset + 3*x+2] = ( Uint8 ) ( rgb[2]*255 );
+//   unsigned int stride = resolution[0] * 3;
+//   unsigned int offset = 0;
+//   for ( unsigned int y = 0 ; y < resolution[1] ; ++y ) {
+//     for ( unsigned int x = 0; x < resolution[0]; ++x ) {
+//       
+//       
+//       // Calculate the current ray based on the current pixel and the camera
+//       currentU = projPlaneU * ( x );
+//       currentV = projPlaneV * ( y );
+//       projectPoint = projOrigin + currentU + currentV;
+// 
+//       currentRay.setDirection ( ( projectPoint - position ).normal() );
+//       currentRay.setStart ( projectPoint );
+//       
+//       if ( x < range[0] || x > range[1] || y < range[2] || y >range[3]) {
+//       mem[offset + 3*x] = 0;
+//       mem[offset + 3*x+1] = 0;
+//       mem[offset + 3*x+2] = 100;
+//       
+//       } else {
+//       
+//       const float *rgb = tl->trace ( currentRay ).getRGB();
+//       mem[offset + 3*x] = ( Uint8 ) ( rgb[0]*255 );
+//       mem[offset + 3*x+1] = ( Uint8 ) ( rgb[1]*255 );
+//       mem[offset + 3*x+2] = ( Uint8 ) ( rgb[2]*255 );
+//       }
+//     }
+//     offset += stride;
+//   }
+    const float *rgb;
+    unsigned int offset = 0;
+    for ( unsigned int y = 0 ; y < resolution[1] ; ++y ) {
+        for ( unsigned int x = 0; x < resolution[0]; ++x ) {
+            projectPoint += projPlaneU;
+
+            currentRay.setDirection ( ( projectPoint - position ).normal() );
+            currentRay.setStart ( projectPoint );
+
+            rgb = tl->trace ( currentRay ).getRGB();
+            mem[offset++] = ( GLubyte ) ( rgb[0]*255 );
+            mem[offset++] = ( GLubyte ) ( rgb[1]*255 );
+            mem[offset++] = ( GLubyte ) ( rgb[2]*255 );
+        }
+        projectPoint += projPlaneV;
+        projectPoint -= u;
     }
-    offset += stride;
-  }
 
 }
 
@@ -283,12 +315,15 @@ int main ( int argc, char *argv[] ) {
   RGBvalue cblue ( 0.2, 0.2, 0.6 );
   RGBvalue cwhite ( 1.0, 1.0, 1.0 );
 
-  Light red ( Vector3D ( -2.0, 3.0,  1.0 ), cred );
-  Light blue ( Vector3D ( 0.0, -1.0, 3.0 ), cblue );
+  Light red ( Vector3D ( -2.0, 0.5,  1.0 ), cred );
+  Light blue ( Vector3D ( 0.0, 1.0, 0.0 ), cblue );
   Light green ( Vector3D ( 2.0, 3.0, 1.0 ), cgreen );
+  Light white ( Vector3D ( 2.0, 2.0, 2.0 ), cwhite );
   scene.addLight ( red );
   scene.addLight ( blue );
   scene.addLight ( green );
+//    scene.addLight ( white );
+
 
   AccelerationStruct *structure = 0;
   switch ( accellStruc ) {
@@ -312,20 +347,25 @@ int main ( int argc, char *argv[] ) {
 
   std::cout << " done \n";
   Vector3D position ( -0.5001, 0.25001, 4.1 );
-  Vector3D target ( 0.0 );
+  Vector3D target ( 0.5 );
   Vector3D lookUp ( 0.0, 1.0, 0.0 );
 
   Camera cam ( position, target, lookUp, 1.0, width, height );
 
   std::cout << "start rendering..." << std::endl;
-  fliess angle = 0;
+  float angle = 9.7;
 
   unsigned int frame = 0;
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, id);
   GLubyte *mem = 0;
-  while ( !profile && !done ) {
-    cam.setPosition ( Vector3D ( sin ( angle ) * ( 3.1 ), 0.25 + sin ( angle ) *0.5, cos ( angle ) * ( 3.1 ) ) );
+  
+  Light& l = scene.getLight(0);
+  l.setPosition( 2.0, 2.0, 2.0  );
 
+  while (!profile && !done ) {
+    cam.setPosition ( Vector3D ( sin ( angle ) * ( 2.3 ), 1.0 + sin ( angle ) *0.5, cos ( angle ) * ( 2.3 ) ) );
+//     cam.setPosition ( Vector3D ( sin ( angle ) * ( 0.3 ), 1.0 + sin ( angle ) *0.2, cos ( angle ) * ( 2.1 ) ) );
+//     l.setPosition( sin ( angle*0.33 ) * ( 2.1 ), 4.0 , cos ( angle*0.33 ) * ( 2.1 ) );
     mem = (GLubyte *)glMapBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, GL_WRITE_ONLY);
     renderr ( structure, cam, mem );
     glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER_ARB);
@@ -342,6 +382,27 @@ int main ( int argc, char *argv[] ) {
     userEvents();
     angle += 0.1;
     ++frame;
+  }
+  if (profile) {
+    cam.setPosition ( Vector3D ( sin ( angle ) * ( 2.3 ), 1.0 + sin ( angle ) *0.5, cos ( angle ) * ( 2.3 ) ) );
+//     cam.setPosition ( Vector3D ( sin ( angle ) * ( 0.3 ), 1.0 + sin ( angle ) *0.2, cos ( angle ) * ( 2.1 ) ) );
+//     l.setPosition( sin ( angle*0.33 ) * ( 2.1 ), 4.0 , cos ( angle*0.33 ) * ( 2.1 ) );
+    mem = (GLubyte *)glMapBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, GL_WRITE_ONLY);
+    renderr ( structure, cam, mem );
+    glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER_ARB);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0,0, width, height, GL_RGB, GL_UNSIGNED_BYTE, 0); 
+    
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glBegin(GL_QUADS);
+      glTexCoord2f(0.0, 0.0); glVertex3f(-1.0, 1.0, 0.0);
+      glTexCoord2f(0.0, 1.0); glVertex3f(-1.0, -1.0, 0.0);
+      glTexCoord2f(1.0, 1.0); glVertex3f( 1.0, -1.0, 0.0);
+      glTexCoord2f(1.0, 0.0); glVertex3f( 1.0, 1.0, 0.0);
+    glEnd();
+    SDL_GL_SwapBuffers();
+    userEvents();
+    angle += 0.1;
+    ++frame;    
   }
   return 0;
 }

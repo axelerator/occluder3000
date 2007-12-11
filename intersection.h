@@ -35,8 +35,8 @@ class Intersection {
 
     const Triangle *triangle;
     Vector3D intersectionPoint;
-    fliess intersectionDistance;
-    fliess u,v;
+    float intersectionDistance;
+    float u,v;
     Vector3D e1, e2;
 };
 

@@ -29,3 +29,13 @@ Light::~Light()
 }
 
 
+
+
+/*!
+    \fn Light::setPosition(float x, float y, float z)
+ */
+void Light::setPosition(float x, float y, float z) {
+    position.value[0] = x;
+    position.value[0] = y;
+    position.value[0] = z;
+}

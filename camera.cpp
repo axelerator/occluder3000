@@ -11,7 +11,7 @@
 //
 #include "camera.h"
 
-Camera::Camera(Vector3D& position, Vector3D& target, Vector3D& up, fliess d, unsigned int x, unsigned int y) :
+Camera::Camera(Vector3D& position, Vector3D& target, Vector3D& up, float d, unsigned int x, unsigned int y) :
  position(position), target(target), up(up), d(d) {
 resolution[0] = x;
 resolution[1] = y;

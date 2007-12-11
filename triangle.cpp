@@ -46,15 +46,15 @@ Triangle::Triangle(const Vector3D& v1, const Vector3D& v2, const Vector3D& v3, c
           dest[1]=v1[1]-v2[1]; \
           dest[2]=v1[2]-v2[2]; 
 
-#define TEST_CULL 1
+// #define TEST_CULL 1
 
 
 int
-intersect_triangle(const fliess orig[3], const fliess dir[3],
-                   const fliess vert0[3], const fliess vert1[3], const fliess vert2[3],
-                   fliess *t, fliess *u, fliess *v, fliess* edge1, fliess* edge2) {
-   fliess tvec[3], pvec[3], qvec[3];
-   fliess det,inv_det;
+intersect_triangle(const float orig[3], const float dir[3],
+                   const float vert0[3], const float vert1[3], const float vert2[3],
+                   float *t, float *u, float *v, float* edge1, float* edge2) {
+   float tvec[3], pvec[3], qvec[3];
+   float det,inv_det;
 
    /* find vectors for two edges sharing vert0 */
    SUB(edge1, vert1, vert0);
@@ -116,7 +116,7 @@ intersect_triangle(const fliess orig[3], const fliess dir[3],
    /* calculate t, ray intersects triangle */
    *t = DOT(edge2, qvec) * inv_det;
 #endif
-   return 1;
+   return *t > 0.0;
 }
 
 
@@ -131,7 +131,7 @@ if ( intersect_triangle(r.getStart().value, r.getDirection().value ,
 }
 
 bool Triangle::intersect(RadianceRay& r) const {
-fliess t,u,v;
+float t,u,v;
 Vector3D e1,e2;
 if ( intersect_triangle(r.getStart().value, r.getDirection().value ,
                   this->p[0].value,this->p[1].value, this->p[2].value,

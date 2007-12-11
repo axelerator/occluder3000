@@ -24,6 +24,7 @@ public:
     const Vector3D& getPosition() const { return position;}
     const RGBvalue& getColor() const {return color; }
     ~Light();
+    void setPosition(float x, float y, float z);
 private:
     Vector3D position;
     RGBvalue color;

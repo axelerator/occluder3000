@@ -25,6 +25,8 @@ public:
     Scene();
     void addLight(const Light& l);
     const std::vector<Light> &getLights() const { return lights; }
+    Light &getLight(int i) { return lights[i]; }
+    
     ~Scene();
 private:
 std::vector<Light> lights;

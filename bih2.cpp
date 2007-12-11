@@ -13,6 +13,8 @@
 #include "assert.h"
 #include "radianceray.h"
 
+#define STACKDEPTH 512
+
 BIH2::BIH2 ( const Scene& scene )
     : AccelerationStruct ( scene ), triangleIndices ( 0 ), minimalPrimitiveCount ( 3 ), maxDepth ( 64 ),
     reserved ( 0 ), occupied ( 0 ), markednode ( 0 ) {}
@@ -22,79 +24,79 @@ BIH2::~BIH2() {
   free ( nodes );
 }
 
-void BIH2::traverse ( const BihNode& node, RadianceRay& r, fliess tmin, fliess tmax, unsigned int depth) {
+void BIH2::traverse ( const BihNode& node, RadianceRay& r, float tmin, float tmax, unsigned int depth ) {
   if ( node.type == 3 ) {
     IntersectionResult ir;
-    for ( unsigned int i = node.leafContent[0]; i <= node.leafContent[1]; ++i) {
+    for ( unsigned int i = node.leafContent[0]; i <= node.leafContent[1]; ++i ) {
       Triangle& hitTriangle = triangles[triangleIndices[i]];
-       hitTriangle.intersect(r);
+      hitTriangle.intersect ( r );
 
     }
   } else {
-      // check ray direction to determine identity of 'near' and 'far' children
-      unsigned int near=0, far=1;
-      if ( r.getDirection() [node.type] < 0.0f ) {
-        // near is right, far is left
-        near = 1; far = 0;
-      }
-    
-    fliess tNear = ( node.planes[near] - r.getStart().value[node.type] ) * r.getInvDirection().value[node.type];
-    fliess tFar = ( node.planes[far] - r.getStart().value[node.type] )  * r.getInvDirection().value[node.type];
-    if ( tmin > tNear ) {
-      tmin = Fliess::max( tmin, tFar );
-      traverse(*node.children[far], r, tmin, tmax, depth + 1  );
-    } else
-    if ( tmax  < tFar ) {
-      tmax = Fliess::min( tmax, tNear );
-      traverse(*node.children[near], r, tmin, tmax, depth + 1  );
-    } else {
-      traverse(*node.children[near], r, tmin, Fliess::min( tmax, tNear ) , depth + 1 );
-      traverse(*node.children[far],  r, Fliess::max ( tmin, tFar ), tmax, depth + 1 );
+    // check ray direction to determine identity of 'near' and 'far' children
+    unsigned int near=0, far=1;
+    if ( r.getDirection().value [node.type] < 0.0f ) {
+      // near is right, far is left
+      near = 1; far = 0;
     }
+
+    float tNear = ( node.planes[near] - r.getStart().value[node.type] ) * r.getInvDirection().value[node.type];
+    float tFar = ( node.planes[far] - r.getStart().value[node.type] )  * r.getInvDirection().value[node.type];
+    if ( tmin > tNear ) {
+      tmin = fmaxf ( tmin, tFar );
+      traverse ( *node.children[far], r, tmin, tmax, depth + 1 );
+    } else
+      if ( tmax  < tFar ) {
+        tmax = fminf ( tmax, tNear );
+        traverse ( *node.children[near], r, tmin, tmax, depth + 1 );
+      } else {
+        traverse ( *node.children[near], r, tmin, fminf ( tmax, tNear ) , depth + 1 );
+        traverse ( *node.children[far],  r, fmaxf ( tmin, tFar ), tmax, depth + 1 );
+      }
   }
 }
 
-void BIH2::traverseIterative ( const BihNode* startnode, RadianceRay& r, fliess tmin, fliess tmax) {
-  
-  Stack stack[256];
+void BIH2::traverseIterative ( const BihNode* startnode, RadianceRay& r, float tmin, float tmax ) {
+
+  Stack stack[STACKDEPTH];
   int stackpos = 1;
   stack[0].node = startnode;
   stack[0].tmin = tmin;
   stack[0].tmax = tmax;
   const BihNode *node;
-  while (--stackpos > -1 ) {
-  
-  // pop from stack
-  Stack &current = stack[stackpos];
-  tmin = current.tmin;
-  tmax = current.tmax;
-  node = current.node;
-  
+  while ( --stackpos > -1 ) {
+
+    // pop from stack
+    Stack &current = stack[stackpos];
+    tmin = current.tmin;
+    tmax = current.tmax;
+    node = current.node;
+
     if ( node->type == 3 ) {
       IntersectionResult ir;
-      for ( unsigned int i = node->leafContent[0]; i <= node->leafContent[1]; ++i) {
+      for ( unsigned int i = node->leafContent[0]; i <= node->leafContent[1]; ++i ) {
         Triangle& hitTriangle = triangles[triangleIndices[i]];
-        hitTriangle.intersect(r);
-  
+        hitTriangle.intersect ( r );
+
       }
     } else {
-        // check ray direction to determine identity of 'near' and 'far' children
-        unsigned int near=0, far=1;
-        if ( r.getDirection() [node->type] < 0.0f ) {
-          // near is right, far is left
-          near = 1; far = 0;
-        }
-      
-      fliess tNear = ( node->planes[near] - r.getStart().value[node->type] ) * r.getInvDirection().value[node->type];
-      fliess tFar = ( node->planes[far] - r.getStart().value[node->type] )  * r.getInvDirection().value[node->type];
+      // check ray direction to determine identity of 'near' and 'far' children
+      unsigned int near=0, far=1;
+      if ( r.getDirection().value[node->type] < 0.0f ) {
+        // near is right, far is left
+        near = 1; far = 0;
+      }
+
+      float tNear = ( node->planes[near] - r.getStart().value[node->type] ) * r.getInvDirection().value[node->type];
+      float tFar = ( node->planes[far] - r.getStart().value[node->type] )  * r.getInvDirection().value[node->type];
       if ( tmin > tNear ) {
-        tmin = Fliess::max( tmin, tFar );
+        tmin = fmaxf ( tmin, tFar );
         stack[stackpos].tmin = tmin;
         stack[stackpos].tmax = tmax;
         stack[stackpos].node = node->children[far];
         ++stackpos;
       } else if ( tmax  < tFar ) {
-        tmax = Fliess::min( tmax, tNear );
+        tmax = fminf ( tmax, tNear );
         stack[stackpos].tmin = tmin;
         stack[stackpos].tmax = tmax;
         stack[stackpos].node = node->children[near];
@@ -114,76 +116,165 @@ void BIH2::traverseIterative ( const BihNode* startnode, RadianceRay& r, fliess 
 
 }
 
+bool BIH2::traverseShadow ( const BihNode* startnode, Ray& r, float tmin, float tmax, IntersectionResult &ir, const Triangle *ignoreTriangle ) {
+
+  Stack stack[STACKDEPTH];
+  int stackpos = 1;
+  stack[0].node = startnode;
+  stack[0].tmin = tmin;
+  stack[0].tmax = tmax;
+  const BihNode *node;
+  while ( --stackpos > -1 ) {
+
+    // pop from stack
+    Stack &current = stack[stackpos];
+    tmin = current.tmin;
+    tmax = current.tmax;
+    node = current.node;
+
+    if ( node->type == 3 ) {
+      IntersectionResult ir;
+      for ( unsigned int i = node->leafContent[0]; i <= node->leafContent[1]; ++i ) {
+        Triangle& hitTriangle = triangles[triangleIndices[i]];
+        if ( ignoreTriangle != &hitTriangle )
+          if ( hitTriangle.intersect ( r, ir ) ) {
+            return true;
+          }
+      }
+    } else {
+      // check ray direction to determine identity of 'near' and 'far' children
+      unsigned int near=0, far=1;
+      if ( r.getDirection().value [node->type] < 0.0f ) {
+        // near is right, far is left
+        near = 1; far = 0;
+      }
+
+      float tNear = ( node->planes[near] - r.getStart().value[node->type] ) * r.getInvDirection().value[node->type];
+      float tFar = ( node->planes[far] - r.getStart().value[node->type] )  * r.getInvDirection().value[node->type];
+      if ( tmin > tNear ) {
+        tmin = fmaxf ( tmin, tFar );
+        stack[stackpos].tmin = tmin;
+        stack[stackpos].tmax = tmax;
+        stack[stackpos].node = node->children[far];
+        ++stackpos;
+      } else if ( tmax  < tFar ) {
+        tmax = fminf ( tmax, tNear );
+        stack[stackpos].tmin = tmin;
+        stack[stackpos].tmax = tmax;
+        stack[stackpos].node = node->children[near];
+        ++stackpos;
+      } else {
+        stack[stackpos].tmin = tmin;
+        stack[stackpos].tmax = tmax;
+        stack[stackpos].node = node->children[near];
+        ++stackpos;
+        stack[stackpos].tmin = tmin;
+        stack[stackpos].tmax = tmax;
+        stack[stackpos].node = node->children[far];
+        ++stackpos;
+      }
+    }
+  }
+  return false;
+}
+
 const RGBvalue BIH2::trace ( Ray& r, unsigned int depth ) {
-/*
- * Ray-box intersection using IEEE numerical properties to ensure that the
- * test is both robust and efficient, as described in:
- *
- *      Amy Williams, Steve Barrus, R. Keith Morley, and Peter Shirley
- *      "An Efficient and Robust Ray-Box Intersection Algorithm"
- *      Journal of graphics tools, 10(1):49-54, 2005
- *
- *      * slightly altered to find poin of intersection *
- */
+  /*
+   * Ray-box intersection using IEEE numerical properties to ensure that the
+   * test is both robust and efficient, as described in:
+   *
+   *      Amy Williams, Steve Barrus, R. Keith Morley, and Peter Shirley
+   *      "An Efficient and Robust Ray-Box Intersection Algorithm"
+   *      Journal of graphics tools, 10(1):49-54, 2005
+   *
+   *      * slightly altered to find point of intersection *
+   */
   float t0 = 0.0;
   float t1 = UNENDLICH;
   float tmin, tmax, tymin, tymax, tzmin, tzmax;
-  Vector3D parameters[2] = {Vector3D(bounds[0], bounds[2], bounds[4]), 
-                            Vector3D(bounds[1], bounds[3], bounds[5])};  
-  Vector3D inv_direction(1.0/r.getDirection()[0], 1.0/r.getDirection()[1], 1.0/r.getDirection()[2]);
+  Vector3D parameters[2] = {Vector3D ( bounds[0], bounds[2], bounds[4] ),
+                            Vector3D ( bounds[1], bounds[3], bounds[5] ) };
+  const Vector3D &inv_direction = r.getInvDirection();
   int sign[3];
-  sign[0] = (inv_direction[0] < 0);
-  sign[1] = (inv_direction[1] < 0);
-  sign[2] = (inv_direction[2] < 0);
+  sign[0] = ( inv_direction.value[0] < 0 );
+  sign[1] = ( inv_direction.value[1] < 0 );
+  sign[2] = ( inv_direction.value[2] < 0 );
 
-  tmin = (parameters[sign[0]][0] - r.getStart()[0]) * inv_direction[0];
-  tmax = (parameters[1-sign[0]][0] - r.getStart()[0]) * inv_direction[0];
-  tymin = (parameters[sign[1]][1] - r.getStart()[1]) * inv_direction[1];
-  tymax = (parameters[1-sign[1]][1] - r.getStart()[1]) * inv_direction[1];
-  if ( (tmin > tymax) || (tymin > tmax) ) {
-    return RGBvalue(0.0, 0.0, 0.0);
+  tmin = ( parameters[sign[0]].value[0] - r.getStart().value[0] ) * inv_direction.value[0];
+  tmax = ( parameters[1-sign[0]].value[0] - r.getStart().value[0] ) * inv_direction.value[0];
+  tymin = ( parameters[sign[1]].value[1] - r.getStart().value[1] ) * inv_direction.value[1];
+  tymax = ( parameters[1-sign[1]].value[1] - r.getStart().value[1] ) * inv_direction.value[1];
+  if ( ( tmin > tymax ) || ( tymin > tmax ) ) {
+    return RGBvalue ( 0.0, 0.0, 0.0 );
   }
-  if (tymin > tmin)
+  if ( tymin > tmin )
     tmin = tymin;
-  if (tymax < tmax)
+  if ( tymax < tmax )
     tmax = tymax;
-  tzmin = (parameters[sign[2]][2] - r.getStart()[2]) * inv_direction[2];
-  tzmax = (parameters[1-sign[2]][2] - r.getStart()[2]) * inv_direction[2];
-  if ( (tmin > tzmax) || (tzmin > tmax) ) { 
-    return RGBvalue(0.0, 0.0, 0.0);
+  tzmin = ( parameters[sign[2]].value[2] - r.getStart().value[2] ) * inv_direction.value[2];
+  tzmax = ( parameters[1-sign[2]].value[2] - r.getStart().value[2] ) * inv_direction.value[2];
+  if ( ( tmin > tzmax ) || ( tzmin > tmax ) ) {
+    return RGBvalue ( 0.0, 0.0, 0.0 );
   }
-  if (tzmin > tmin)
+  if ( tzmin > tmin )
     tmin = tzmin;
-  if (tzmax < tmax)
+  if ( tzmax < tmax )
     tmax = tzmax;
-  if ( (tmin < t1) && (tmax > t0) ) {
-  ;
-  } else    
-    return RGBvalue(0.0, 0.0, 0.0);
+  if ( ( tmin < t1 ) && ( tmax > t0 ) ) {
+    ;
+  } else
+    return RGBvalue ( 0.0, 0.0, 0.0 );
 
-  RGBvalue result(0.0, 0.0, 0.0);
-  RadianceRay rr(r.getStart(), r.getDirection());
+  RGBvalue result ( 0.0, 0.0, 0.0 );
+  RadianceRay rr ( r.getStart(), r.getDirection() );
 //   traverse(nodes[0], rr, tmin, tmax, 0);
-  traverseIterative(nodes, rr, tmin, tmax);
+
+
+  traverseIterative ( nodes, rr, fmaxf(tmin, 0.0), tmax );
   if ( rr.didHitSomething() ) {
 //    return RGBvalue(1.0, 0.0, 0.0);
-      const Intersection &i = rr.getClosestIntersection();
-      const Triangle &hitTriangle = *(i.triangle);
-      Vector3D n ( hitTriangle.getNormalAt ( i ) );
-      const PhongMaterial& mat = hitTriangle.getMaterial();
-      const std::vector<Light> lights = scene.getLights();
-      std::vector<Light>::const_iterator it;
-      for ( it = lights.begin(); it!=lights.end(); ++it ) {
-          const Light& light = *it;
-
-          Vector3D l ( light.getPosition() - i.intersectionPoint );
-          l.normalize();
-          fliess dif = n * l;
-          //dif = 1.0;
-          if (dif > 0.0)
-              result.add ( dif * mat.diffuse[0] * light.getColor().getRGB()[0],
-                                dif * mat.diffuse[1] * light.getColor().getRGB()[1],
-                                dif * mat.diffuse[2] * light.getColor().getRGB()[2] );
+    const Intersection &i = rr.getClosestIntersection();
+    const Triangle &hitTriangle = * ( i.triangle );
+    Vector3D n ( hitTriangle.getNormalAt ( i ) );
+    const PhongMaterial& mat = hitTriangle.getMaterial();
+    const std::vector<Light> lights = scene.getLights();
+    std::vector<Light>::const_iterator it;
+    IntersectionResult doesntMatter;
+    for ( it = lights.begin(); it!=lights.end(); ++it ) {
+      const Light& light = *it;
+      Vector3D l ( light.getPosition() -  i.intersectionPoint);
+//       Vector3D l (   i.intersectionPoint - light.getPosition() );
+//        Vector3D l ( 0.0, 1.0, 0.0);
+      tmax = l.length();
+      l.normalize();
+      Ray intersectToLigth ( i.intersectionPoint, l );
+      
+      
+      //           RadianceRay rrr(i.intersectionPoint, l);
+      //         traverseIterative(nodes, rrr, 0.001, 10.0);
+      //         if ( !traverseShadow(nodes, intersectToLigth, 0.0, tmax, doesntMatter) ) {
+      //           if ( ! rrr.didHitSomething() ) {
+              float dif = n * l;
+//       float dif = 1.0;
+      if ( dif > 0.0 ) {
+//         bool hitt = false;
+//         for ( std::vector<Triangle>::iterator it2 = triangles.begin(); it2!=triangles.end(); ++it2 ) {
+//           if ( ( & ( *it2 ) != &hitTriangle ) && ( *it2 ).intersect ( intersectToLigth, doesntMatter ) ) {
+//             hitt = true;
+//             break;
+//           }
+//         }
+//         if ( ! hitt ) {
+              if ( !traverseShadow(nodes, intersectToLigth, 0.0, tmax, doesntMatter, &hitTriangle) ) {
+          result.add ( dif * mat.diffuse[0] * light.getColor().getRGB() [0],
+                       dif * mat.diffuse[1] * light.getColor().getRGB() [1],
+                       dif * mat.diffuse[2] * light.getColor().getRGB() [2] );
+        }
+      }
+          
+//           result.add (  i.intersectionPoint[0],
+//                        i.intersectionPoint[1],
+//                         i.intersectionPoint[2] );
       }
   }
   return result;
@@ -199,17 +290,20 @@ void BIH2::construct() {
   reserved = 30;
   nodes = ( BihNode * ) malloc ( reserved * sizeof ( BihNode ) );
   occupied = 1;
+#ifdef VISUAL_DEBUGGER
   nodes[0].idx = 0;
+#endif
   subdivide ( nodes[0], 0, objectCount-1, bounds, 0 );
   std::cout << "construction done. Nodecount:" << occupied << std::endl;
-  std::cout << "consistency check: " << (isConsistent()?"true":"false") << std::endl;
+  std::cout << "consistency check: " << ( isConsistent() ?"true":"false" ) << std::endl;
 }
 
-void BIH2::subdivide ( BihNode &thisNode, unsigned int start, unsigned int end, const fliess *currBounds, unsigned int depth ) {
+void BIH2::subdivide ( BihNode &thisNode, unsigned int start, unsigned int end, const float *currBounds, unsigned int depth ) {
   assert ( end < triangles.size() );
   assert ( start <= end );
+#ifdef VISUAL_DEBUGGER
   memcpy ( thisNode.bounds, currBounds, 6 * sizeof ( float ) );
-
+#endif
   // determine if we hit a termination condition
   if ( ( ( end - start ) < minimalPrimitiveCount )
        || ( depth > maxDepth ) ) {
@@ -220,7 +314,7 @@ void BIH2::subdivide ( BihNode &thisNode, unsigned int start, unsigned int end, 
   }
 
   // determine longest axis of bounding box
-  const fliess bbLength[3] = {
+  const float bbLength[3] = {
                                currBounds[1] - currBounds[0],
                                currBounds[3] - currBounds[2],
                                currBounds[5] - currBounds[4]
@@ -234,18 +328,18 @@ void BIH2::subdivide ( BihNode &thisNode, unsigned int start, unsigned int end, 
     axis = 2;
 
   // Split the resulting axis in half
-  const fliess splitVal = currBounds[axis * 2] + ( bbLength[axis] * 0.5 );
+  const float splitVal = currBounds[axis * 2] + ( bbLength[axis] * 0.5 );
 
   unsigned int left = start;
   unsigned int right = end;
-
+  // Good ole quicksortlike partitioning
   do {
 
-    while ( left < right && triangles[triangleIndices[left]].getCenter() [axis] <= splitVal ) {
+    while ( left < right && triangles[triangleIndices[left]].getCenter().value[axis] <= splitVal ) {
       ++left;
     }
 
-    while ( right > left && triangles[triangleIndices[right]].getCenter() [axis] > splitVal ) {
+    while ( right > left && triangles[triangleIndices[right]].getCenter().value[axis] > splitVal ) {
       --right;
     }
 
@@ -257,22 +351,22 @@ void BIH2::subdivide ( BihNode &thisNode, unsigned int start, unsigned int end, 
 
   } while ( left < right );
 
-  if ( triangles[triangleIndices[right]].getCenter() [axis] < triangles[triangleIndices[left]].getCenter() [axis] ) {
+  if ( triangles[triangleIndices[right]].getCenter().value[axis] < triangles[triangleIndices[left]].getCenter().value[axis] ) {
     unsigned int tmp = triangleIndices[left];
     triangleIndices[left] = triangleIndices[right];
     triangleIndices[right] = tmp;
   }
 
   // split the current bounding box in two along the current axis
-  fliess leftBounds[6], rightBounds[6];
+  float leftBounds[6], rightBounds[6];
   switch ( axis ) {
     case 0: leftBounds[0] = currBounds[0];
       leftBounds[1] = splitVal ;
-      memcpy ( leftBounds+2, currBounds+2,  4 * sizeof ( fliess ) );
+      memcpy ( leftBounds+2, currBounds+2,  4 * sizeof ( float ) );
 
       rightBounds[0] = splitVal;
       rightBounds[1] = currBounds[1];
-      memcpy ( rightBounds+2, currBounds+2, 4 * sizeof ( fliess ) );
+      memcpy ( rightBounds+2, currBounds+2, 4 * sizeof ( float ) );
       break;
     case 1: leftBounds[2] = currBounds[2];
       leftBounds[3] = splitVal ;
@@ -290,10 +384,10 @@ void BIH2::subdivide ( BihNode &thisNode, unsigned int start, unsigned int end, 
       break;
     case 2: leftBounds[4] = currBounds[4];
       leftBounds[5] = splitVal ;
-      memcpy ( leftBounds, currBounds, 4 * sizeof ( fliess ) );
+      memcpy ( leftBounds, currBounds, 4 * sizeof ( float ) );
       rightBounds[4] = splitVal;
       rightBounds[5] = currBounds[5];
-      memcpy ( rightBounds, currBounds, 4 * sizeof ( fliess ) );
+      memcpy ( rightBounds, currBounds, 4 * sizeof ( float ) );
       break;
   }
 
@@ -309,24 +403,26 @@ void BIH2::subdivide ( BihNode &thisNode, unsigned int start, unsigned int end, 
       nodes = ( BihNode * ) realloc ( nodes, reserved * sizeof ( BihNode ) );
     }
     occupied += 2;
-    fliess leftMax = -UNENDLICH;
-    fliess rightMin = UNENDLICH;
+    float leftMax = -UNENDLICH;
+    float rightMin = UNENDLICH;
     for ( unsigned int i = start; i < left; ++i ) {
       for ( unsigned char c = 0; c < 3; ++c )
-        if ( triangles[triangleIndices[i]].getPoint ( c ) [axis] > leftMax )
-          leftMax = triangles[triangleIndices[i]].getPoint ( c ) [axis];
+        if ( triangles[triangleIndices[i]].getPoint ( c ).value[axis] > leftMax )
+          leftMax = triangles[triangleIndices[i]].getPoint ( c ).value[axis];
     }
 
     for ( unsigned int i = left; i <= end; ++i ) {
       for ( unsigned char c = 0; c < 3; ++c )
-        if ( triangles[triangleIndices[i]].getPoint ( c ) [axis] < rightMin )
-          rightMin = triangles[triangleIndices[i]].getPoint ( c ) [axis];
+        if ( triangles[triangleIndices[i]].getPoint ( c ).value[axis] < rightMin )
+          rightMin = triangles[triangleIndices[i]].getPoint ( c ).value[axis];
     }
 
     BihNode *leftNode = nodes + occupied - 2;
     BihNode *rightNode = nodes + occupied - 1;
+#ifdef VISUAL_DEBUGGER
     leftNode->idx = occupied - 2;
     rightNode->idx = occupied - 1;
+#endif
     thisNode.planes[0] = leftMax;
     thisNode.planes[1] = rightMin;
 
@@ -509,12 +605,12 @@ bool BIH2::isConsistent() {
 }
 
 bool BIH2::checkConsistency ( BihNode *node ) {
-  if ( node->type > 3 ) 
+  if ( node->type > 3 )
     return false;
 
   unsigned int max = triangles.size();
   if ( node->type == 3 ) {
-    return (node->leafContent[1] - node->leafContent[0] <= minimalPrimitiveCount  ) && ( node->leafContent[1] < max ) && ( node->leafContent[0] <= ( node->leafContent[1] ) );
+    return ( node->leafContent[1] - node->leafContent[0] <= minimalPrimitiveCount ) && ( node->leafContent[1] < max ) && ( node->leafContent[0] <= ( node->leafContent[1] ) );
   }
 
   if ( !node->children[0] || !node->children[1] )

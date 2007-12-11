@@ -14,16 +14,16 @@
  */
 void Box::intersect(const Ray &r, float t0, float t1,BoxRayIntersect& result ) const {
   float tmin, tmax, tymin, tymax, tzmin, tzmax;
-  Vector3D inv_direction(1.0/r.getDirection()[0], 1.0/r.getDirection()[1], 1.0/r.getDirection()[2]);
+  const Vector3D& inv_direction = r.getInvDirection();
   int sign[3];
-  sign[0] = (inv_direction[0] < 0);
-  sign[1] = (inv_direction[1] < 0);
-  sign[2] = (inv_direction[2] < 0);
+  sign[0] = (inv_direction.value[0] < 0);
+  sign[1] = (inv_direction.value[1] < 0);
+  sign[2] = (inv_direction.value[2] < 0);
 
-  tmin = (parameters[sign[0]][0] - r.getStart()[0]) * inv_direction[0];
-  tmax = (parameters[1-sign[0]][0] - r.getStart()[0]) * inv_direction[0];
-  tymin = (parameters[sign[1]][1] - r.getStart()[1]) * inv_direction[1];
-  tymax = (parameters[1-sign[1]][1] - r.getStart()[1]) * inv_direction[1];
+  tmin = (parameters[sign[0]].value[0] - r.getStart().value[0]) * inv_direction.value[0];
+  tmax = (parameters[1-sign[0]].value[0] - r.getStart().value[0]) * inv_direction.value[0];
+  tymin = (parameters[sign[1]].value[1] - r.getStart().value[1]) * inv_direction.value[1];
+  tymax = (parameters[1-sign[1]].value[1] - r.getStart().value[1]) * inv_direction.value[1];
   if ( (tmin > tymax) || (tymin > tmax) ) {
     result.hit = false;
     return;
@@ -32,8 +32,8 @@ void Box::intersect(const Ray &r, float t0, float t1,BoxRayIntersect& result ) c
     tmin = tymin;
   if (tymax < tmax)
     tmax = tymax;
-  tzmin = (parameters[sign[2]][2] - r.getStart()[2]) * inv_direction[2];
-  tzmax = (parameters[1-sign[2]][2] - r.getStart()[2]) * inv_direction[2];
+  tzmin = (parameters[sign[2]].value[2] - r.getStart().value[2]) * inv_direction.value[2];
+  tzmax = (parameters[1-sign[2]].value[2] - r.getStart().value[2]) * inv_direction.value[2];
   if ( (tmin > tzmax) || (tzmin > tmax) ) { 
     result.hit = false;
     return;

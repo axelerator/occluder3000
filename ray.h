@@ -35,7 +35,7 @@ class Ray
 
   // hit info
   bool hitSomething;
-  fliess hitDistance;
+  float hitDistance;
 };
 
 #endif

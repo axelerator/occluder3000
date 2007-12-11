@@ -21,8 +21,8 @@ BoundaryIntervalHierarchy::~BoundaryIntervalHierarchy() {}
 
 const RGBvalue BoundaryIntervalHierarchy::trace ( Ray& r, unsigned int depth ) {
   IntersectionResult ir;
-  static fliess tmin = 0.1;
-  static fliess tmax = 10.0;
+  static float tmin = 0.1;
+  static float tmax = 10.0;
   if ( root->traverse ( r, ir, tmin, tmax ) ) {
         const Triangle& hitTriangle = triangles[ir.triangleIdx];
         Vector3D n ( hitTriangle.getNormalAt (ir ) );
@@ -35,7 +35,7 @@ const RGBvalue BoundaryIntervalHierarchy::trace ( Ray& r, unsigned int depth ) {
 
             Vector3D l ( light.getPosition() - ir.calcPOI() );
             l.normalize();
-            fliess dif = n * l;
+            float dif = n * l;
             //dif = 1.0;
             if (dif > 0.0)
                 lightVessel.add ( dif * mat.diffuse[0] * light.getColor().getRGB()[0],
@@ -47,20 +47,20 @@ const RGBvalue BoundaryIntervalHierarchy::trace ( Ray& r, unsigned int depth ) {
         return  RGBvalue ( 0, 0, 0 );
 }
 
-bool BIHInternalNode::traverse ( Ray& r, IntersectionResult& ir, fliess tmin, fliess tmax ) {
+bool BIHInternalNode::traverse ( Ray& r, IntersectionResult& ir, float tmin, float tmax ) {
 
   // check ray direction to determine identity of 'near' and 'far' children
   int near=0, far=1;
-  if ( r.getDirection()[axis] < 0.0f ) {
+  if ( r.getDirection().value[axis] < 0.0f ) {
     // near is right, far is left
     near = 1; far = 0;
   }
 
   // compute intersection with near split
-  fliess tnear = ( clip[near] - r.getStart().value[axis] ) / r.getDirection().value[axis];
+  float tnear = ( clip[near] - r.getStart().value[axis] ) / r.getDirection().value[axis];
 
   // compute intersection with far split
-  fliess tfar = ( clip[far] - r.getStart().value[axis] ) / r.getDirection().value[axis];
+  float tfar = ( clip[far] - r.getStart().value[axis] ) / r.getDirection().value[axis];
 
 
   // if tmin >= near split, tmin = max(tmin,far split), traverse far child
@@ -68,16 +68,16 @@ bool BIHInternalNode::traverse ( Ray& r, IntersectionResult& ir, fliess tmin, fl
   // else traverse both
   bool bhit = false;
   if ( tmin >= tnear ) {
-    tmin = Fliess::max ( tmin, tfar );
+    tmin = fmaxf ( tmin, tfar );
     bhit = children[far]->traverse ( r, ir, tmin, tmax );
   } else if ( tmax < tfar ) {
-    tmax = Fliess::min ( tmax, tnear );
+    tmax = fminf ( tmax, tnear );
     bhit = children[near]->traverse ( r, ir, tmin, tmax );
 
   } else {
-    bhit = children[near]->traverse ( r, ir, tmin, Fliess::min ( tmax, tnear ) );
+    bhit = children[near]->traverse ( r, ir, tmin, fminf ( tmax, tnear ) );
 //     bhit = children[near]->traverse ( r, ir, tmin,tmax );
-    bhit = children[far]->traverse ( r, ir, Fliess::max ( tmin, tfar ), tmax ) || bhit;
+    bhit = children[far]->traverse ( r, ir, fmaxf ( tmin, tfar ), tmax ) || bhit;
 //     bhit = children[far]->traverse ( r, ir, tmin, tmax ) || bhit;
   }
 
@@ -85,7 +85,7 @@ bool BIHInternalNode::traverse ( Ray& r, IntersectionResult& ir, fliess tmin, fl
 
 }
 
-bool BIHLeaf::traverse ( Ray& r, IntersectionResult& ir, fliess tmin, fliess tmax ) {
+bool BIHLeaf::traverse ( Ray& r, IntersectionResult& ir, float tmin, float tmax ) {
   if ( b->getTriangle ( index ).intersect ( r, ir ) ) {
     ir.triangleIdx = index;
     return true;
@@ -105,7 +105,7 @@ void BoundaryIntervalHierarchy::construct() {
 /**
  * To test consisteny: Checks if objects are inside given bounds
  */
-bool BoundaryIntervalHierarchy::testObjctsVsBB ( fliess *cbounds, std::vector<int> &objects ) {
+bool BoundaryIntervalHierarchy::testObjctsVsBB ( float *cbounds, std::vector<int> &objects ) {
   std::vector<int>::iterator iter = objects.begin();
   while ( iter != objects.end() ) {
     const Triangle& tri = triangles[*iter];
@@ -118,13 +118,13 @@ bool BoundaryIntervalHierarchy::testObjctsVsBB ( fliess *cbounds, std::vector<in
   return true;
 }
 
-BIHTreeNode *BoundaryIntervalHierarchy::subdivide ( fliess *currBounds, std::vector<int> &objects, unsigned int depth ) {
+BIHTreeNode *BoundaryIntervalHierarchy::subdivide ( float *currBounds, std::vector<int> &objects, unsigned int depth ) {
   assert ( objects.size() > 0 );
 //   assert(testObjctsVsBB(currBounds, objects));
   if ( objects.size() == 1 )
     return new BIHLeaf ( objects[0] );
 
-  const fliess boundLength[3] = { currBounds[1] - currBounds[0],  currBounds[3] - currBounds[2],  currBounds[5] - currBounds[4]};
+  const float boundLength[3] = { currBounds[1] - currBounds[0],  currBounds[3] - currBounds[2],  currBounds[5] - currBounds[4]};
   unsigned char axis;
   // determine longest axis of bounding box
   if ( boundLength[0] > boundLength[1] )
@@ -135,11 +135,11 @@ BIHTreeNode *BoundaryIntervalHierarchy::subdivide ( fliess *currBounds, std::vec
     axis = 2;
 
   unsigned char boundsIdx = 2 * axis;
-  const fliess seperatePlane = currBounds[boundsIdx] + boundLength[axis] * 0.5;
-  /*  fliess leftMax = currBounds[boundsIdx];
-    fliess rightMin = currBounds[boundsIdx + 1];*/
-  fliess leftMax = -INFINITY;
-  fliess rightMin = INFINITY;
+  const float seperatePlane = currBounds[boundsIdx] + boundLength[axis] * 0.5;
+  /*  float leftMax = currBounds[boundsIdx];
+    float rightMin = currBounds[boundsIdx + 1];*/
+  float leftMax = -INFINITY;
+  float rightMin = INFINITY;
 
   unsigned char charIterator;
 
@@ -162,15 +162,15 @@ BIHTreeNode *BoundaryIntervalHierarchy::subdivide ( fliess *currBounds, std::vec
   }
 
   // split the current bounding box in two along the current axis
-  fliess leftBounds[6], rightBounds[6];
+  float leftBounds[6], rightBounds[6];
   switch ( axis ) {
     case 0: leftBounds[0] = currBounds[0];
       leftBounds[1] = seperatePlane ;
-      memcpy ( leftBounds+2, currBounds+2,  4 * sizeof ( fliess ) );
+      memcpy ( leftBounds+2, currBounds+2,  4 * sizeof ( float ) );
 
       rightBounds[0] = seperatePlane;
       rightBounds[1] = currBounds[1];
-      memcpy ( rightBounds+2, currBounds+2, 4 * sizeof ( fliess ) );
+      memcpy ( rightBounds+2, currBounds+2, 4 * sizeof ( float ) );
       break;
     case 1: leftBounds[2] = currBounds[2];
       leftBounds[3] = seperatePlane ;
@@ -188,10 +188,10 @@ BIHTreeNode *BoundaryIntervalHierarchy::subdivide ( fliess *currBounds, std::vec
       break;
     case 2: leftBounds[4] = currBounds[4];
       leftBounds[5] = seperatePlane ;
-      memcpy ( leftBounds, currBounds, 4 * sizeof ( fliess ) );
+      memcpy ( leftBounds, currBounds, 4 * sizeof ( float ) );
       rightBounds[4] = seperatePlane;
       rightBounds[5] = currBounds[5];
-      memcpy ( rightBounds, currBounds, 4 * sizeof ( fliess ) );
+      memcpy ( rightBounds, currBounds, 4 * sizeof ( float ) );
       break;
   }
   assert ( leftObjects.size()  + rightObjects.size() > 0 );
@@ -209,7 +209,7 @@ BIHTreeNode *BoundaryIntervalHierarchy::subdivide ( fliess *currBounds, std::vec
   return result;
 }
 
-void BoundaryIntervalHierarchy::drawBB ( fliess *bounds ) {
+void BoundaryIntervalHierarchy::drawBB ( float *bounds ) {
   glBegin ( GL_LINE_LOOP );
   glVertex3f ( bounds[0], bounds[2], bounds[4] );
   glVertex3f ( bounds[0], bounds[3], bounds[4] );

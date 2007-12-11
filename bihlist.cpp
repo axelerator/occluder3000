@@ -39,16 +39,16 @@ const RGBvalue BihList::trace ( Ray& r, unsigned int depth ) {
   float tmin, tmax, tymin, tymax, tzmin, tzmax;
   Vector3D parameters[2] = {Vector3D(bounds[0], bounds[2], bounds[4]), 
                             Vector3D(bounds[1], bounds[3], bounds[5])};  
-  Vector3D inv_direction(1.0/r.getDirection()[0], 1.0/r.getDirection()[1], 1.0/r.getDirection()[2]);
+  const Vector3D &inv_direction = r.getInvDirection();
   int sign[3];
-  sign[0] = (inv_direction[0] < 0);
-  sign[1] = (inv_direction[1] < 0);
-  sign[2] = (inv_direction[2] < 0);
+  sign[0] = (inv_direction.value[0] < 0);
+  sign[1] = (inv_direction.value[1] < 0);
+  sign[2] = (inv_direction.value[2] < 0);
 
-  tmin = (parameters[sign[0]][0] - r.getStart()[0]) * inv_direction[0];
-  tmax = (parameters[1-sign[0]][0] - r.getStart()[0]) * inv_direction[0];
-  tymin = (parameters[sign[1]][1] - r.getStart()[1]) * inv_direction[1];
-  tymax = (parameters[1-sign[1]][1] - r.getStart()[1]) * inv_direction[1];
+  tmin = (parameters[sign[0]].value[0] - r.getStart().value[0]) * inv_direction.value[0];
+  tmax = (parameters[1-sign[0]].value[0] - r.getStart().value[0]) * inv_direction.value[0];
+  tymin = (parameters[sign[1]].value[1] - r.getStart().value[1]) * inv_direction.value[1];
+  tymax = (parameters[1-sign[1]].value[1] - r.getStart().value[1]) * inv_direction.value[1];
   if ( (tmin > tymax) || (tymin > tmax) ) {
     return RGBvalue(0.0, 0.0, 0.0);
   }
@@ -56,8 +56,8 @@ const RGBvalue BihList::trace ( Ray& r, unsigned int depth ) {
     tmin = tymin;
   if (tymax < tmax)
     tmax = tymax;
-  tzmin = (parameters[sign[2]][2] - r.getStart()[2]) * inv_direction[2];
-  tzmax = (parameters[1-sign[2]][2] - r.getStart()[2]) * inv_direction[2];
+  tzmin = (parameters[sign[2]].value[2] - r.getStart().value[2]) * inv_direction.value[2];
+  tzmax = (parameters[1-sign[2]].value[2] - r.getStart().value[2]) * inv_direction.value[2];
   if ( (tmin > tzmax) || (tzmin > tmax) ) { 
     return RGBvalue(0.0, 0.0, 0.0);
   }
@@ -74,8 +74,8 @@ const RGBvalue BihList::trace ( Ray& r, unsigned int depth ) {
 
   BihNode *node = & ( bihNodes[0] );
 
-  fliess tNear;
-  fliess tFar;
+  float tNear;
+  float tFar;
   Stacknode *stack = 0;
   unsigned int near=0, far=1;
   Stacknode *discard = 0;
@@ -88,7 +88,7 @@ const RGBvalue BihList::trace ( Ray& r, unsigned int depth ) {
     while ((axis = (node->axis) & 3 ) != 3 ) {
       // check ray direction to determine identity of 'near' and 'far' children
       near=0, far=1;
-      if ( r.getDirection() [axis] < 0.0f ) {
+      if ( r.getDirection().value[axis] < 0.0f ) {
         // near is right, far is left
         near = 1; far = 0;
       }
@@ -100,7 +100,7 @@ const RGBvalue BihList::trace ( Ray& r, unsigned int depth ) {
       if ( tNear <= tmin ) { //Near side intersected?
         // compute intersection with far split
         if ( tFar >= tmax ) { //Both sides intersected
-          stack = new Stacknode ( Fliess::max ( tNear,tmax ), tmax, tempNode.nextLeft + far, stack );
+          stack = new Stacknode ( fmaxf ( tNear,tmax ), tmax, tempNode.nextLeft + far, stack );
         }
         node = tempNode.nextLeft + near;
         if ( tmin < tFar )
@@ -149,7 +149,7 @@ const RGBvalue BihList::trace ( Ray& r, unsigned int depth ) {
 
             Vector3D l ( light.getPosition() - ir.calcPOI() );
             l.normalize();
-            fliess dif = n * l;
+            float dif = n * l;
             //dif = 1.0;
             if (dif > 0.0)
                 lightVessel.add ( dif * mat.diffuse[0] * light.getColor().getRGB()[0],
@@ -173,7 +173,7 @@ void BihList::construct() {
 }
 
 
-void BihList::subdivide(BihNode *thisNode, unsigned int start, unsigned int end, const fliess *currBounds, unsigned int depth) {
+void BihList::subdivide(BihNode *thisNode, unsigned int start, unsigned int end, const float *currBounds, unsigned int depth) {
   std::cout << "depth:" << depth << std::endl;
   assert(end <= triangles.size() );
   assert(start < end );
@@ -187,7 +187,7 @@ void BihList::subdivide(BihNode *thisNode, unsigned int start, unsigned int end,
   }
   
   // determine longest axis of bounding box
-  const fliess bbLength[3] = { currBounds[1] - currBounds[0],
+  const float bbLength[3] = { currBounds[1] - currBounds[0],
                                currBounds[3] - currBounds[2],
                                currBounds[5] - currBounds[4]};
   unsigned char axis;
@@ -200,15 +200,15 @@ void BihList::subdivide(BihNode *thisNode, unsigned int start, unsigned int end,
 
 
   // Split the resulting axis in half
-  const fliess splitVal = currBounds[axis * 2] + ( bbLength[axis] * 0.5 );
+  const float splitVal = currBounds[axis * 2] + ( bbLength[axis] * 0.5 );
 
   unsigned int leftStart = start;
   unsigned int leftEnd = start;
   
   unsigned int rightStart = end;
   unsigned int rightEnd = end;
-  fliess leftMax = -UNENDLICH;
-  fliess rightMin = UNENDLICH;
+  float leftMax = -UNENDLICH;
+  float rightMin = UNENDLICH;
   // Sort the segment of the list passed to the function ( by start/end ) according to splitVal
   while ( leftEnd < (rightStart-1) ) { // -1 to avoid overlapping
 
@@ -216,8 +216,8 @@ void BihList::subdivide(BihNode *thisNode, unsigned int start, unsigned int end,
     // 0 = both are on the correct side
     // 1 & 2 = only leftEnd or RightStart are wrong -> in-/decrement the other
     // 3 = both values (leftEnd and rightStart are on the 'wrong' side -> swap
-    char swapCase = (( triangles[triangleIndices[leftEnd   ]].getCenter()[axis] > splitVal) << 1 )
-                  | ( triangles[triangleIndices[rightStart]].getCenter()[axis] < splitVal) ;
+    char swapCase = (( triangles[triangleIndices[leftEnd   ]].getCenter().value[axis] > splitVal) << 1 )
+                  | ( triangles[triangleIndices[rightStart]].getCenter().value[axis] < splitVal) ;
     unsigned int swapVal;
     switch (swapCase ) {
       case 0: ++leftEnd; --rightStart; break;
@@ -239,29 +239,29 @@ void BihList::subdivide(BihNode *thisNode, unsigned int start, unsigned int end,
   
   // in case of even num of primitives
   if ( rightStart == leftEnd) {
-    if (triangles[triangleIndices[rightStart]].getCenter()[axis] > splitVal)
+    if (triangles[triangleIndices[rightStart]].getCenter().value[axis] > splitVal)
       --leftEnd;
     else
       ++rightStart;
   // in case of odd number of odd number of primitives we have
   // the 'middle' lement not sorted into one of the lists
   } else if ( (rightStart - leftEnd) > 1)
-    if (triangles[triangleIndices[rightStart - 1]].getCenter()[axis] > splitVal)
+    if (triangles[triangleIndices[rightStart - 1]].getCenter().value[axis] > splitVal)
       --rightStart;
     else
       ++leftEnd;
   assert(rightStart == leftEnd + 1 );
 
   // split the current bounding box in two along the current axis
-  fliess leftBounds[6], rightBounds[6];
+  float leftBounds[6], rightBounds[6];
   switch ( axis ) {
     case 0: leftBounds[0] = currBounds[0];
       leftBounds[1] = splitVal ;
-      memcpy ( leftBounds+2, currBounds+2,  4 * sizeof ( fliess ) );
+      memcpy ( leftBounds+2, currBounds+2,  4 * sizeof ( float ) );
 
       rightBounds[0] = splitVal;
       rightBounds[1] = currBounds[1];
-      memcpy ( rightBounds+2, currBounds+2, 4 * sizeof ( fliess ) );
+      memcpy ( rightBounds+2, currBounds+2, 4 * sizeof ( float ) );
       break;
     case 1: leftBounds[2] = currBounds[2];
       leftBounds[3] = splitVal ;
@@ -279,10 +279,10 @@ void BihList::subdivide(BihNode *thisNode, unsigned int start, unsigned int end,
       break;
     case 2: leftBounds[4] = currBounds[4];
       leftBounds[5] = splitVal ;
-      memcpy ( leftBounds, currBounds, 4 * sizeof ( fliess ) );
+      memcpy ( leftBounds, currBounds, 4 * sizeof ( float ) );
       rightBounds[4] = splitVal;
       rightBounds[5] = currBounds[5];
-      memcpy ( rightBounds, currBounds, 4 * sizeof ( fliess ) );
+      memcpy ( rightBounds, currBounds, 4 * sizeof ( float ) );
       break;
   }  
   if ( leftEnd == leftStart ) {// no primitives in left half => split the right side again

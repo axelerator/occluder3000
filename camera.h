@@ -22,7 +22,7 @@ A basic camera. Providing information about point of view, projection aera etc..
 class Camera
 {
   public:
-    Camera(Vector3D& position, Vector3D& target, Vector3D& up, fliess d, unsigned int x, unsigned int y);
+    Camera(Vector3D& position, Vector3D& target, Vector3D& up, float d, unsigned int x, unsigned int y);
     void setPosition(const Vector3D& position);
     void update();
     ~Camera();
@@ -31,11 +31,11 @@ class Camera
     Vector3D position;
     Vector3D target;
     Vector3D up;
-    fliess d; /// distance from cam to projectionplane
+    float d; /// distance from cam to projectionplane
 
 
-    fliess projWidth;          ///< Width of the projection plane
-    fliess projHeight;         ///< Height of the projection plane
+    float projWidth;          ///< Width of the projection plane
+    float projHeight;         ///< Height of the projection plane
 
     Vector3D projOrigin;         ///< Origin (upper left corner) of the projection plane
     Vector3D u;                  ///< Current vector in x direction

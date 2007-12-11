@@ -28,13 +28,13 @@ public:
     void addTriangle(const Triangle& t);
     virtual const RGBvalue trace(Ray& r, unsigned int depth = 0) = 0;
     unsigned int getTriangleCount() const { return triangles.size(); }
-    void setBounds(fliess* newBounds);
+    void setBounds(float* newBounds);
     virtual void construct() = 0;
     const Triangle& getTriangle(unsigned int idx) const { return triangles[idx]; }
 
 protected:
     std::vector<Triangle> triangles;
-    fliess bounds[6]; //xmin,xmax,ymin,ymax,zmin,zmax
+    float bounds[6]; //xmin,xmax,ymin,ymax,zmin,zmax
     bool boundsSet; // becomes true when setBounds is called
     const Scene& scene;
 };

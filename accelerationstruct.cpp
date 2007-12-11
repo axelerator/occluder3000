@@ -16,8 +16,8 @@ AccelerationStruct::AccelerationStruct(const Scene& scene) : scene ( scene )  {}
 
 AccelerationStruct::~AccelerationStruct() {}
 
-void AccelerationStruct::setBounds(fliess* newBounds) {
-  memcpy(this->bounds, newBounds, 6 * sizeof(fliess));
+void AccelerationStruct::setBounds(float* newBounds) {
+  memcpy(this->bounds, newBounds, 6 * sizeof(float));
   this->boundsSet = true;
 }
 

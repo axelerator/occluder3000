@@ -17,19 +17,226 @@
 #include <math.h>
 
 
-typedef float fliess;
-#define EPSILON 0.00000001
+
+#define EPSILON 0.0001
 #define UNENDLICH INFINITY
 
-class Fliess {
-  public:
-    static fliess (*abs)(fliess) ;
-    static fliess (*ceil)(fliess);
-    static fliess (*floor)(fliess);
-    static fliess (*max)(fliess, fliess);
-    static fliess (*min)(fliess, fliess);
-};
+#define INLINE
 
+#ifdef INLINE
+
+class Vector3D {
+public:
+    inline ~Vector3D() {}
+
+   inline  Vector3D() {
+        value[0] = 0.0;
+        value[1] = 0.0;
+        value[2] = 0.0;
+    }
+
+    /**
+     * Create a copy of another vector. This is the copy-constructor.
+     *
+     * @param v The other vector.
+     */
+    inline Vector3D(const Vector3D& v) {
+        value[0] = v.value[0];
+        value[1] = v.value[1];
+        value[2] = v.value[2];
+    }
+
+    /**
+     * Create vector from an arry.
+     *
+     * @param v A vector as array.
+     */
+    inline Vector3D(const float *v) {
+        value[0] = v[0];
+        value[1] = v[1];
+        value[2] = v[2];
+    }
+
+    /**
+     * Create a vector from three values.
+     *
+     * @param fx value[0]-value.
+     * @param fy value[1]-value.
+     * @param fz value[2]-value.
+     */
+    inline Vector3D(float fx, float fy, float fz) {
+        value[0] = fx;
+        value[1] = fy;
+        value[2] = fz;
+    }
+
+    /**
+     * Create a vector with the same value for value[0], value[1] and value[2].
+     *
+     * @param fn The value.
+     */
+    inline Vector3D(float fn) {
+        value[0] = value[1] = value[2] = fn;
+    }
+
+
+    inline Vector3D& operator += (const Vector3D& v) {
+        value[0] += v.value[0];
+        value[1] += v.value[1];
+        value[2] += v.value[2];
+        return (*this);
+    }
+
+    inline Vector3D& operator -= (const Vector3D& v) {
+        value[0] -= v.value[0];
+        value[1] -= v.value[1];
+        value[2] -= v.value[2];
+        return (*this);
+    }
+
+    inline Vector3D& operator *= (float f) {
+        value[0] *= f;
+        value[1] *= f;
+        value[2] *= f;
+        return (*this);
+    }
+
+    inline Vector3D& operator /= (float f) {
+        float s = 1.0f/f;
+        value[0] *= s;
+        value[1] *= s;
+        value[2] *= s;
+        return (*this);
+    }
+
+    inline Vector3D& operator = (const Vector3D& v) {
+        memcpy(this, v.value, sizeof(Vector3D));
+        return (*this);
+    }
+
+    inline Vector3D operator + () const {
+        return Vector3D(*this);
+    }
+
+    inline Vector3D operator - () const {
+        return Vector3D(-value[0], -value[1], -value[2]);
+    }
+
+    inline Vector3D operator + (const Vector3D& v) const {
+        return Vector3D(value[0]+v.value[0], value[1]+v.value[1], value[2]+v.value[2]);
+    }
+
+    inline Vector3D operator - (const Vector3D& v) const {
+        return Vector3D(value[0]-v.value[0], value[1]-v.value[1], value[2]-v.value[2]);
+    }
+
+    /**
+     * Calculate the cross product of the vector and another vector.
+     *
+     * @param v The other vector.
+     * @return The cross product of the two vectors.
+     */
+    inline Vector3D operator % (const Vector3D& v) const {
+        return Vector3D(value[1]*v.value[2] - value[2]*v.value[1], value[2]*v.value[0] - value[0]*v.value[2], value[0]*v.value[1] - value[1]*v.value[0]);
+    }
+
+    inline bool operator > (const Vector3D& v) const {
+        return sqrt(value[0]*value[0] + value[1]*value[1] + value[2]*value[2]) > sqrt(v.value[0]*v.value[0] + v.value[1]*v.value[1] + v.value[2]*v.value[2]);
+    }
+
+    inline bool operator < (const Vector3D& v) const {
+        return sqrt(value[0]*value[0] + value[1]*value[1] + value[2]*value[2]) < sqrt(v.value[0]*v.value[0] + v.value[1]*v.value[1] + v.value[2]*v.value[2]);
+    }
+
+    inline Vector3D operator + (float f) const {
+        return Vector3D(value[0]+f, value[1]+f, value[2]+f);
+    }
+
+    inline Vector3D operator - (float f) const {
+        return Vector3D(value[0]-f, value[1]-f, value[2]-f);
+    }
+
+    inline Vector3D operator * (float f) const {
+        return Vector3D(value[0]*f, value[1]*f, value[2]*f);
+    }
+
+    inline Vector3D operator / (float f) const {
+        float s = 1.0f/f;
+        return Vector3D(value[0]*s, value[1]*s, value[2]*s);
+    }
+
+    inline bool operator == (const Vector3D& v) const {
+        if ((value[0] == v.value[0]) && (value[1] == v.value[1]) && (value[2] == v.value[2]))
+            return true;
+        return false;
+    }
+
+    inline bool operator != (const Vector3D& v) const {
+        if ((value[0] == v.value[0]) && (value[1] == v.value[1]) && (value[2] == v.value[2]))
+            return false;
+        return true;
+    }
+
+    /**
+     * Calculates the dot product of the vector and another vector.
+     *
+     * @param v The other vector.
+     * @return The dot product of the two vectors.
+     */
+    inline float operator * (const Vector3D& v) const {
+        return value[0]*v.value[0] + value[1]*v.value[1] + value[2]*v.value[2];
+    }
+
+    /**
+     * Calculates the length of the vector.
+     *
+     * @return Length of the vector.
+     */
+    inline float length() const {
+        return static_cast<float>(sqrt(value[0]*value[0] + value[1]*value[1] + value[2]*value[2]));
+    }
+
+    /**
+     * Calculate the squared length of the vector.
+     *
+     * @return Squared length of the vector.
+     */
+    inline float lengthSquare() const {
+        return static_cast<float>(value[0]*value[0] + value[1]*value[1] + value[2]*value[2]);
+    }
+
+    /**
+     * Return a normalzed version of this vector.
+     *
+     * @return The normalized vector.
+     */
+    inline Vector3D normal() const {
+        float s = 1.0f / length();
+        return Vector3D(value[0]*s, value[1]*s, value[2]*s);
+    }
+
+   /**
+     * Normalize the vector, that is, make it's length one.
+     *
+     * @return The normalized vector.
+     */
+    inline Vector3D& normalize() {
+        float s = 1.0f / length();
+        this->operator *=( s );
+        return (*this);
+    }
+
+
+    /**
+     * @return the angle between this and the provided vector
+     */
+    inline float angleTo(Vector3D& rhs) {
+        return acos(operator *(rhs)/(length()*rhs.length()));
+    }
+
+    float value[3];
+};
+#else
 /**
   @author Axel Tetzlaff / Timo B. Hübel <axel.tetzlaff@gmx.de / t.h@gmx.com>
 */
@@ -37,16 +244,16 @@ class Vector3D {
   public:
     Vector3D();
     Vector3D(const Vector3D& v);
-    Vector3D(const fliess *v);
-    Vector3D(fliess fx, fliess fy, fliess fz);
-    Vector3D(fliess fn);
+    Vector3D(const float *v);
+    Vector3D(float fx, float fy, float fz);
+    Vector3D(float fn);
 
     virtual ~Vector3D();
 
     Vector3D& operator+=(const Vector3D& v);
     Vector3D& operator-=(const Vector3D& v);
-    Vector3D& operator*=(fliess f);
-    Vector3D& operator/=(fliess f);
+    Vector3D& operator*=(float f);
+    Vector3D& operator/=(float f);
     Vector3D& operator=(const Vector3D& v);
     Vector3D& normalize();
 
@@ -58,12 +265,12 @@ class Vector3D {
 
     Vector3D operator%(const Vector3D& v) const;
 
-    Vector3D operator+(fliess f) const;
-    Vector3D operator-(fliess f) const;
-    Vector3D operator*(fliess f) const;
-    Vector3D operator/(fliess f) const;
+    Vector3D operator+(float f) const;
+    Vector3D operator-(float f) const;
+    Vector3D operator*(float f) const;
+    Vector3D operator/(float f) const;
 
-    fliess operator*(const Vector3D& v) const;
+    float operator*(const Vector3D& v) const;
 
     bool operator>(const Vector3D& v) const;
     bool operator<(const Vector3D& v) const;
@@ -71,24 +278,25 @@ class Vector3D {
     bool operator==(const Vector3D& v) const;
     bool operator!=(const Vector3D& v) const;
 
-    fliess& operator[](unsigned int i);
-    fliess operator[](unsigned int i) const;
+    float& operator[](unsigned int i);
+    float operator[](unsigned int i) const;
 
-    fliess length() const;
-    fliess lengthSquare() const;
+    float length() const;
+    float lengthSquare() const;
 
     Vector3D normal() const;
-    fliess angleTo(Vector3D& rhs);
+    float angleTo(Vector3D& rhs);
 
-    fliess value[3];
+    float value[3];
 
   private:
     static const Vector3D* undefined_ ;
 
 };
+#endif
 
-const Vector3D operator+(fliess lhs, const Vector3D& rhs);
-const Vector3D operator*(fliess lhs, const Vector3D& rhs);
+const Vector3D operator+(float lhs, const Vector3D& rhs);
+const Vector3D operator*(float lhs, const Vector3D& rhs);
 
 std::ostream& operator<<(std::ostream& os, const Vector3D& v);
 

@@ -9,15 +9,11 @@
 // Copyright: See COPYING file that comes with this distribution
 //
 //
-#include <cmath>
-
 #include "vector3d.h"
 
-fliess (*Fliess::abs)(fliess) = fabsf;
-fliess (*Fliess::ceil)(fliess) = ceilf;
-fliess (*Fliess::floor)(fliess) = floorf;
-fliess (*Fliess::max)(fliess, fliess) = fmaxf;
-fliess (*Fliess::min)(fliess, fliess) = fminf;
+#ifndef INLINE
+#include <cmath>
+
 
 /**
  * Create a zero vector.
@@ -44,7 +40,7 @@ Vector3D::Vector3D(const Vector3D& v) {
  *
  * @param v A vector as array.
  */
-Vector3D::Vector3D(const fliess *v) {
+Vector3D::Vector3D(const float *v) {
   value[0] = v[0];
   value[1] = v[1];
   value[2] = v[2];
@@ -57,7 +53,7 @@ Vector3D::Vector3D(const fliess *v) {
  * @param fy value[1]-value.
  * @param fz value[2]-value.
  */
-Vector3D::Vector3D(fliess fx, fliess fy, fliess fz) {
+Vector3D::Vector3D(float fx, float fy, float fz) {
   value[0] = fx;
   value[1] = fy;
   value[2] = fz;
@@ -68,7 +64,7 @@ Vector3D::Vector3D(fliess fx, fliess fy, fliess fz) {
  *
  * @param fn The value.
  */
-Vector3D::Vector3D(fliess fn) {
+Vector3D::Vector3D(float fn) {
   value[0] = value[1] = value[2] = fn;
 }
 
@@ -89,15 +85,15 @@ Vector3D& Vector3D::operator -= (const Vector3D& v) {
   return (*this);
 }
 
-Vector3D& Vector3D::operator *= (fliess f) {
+Vector3D& Vector3D::operator *= (float f) {
   value[0] *= f;
   value[1] *= f;
   value[2] *= f;
   return (*this);
 }
 
-Vector3D& Vector3D::operator /= (fliess f) {
-  fliess s = 1.0f/f;
+Vector3D& Vector3D::operator /= (float f) {
+  float s = 1.0f/f;
   value[0] *= s;
   value[1] *= s;
   value[2] *= s;
@@ -145,20 +141,20 @@ bool Vector3D::operator < (const Vector3D& v) const {
   return sqrt(value[0]*value[0] + value[1]*value[1] + value[2]*value[2]) < sqrt(v.value[0]*v.value[0] + v.value[1]*v.value[1] + v.value[2]*v.value[2]);
 }
 
-Vector3D Vector3D::operator + (fliess f) const {
+Vector3D Vector3D::operator + (float f) const {
   return Vector3D(value[0]+f, value[1]+f, value[2]+f);
 }
 
-Vector3D Vector3D::operator - (fliess f) const {
+Vector3D Vector3D::operator - (float f) const {
   return Vector3D(value[0]-f, value[1]-f, value[2]-f);
 }
 
-Vector3D Vector3D::operator * (fliess f) const {
+Vector3D Vector3D::operator * (float f) const {
   return Vector3D(value[0]*f, value[1]*f, value[2]*f);
 }
 
-Vector3D Vector3D::operator / (fliess f) const {
-  fliess s = 1.0f/f;
+Vector3D Vector3D::operator / (float f) const {
+  float s = 1.0f/f;
   return Vector3D(value[0]*s, value[1]*s, value[2]*s);
 }
 
@@ -176,7 +172,7 @@ bool Vector3D::operator != (const Vector3D& v) const {
  * Allowing indexed access to the three members. This is here
  * just for compatability!!!
  */
-fliess& Vector3D::operator [] (unsigned int i) {
+float& Vector3D::operator [] (unsigned int i) {
   switch (i) {
    case 0: return value[0]; break;
    case 1: return value[1]; break;
@@ -187,7 +183,7 @@ fliess& Vector3D::operator [] (unsigned int i) {
   return value[0];
 }
 
-fliess Vector3D::operator [] (unsigned int i) const {
+float Vector3D::operator [] (unsigned int i) const {
   switch (i) {
    case 0: return value[0]; break;
    case 1: return value[1]; break;
@@ -204,7 +200,7 @@ fliess Vector3D::operator [] (unsigned int i) const {
  * @param v The other vector.
  * @return The dot product of the two vectors.
  */
-fliess Vector3D::operator * (const Vector3D& v) const { 
+float Vector3D::operator * (const Vector3D& v) const { 
   return value[0]*v.value[0] + value[1]*v.value[1] + value[2]*v.value[2];
 }
 
@@ -213,8 +209,8 @@ fliess Vector3D::operator * (const Vector3D& v) const {
  *
  * @return Length of the vector.
  */
-fliess Vector3D::length() const {
-  return static_cast<fliess>(sqrt(value[0]*value[0] + value[1]*value[1] + value[2]*value[2]));
+float Vector3D::length() const {
+  return static_cast<float>(sqrt(value[0]*value[0] + value[1]*value[1] + value[2]*value[2]));
 }
 
 /**
@@ -222,8 +218,8 @@ fliess Vector3D::length() const {
  *
  * @return Squared length of the vector.
  */
-fliess Vector3D::lengthSquare() const {
-  return static_cast<fliess>(value[0]*value[0] + value[1]*value[1] + value[2]*value[2]);
+float Vector3D::lengthSquare() const {
+  return static_cast<float>(value[0]*value[0] + value[1]*value[1] + value[2]*value[2]);
 }
 
 /**
@@ -232,20 +228,8 @@ fliess Vector3D::lengthSquare() const {
  * @return The normalized vector.
  */
 Vector3D Vector3D::normal() const {
-  fliess s = 1.0f / length();
+  float s = 1.0f / length();
   return Vector3D(value[0]*s, value[1]*s, value[2]*s);
-}
-
-const Vector3D operator+(fliess lhs, const Vector3D& rhs) {
-  return Vector3D(lhs + rhs.value[0], lhs + rhs.value[1], lhs + rhs.value[2]);
-}
-
-const Vector3D operator*(fliess lhs, const Vector3D& rhs) {
-  return Vector3D(lhs * rhs.value[0], lhs * rhs.value[1], lhs * rhs.value[2]);
-}
-
-std::ostream& operator << (std::ostream& os, const Vector3D& v) {
-  return os << "value[0]: " << v.value[0] << " value[1]: " << v.value[1] << " value[2]: " << v.value[2] << std::endl;
 }
 
 
@@ -257,7 +241,7 @@ std::ostream& operator << (std::ostream& os, const Vector3D& v) {
  */
 Vector3D& Vector3D::normalize()
 {
- fliess s = 1.0f / length();
+ float s = 1.0f / length();
  this->operator *=( s );
  return (*this);
 }
@@ -266,8 +250,22 @@ Vector3D& Vector3D::normalize()
 /**
  * @return the angle between this and the provided vector
  */
-fliess Vector3D::angleTo(Vector3D& rhs)
+float Vector3D::angleTo(Vector3D& rhs)
 {
     return acos(operator *(rhs)/(length()*rhs.length()));
 }
+#endif
+
+const Vector3D operator+(float lhs, const Vector3D& rhs) {
+  return Vector3D(lhs + rhs.value[0], lhs + rhs.value[1], lhs + rhs.value[2]);
+}
+
+const Vector3D operator*(float lhs, const Vector3D& rhs) {
+  return Vector3D(lhs * rhs.value[0], lhs * rhs.value[1], lhs * rhs.value[2]);
+}
+
+std::ostream& operator << (std::ostream& os, const Vector3D& v) {
+  return os << "value[0]: " << v.value[0] << " value[1]: " << v.value[1] << " value[2]: " << v.value[2] << std::endl;
+}
+
 

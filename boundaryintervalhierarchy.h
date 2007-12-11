@@ -19,7 +19,7 @@ class BIHTreeNode {
 public:
     virtual ~BIHTreeNode(){};
     virtual void drawGL() = 0;
-    virtual bool traverse(Ray& r, IntersectionResult& ir, fliess tmin, fliess tmax ) = 0;
+    virtual bool traverse(Ray& r, IntersectionResult& ir, float tmin, float tmax ) = 0;
 };
 
 
@@ -37,14 +37,14 @@ class BoundaryIntervalHierarchy : public AccelerationStruct
 
     virtual const RGBvalue trace ( Ray& r, unsigned int depth );
     virtual void construct();
-    static void drawBB(fliess *bounds);
+    static void drawBB(float *bounds);
     
     
     
     private:
-    BIHTreeNode *subdivide(fliess *currBounds, std::vector<int> &objects, unsigned int depth  = 0);
+    BIHTreeNode *subdivide(float *currBounds, std::vector<int> &objects, unsigned int depth  = 0);
     virtual void drawGL();
-    bool testObjctsVsBB(fliess *bounds, std::vector<int> &objects);
+    bool testObjctsVsBB(float *bounds, std::vector<int> &objects);
 /*
     typedef struct {
       int index; // TODO: use lowestbits:axis(00,01,10)orleaf(11)
@@ -61,11 +61,11 @@ class BoundaryIntervalHierarchy : public AccelerationStruct
 
 class BIHInternalNode : public BIHTreeNode {
   public:
-  BIHInternalNode(unsigned char axis, fliess leftMax, fliess rightMin, fliess *bb):
+  BIHInternalNode(unsigned char axis, float leftMax, float rightMin, float *bb):
   axis(axis){
     clip[0] = leftMax;
     clip[1] = rightMin;
-    memcpy(this->bb, bb, sizeof(fliess) * 6);
+    memcpy(this->bb, bb, sizeof(float) * 6);
   }
   
   virtual void drawGL() {
@@ -74,12 +74,12 @@ class BIHInternalNode : public BIHTreeNode {
     children[1]->drawGL();
   }
   
-  virtual bool traverse(Ray& r, IntersectionResult& ir, fliess tmin, fliess tmax ) ;
+  virtual bool traverse(Ray& r, IntersectionResult& ir, float tmin, float tmax ) ;
   
   BIHTreeNode *children[2];
   unsigned char axis;
-  fliess clip[2];
-  fliess bb[6];
+  float clip[2];
+  float bb[6];
 };
 
 
@@ -94,7 +94,7 @@ class BIHLeaf : public BIHTreeNode {
         glEnd();
       }
       
-  virtual bool traverse(Ray& r, IntersectionResult& ir, fliess tmin, fliess tmax );
+  virtual bool traverse(Ray& r, IntersectionResult& ir, float tmin, float tmax );
   static BoundaryIntervalHierarchy *b;
 };
 

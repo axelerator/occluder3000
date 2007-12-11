@@ -56,7 +56,7 @@ bool ObjectLoader::loadOBJ(const std::string& filename, AccelerationStruct *tl) 
     boost::regex facere;
     boost::regex normalre;
 //     determine scene boundaries while loading;
-    fliess boundings[6] = {UNENDLICH, -UNENDLICH, UNENDLICH, -UNENDLICH, UNENDLICH, -UNENDLICH};
+    float boundings[6] = {UNENDLICH, -UNENDLICH, UNENDLICH, -UNENDLICH, UNENDLICH, -UNENDLICH};
     try  {
         // Set up the regular expression for case-insensitivity
         re.assign(vertexRE);
@@ -98,10 +98,10 @@ bool ObjectLoader::loadOBJ(const std::string& filename, AccelerationStruct *tl) 
                     unsigned int twoI;
                     for (unsigned int i = 0; i < 3; ++i) {
                       twoI = 2*i;
-                      if (newV[i] < boundings[twoI])
-                        boundings[twoI] = newV[i];
-                      if (newV[i] > boundings[twoI+1])
-                        boundings[twoI+1] = newV[i];
+                      if (newV.value[i] < boundings[twoI])
+                        boundings[twoI] = newV.value[i];
+                      if (newV.value[i] > boundings[twoI+1])
+                        boundings[twoI+1] = newV.value[i];
                     }
                 } else {
                     std::cout << "The regexp \"" << re << "\" does not match \"" << line << "\"" << std::endl;
@@ -168,15 +168,15 @@ bool ObjectLoader::loadRA2(const std::string& filename, AccelerationStruct *tl) 
     std::cout << "Read " << trianglecount << " triangles";
     fclose ( fp );
     
-    fliess boundings[6] = {UNENDLICH, -UNENDLICH, UNENDLICH, -UNENDLICH, UNENDLICH, -UNENDLICH};
+    float boundings[6] = {UNENDLICH, -UNENDLICH, UNENDLICH, -UNENDLICH, UNENDLICH, -UNENDLICH};
     for ( unsigned int i = 0; i < trianglecount; ++i) {
       Vector3D p[] = {Vector3D(currentchunk[i][0]), Vector3D(currentchunk[i][1]), Vector3D(currentchunk[i][2])};
       for (unsigned char pi = 0; pi < 3; ++pi)
         for (unsigned char c = 0; c < 3; ++c) 
-          if ( p[pi][c] < boundings[2*c] )
-             boundings[2*c] = p[pi][c];
-          else if ( p[pi][c] > boundings[2*c+1] )
-             boundings[2*c+1] = p[pi][c];
+          if ( p[pi].value[c] < boundings[2*c] )
+             boundings[2*c] = p[pi].value[c];
+          else if ( p[pi].value[c] > boundings[2*c+1] )
+             boundings[2*c+1] = p[pi].value[c];
       tl->addTriangle(Triangle(p[0], p[1], p[2]));
     }
     std::cout << "Scene boundaries x(min:" << boundings[0]  << ",max:" << boundings[1]  << ") y(min:" << boundings[2]  << ",max:" << boundings[3]  << ") z(min:" << boundings[4]  << ",max:" << boundings[5]  << ")" << std::endl;
