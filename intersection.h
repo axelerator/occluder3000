@@ -33,6 +33,7 @@ class Intersection {
                                                      return (*this);}
     bool operator<(const Intersection& i) const {return i.triangle == 0 || i.intersectionDistance > this->intersectionDistance; }
 
+
     const Triangle *triangle;
     Vector3D intersectionPoint;
     float intersectionDistance;

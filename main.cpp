@@ -22,6 +22,7 @@
 #include "objectloader.h"
 //#define DEBUG_ENABLE
 #include "bih2.h"
+#include "kdtree.h"
 
 class Tile {
   public:
@@ -243,6 +244,8 @@ int main ( int argc, char *argv[] ) {
         accellStruc = 1;
       else if ( arg == "-as=bih" )
         accellStruc = 2;
+      else if ( arg == "-as=kd" )
+        accellStruc = 3;
       else if ( arg == "-p" || arg == "--profile" )
         profile = true;
       else if ( ( arg == "-r" ) || ( arg == "resolution" ) ) {
@@ -330,6 +333,7 @@ int main ( int argc, char *argv[] ) {
     case 0: structure = new Trianglelist ( scene );break;
     case 1: structure = new RegularGrid ( scene, 0.2 );break;
     case 2: structure = new BIH2 ( scene );break;
+    case 3: structure = new KdTree ( scene );break;
   }
 
   std::string filename ( argv[1] );

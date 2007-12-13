@@ -17,11 +17,10 @@
 
 BIH2::BIH2 ( const Scene& scene )
     : AccelerationStruct ( scene ), triangleIndices ( 0 ), minimalPrimitiveCount ( 3 ), maxDepth ( 64 ),
-    reserved ( 0 ), occupied ( 0 ), markednode ( 0 ) {}
+     markednode ( 0 ) {}
 
 
 BIH2::~BIH2() {
-  free ( nodes );
 }
 
 void BIH2::traverse ( const BihNode& node, RadianceRay& r, float tmin, float tmax, unsigned int depth ) {
@@ -44,14 +43,14 @@ void BIH2::traverse ( const BihNode& node, RadianceRay& r, float tmin, float tma
     float tFar = ( node.planes[far] - r.getStart().value[node.type] )  * r.getInvDirection().value[node.type];
     if ( tmin > tNear ) {
       tmin = fmaxf ( tmin, tFar );
-      traverse ( *node.children[far], r, tmin, tmax, depth + 1 );
+      traverse ( node.leftchild[far], r, tmin, tmax, depth + 1 );
     } else
       if ( tmax  < tFar ) {
         tmax = fminf ( tmax, tNear );
-        traverse ( *node.children[near], r, tmin, tmax, depth + 1 );
+        traverse ( node.leftchild[near], r, tmin, tmax, depth + 1 );
       } else {
-        traverse ( *node.children[near], r, tmin, fminf ( tmax, tNear ) , depth + 1 );
-        traverse ( *node.children[far],  r, fmaxf ( tmin, tFar ), tmax, depth + 1 );
+        traverse ( node.leftchild[near], r, tmin, fminf ( tmax, tNear ) , depth + 1 );
+        traverse ( node.leftchild[far],  r, fmaxf ( tmin, tFar ), tmax, depth + 1 );
       }
   }
 }
@@ -93,22 +92,22 @@ void BIH2::traverseIterative ( const BihNode* startnode, RadianceRay& r, float t
         tmin = fmaxf ( tmin, tFar );
         stack[stackpos].tmin = tmin;
         stack[stackpos].tmax = tmax;
-        stack[stackpos].node = node->children[far];
+        stack[stackpos].node = node->leftchild + far;
         ++stackpos;
       } else if ( tmax  < tFar ) {
         tmax = fminf ( tmax, tNear );
         stack[stackpos].tmin = tmin;
         stack[stackpos].tmax = tmax;
-        stack[stackpos].node = node->children[near];
+        stack[stackpos].node = node->leftchild + near;
         ++stackpos;
       } else {
         stack[stackpos].tmin = tmin;
         stack[stackpos].tmax = tmax;
-        stack[stackpos].node = node->children[near];
+        stack[stackpos].node = node->leftchild + near;
         ++stackpos;
         stack[stackpos].tmin = tmin;
         stack[stackpos].tmax = tmax;
-        stack[stackpos].node = node->children[far];
+        stack[stackpos].node = node->leftchild + far;
         ++stackpos;
       }
     }
@@ -155,22 +154,22 @@ bool BIH2::traverseShadow ( const BihNode* startnode, Ray& r, float tmin, float 
         tmin = fmaxf ( tmin, tFar );
         stack[stackpos].tmin = tmin;
         stack[stackpos].tmax = tmax;
-        stack[stackpos].node = node->children[far];
+        stack[stackpos].node = node->leftchild + far;
         ++stackpos;
       } else if ( tmax  < tFar ) {
         tmax = fminf ( tmax, tNear );
         stack[stackpos].tmin = tmin;
         stack[stackpos].tmax = tmax;
-        stack[stackpos].node = node->children[near];
+        stack[stackpos].node = node->leftchild + near;
         ++stackpos;
       } else {
         stack[stackpos].tmin = tmin;
         stack[stackpos].tmax = tmax;
-        stack[stackpos].node = node->children[near];
+        stack[stackpos].node = node->leftchild + near;
         ++stackpos;
         stack[stackpos].tmin = tmin;
         stack[stackpos].tmax = tmax;
-        stack[stackpos].node = node->children[far];
+        stack[stackpos].node = node->leftchild + far;
         ++stackpos;
       }
     }
@@ -230,7 +229,7 @@ const RGBvalue BIH2::trace ( Ray& r, unsigned int depth ) {
 //   traverse(nodes[0], rr, tmin, tmax, 0);
 
 
-  traverseIterative ( nodes, rr, fmaxf(tmin, 0.0), tmax );
+  traverseIterative ( &nodes.get(0), rr, fmaxf(tmin, 0.0), tmax );
   if ( rr.didHitSomething() ) {
 //    return RGBvalue(1.0, 0.0, 0.0);
     const Intersection &i = rr.getClosestIntersection();
@@ -265,7 +264,7 @@ const RGBvalue BIH2::trace ( Ray& r, unsigned int depth ) {
 //           }
 //         }
 //         if ( ! hitt ) {
-              if ( !traverseShadow(nodes, intersectToLigth, 0.0, tmax, doesntMatter, &hitTriangle) ) {
+              if ( !traverseShadow(&nodes.get(0), intersectToLigth, 0.0, tmax, doesntMatter, &hitTriangle) ) {
           result.add ( dif * mat.diffuse[0] * light.getColor().getRGB() [0],
                        dif * mat.diffuse[1] * light.getColor().getRGB() [1],
                        dif * mat.diffuse[2] * light.getColor().getRGB() [2] );
@@ -286,15 +285,11 @@ void BIH2::construct() {
   triangleIndices = ( unsigned int * ) malloc ( objectCount * sizeof ( unsigned int ) );
   for ( unsigned int i = 0 ; i < objectCount ; ++i )
     triangleIndices[i] = i;
-
-  reserved = 30;
-  nodes = ( BihNode * ) malloc ( reserved * sizeof ( BihNode ) );
-  occupied = 1;
 #ifdef VISUAL_DEBUGGER
   nodes[0].idx = 0;
 #endif
-  subdivide ( nodes[0], 0, objectCount-1, bounds, 0 );
-  std::cout << "construction done. Nodecount:" << occupied << std::endl;
+  subdivide ( nodes.getNextFree(), 0, objectCount-1, bounds, 0 );
+  std::cout << "construction done. Nodecount:" << nodes.size() << std::endl;
   std::cout << "consistency check: " << ( isConsistent() ?"true":"false" ) << std::endl;
 }
 
@@ -398,11 +393,6 @@ void BIH2::subdivide ( BihNode &thisNode, unsigned int start, unsigned int end, 
   else if ( left == start )
     subdivide ( thisNode, start, end, rightBounds, depth );
   else {
-    if ( occupied + 2 >= reserved ) {
-      reserved *= 2;
-      nodes = ( BihNode * ) realloc ( nodes, reserved * sizeof ( BihNode ) );
-    }
-    occupied += 2;
     float leftMax = -UNENDLICH;
     float rightMin = UNENDLICH;
     for ( unsigned int i = start; i < left; ++i ) {
@@ -417,8 +407,7 @@ void BIH2::subdivide ( BihNode &thisNode, unsigned int start, unsigned int end, 
           rightMin = triangles[triangleIndices[i]].getPoint ( c ).value[axis];
     }
 
-    BihNode *leftNode = nodes + occupied - 2;
-    BihNode *rightNode = nodes + occupied - 1;
+    thisNode.leftchild = nodes.getNextFreePair();
 #ifdef VISUAL_DEBUGGER
     leftNode->idx = occupied - 2;
     rightNode->idx = occupied - 1;
@@ -427,10 +416,8 @@ void BIH2::subdivide ( BihNode &thisNode, unsigned int start, unsigned int end, 
     thisNode.planes[1] = rightMin;
 
     thisNode.type = axis;
-    thisNode.children[0] = leftNode;
-    thisNode.children[1] = rightNode;
-    subdivide ( *leftNode, start, left-1, leftBounds, depth );
-    subdivide ( *rightNode, left, end, rightBounds, depth );
+    subdivide ( *thisNode.leftchild, start, left-1, leftBounds, depth );
+    subdivide ( *(thisNode.leftchild + 1), left, end, rightBounds, depth );
   }
 }
 
@@ -601,7 +588,7 @@ void BIH2::drawSchema ( GLWidget* context ) const {
 
 bool BIH2::isConsistent() {
 
-  return ( reserved > occupied ) && checkConsistency ( nodes );
+  return checkConsistency ( &nodes.get(0) );
 }
 
 bool BIH2::checkConsistency ( BihNode *node ) {
@@ -613,9 +600,9 @@ bool BIH2::checkConsistency ( BihNode *node ) {
     return ( node->leafContent[1] - node->leafContent[0] <= minimalPrimitiveCount ) && ( node->leafContent[1] < max ) && ( node->leafContent[0] <= ( node->leafContent[1] ) );
   }
 
-  if ( !node->children[0] || !node->children[1] )
+  if ( !node->leftchild )
     return false;
-  return checkConsistency ( node->children[0] ) && checkConsistency ( node->children[1] );
+  return checkConsistency ( node->leftchild ) && checkConsistency ( node->leftchild + 1 );
 
 }
 

@@ -12,7 +12,7 @@
 #ifndef BIH2_H
 #define BIH2_H
 #include "accelerationstruct.h"
-
+#include "simplevector.h"
 
 /**
 	@author Axel Tetzlaff <axel.tetzlaff@gmx.de>
@@ -39,12 +39,14 @@ class BIH2 : public AccelerationStruct {
     struct BihNode {
 
       unsigned char type;
-      struct BihNode *children[2];
 #ifdef VISUAL_DEBUGGER
       int idx;
       float bounds[6];
 #endif
+      struct BihNode *leftchild;
+
       union {
+        
         float planes[2];
         unsigned int leafContent[2];
       };
@@ -75,9 +77,7 @@ class BIH2 : public AccelerationStruct {
     unsigned int maxDepth; // maximal Depth of recursion of subdivision
 
 
-    unsigned int reserved;
-    unsigned int occupied;
-    BihNode *nodes;
+    SimpleVector<BihNode> nodes;
     int markednode;
 };
 
