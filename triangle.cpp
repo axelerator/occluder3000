@@ -191,23 +191,41 @@ bool Triangle::intersect(const Ray& r, IntersectionResult& ir) const {
 
 bool Triangle::intersect(RadianceRay& r) const {
 float t,u,v;
-Vector3D e1,e2;
-if ( intersect_triangle(r.getStart().value, r.getDirection().value ,
-                  this->p[0].value,this->p[1].value, this->p[2].value,
-                  &t, &u, &v, e1.value, e2.value)) {
-  Intersection current(this, this->p[0] + (u * e1) + (v * e2), r.getStart());
+
+   float inv_det;
+
+   Vector3D pvec(r.getDirection() % this->v);
+
+   float det = this->u * pvec;
+
+   if (det > -EPSILON && det < EPSILON)
+     return 0;
+   inv_det = 1.0 / det;
+
+   Vector3D tvec = r.getStart() - p[0].value;
+
+   u = (tvec * pvec) * inv_det;
+   if (u < 0.0 || u > 1.0)
+     return 0;
+
+   Vector3D qvec = tvec % this->u;
+   v = (r.getDirection() * qvec) * inv_det;
+   if (v < 0.0 || u + v > 1.0)
+     return 0;
+
+   t = (this->v * qvec) * inv_det;
+   if ( t < r.getMin() || t > r.getMax() )
+    return false;
+
+  Intersection current(this, this->p[0] + (u * this->u) + (v * this->v), r.getStart());
   if ( current < r.getClosestIntersection() ) {
-    current.e1 = e1;
-    current.e2 = e2;
+    current.e1 = this->u;
+    current.e2 = this->v;
     current.u = u;
     current.v = v;
     r.setClosestIntersection(current);
   }
-
-
   return true;
-} else
-  return false;
 }
 
 Vector3D Triangle::getNormalAt(const IntersectionResult& ir) const {

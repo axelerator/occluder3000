@@ -51,14 +51,20 @@ class KdTree : public AccelerationStruct {
     };
     typedef KdTreenode KdTreenode;
 
+    typedef struct {
+      KdTreenode *node;
+      float tMin;
+      float tMax;
+    } KdTreeStacknode;
+
     bool traverse(const KdTreenode& node, RadianceRay& r, float tMax );
-    bool traverseIterative( RadianceRay& r , float tMin , float tMax );
+    bool traverseIterative( RadianceRay& r );
     void subdivide ( KdTreenode &node, const std::vector<unsigned int> &prims, float *bounds, unsigned int depth );
     void deleteNode( KdTreenode &node );
     float calculatecost( KdTreenode &node, const std::vector<unsigned int> &prims, float *bounds,float splitpos );
     bool checkConsitency() const;
     bool checkConsRec(KdTreenode *node, std::set<unsigned int>& missing) const ;
-
+    void traceall(KdTreenode &node, RadianceRay& r);
     SimpleVector<KdTreenode> nodes;
 #ifdef VISUAL_DEBUGGER    
     void drawContent(const KdTreenode& node, GLWidget* context, bool parentMarked)  const;

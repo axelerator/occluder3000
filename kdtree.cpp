@@ -33,29 +33,37 @@ KdTree::~KdTree() {
 }
 
 static int hc = 0;
-bool KdTree::traverseIterative ( RadianceRay& r, float tMin, float tMax) {
-  KdTreenode *stack[128];
+bool KdTree::traverseIterative ( RadianceRay& r ) {
+  KdTreeStacknode stack[128];
   int stackpointer = 0;
-  stack[0] = 0;
+  stack[0].node = 0;
   KdTreenode *node = &nodes.get(0);
-  float d;
-
+  float d ;
+  
     
   do {
     while( node->axis != 3 ) {
       d = ( node->splitPos - r.getStart().value[node->axis] ) * r.getInvDirection().value[node->axis] ;
-//       if ( d <= tMin ) {
-//         node = node->leftchild + ((r.getDirection().value[node->axis] < 0.0) ? 0 : 1 );
-//       } else if ( d >= tMax ) {
-//         node = node->leftchild + ((r.getDirection().value[node->axis] < 0.0) ? 1 : 0 ) ;
-//       } else {
+      if ( d <= r.getMin() ) { // just far side
+        node = node->leftchild + ((r.getDirection().value[node->axis] > 0.0) ? 1 : 0 );
+        r.setMin(d);
+      } else if ( d >= r.getMax() ) { // just near side
+        r.setMax(d);
+        node = node->leftchild + ((r.getDirection().value[node->axis] > 0.0) ? 0 : 1 ) ;
+      } else {
         if (r.getDirection().value[node->axis] < 0.0) {
-          stack[++stackpointer] = node->leftchild;
+          stack[++stackpointer].node = node->leftchild;
+          stack[stackpointer].tMin = r.getMin();
+          stack[stackpointer].tMax = r.getMax();
           node = node->leftchild + 1;
+          r.setMax(d);
         } else {
-          stack[++stackpointer] = node->leftchild + 1;
+          stack[++stackpointer].node = node->leftchild + 1;
+          stack[stackpointer].tMin = d;
+          stack[stackpointer].tMax = r.getMax();
           node = node->leftchild;
-//         }
+          r.setMax(d);
+      }
       }
     }
 
@@ -66,7 +74,9 @@ bool KdTree::traverseIterative ( RadianceRay& r, float tMin, float tMax) {
     if ( r.didHitSomething() )
       return true;
     // pop stack
-    node = stack[stackpointer];
+    node = stack[stackpointer].node;
+    r.setMin(stack[stackpointer].tMin);
+    r.setMax(stack[stackpointer].tMax);
     --stackpointer;
 
   } while ( node ) ;
@@ -99,6 +109,34 @@ bool KdTree::traverse ( const KdTreenode& node, RadianceRay& r, float tMax) {
   bool skipFar = (( node.splitPos - r.getStart().value[node.axis] ) * r.getInvDirection().value[node.axis]) > tMax;
   return !skipFar && traverse ( *(node.leftchild + far), r, tMax ) ;
 
+}
+
+void KdTree::traceall(KdTreenode &node, RadianceRay& r) {
+  if ( node.axis == 3 ) {
+        for (unsigned char i = 0; i < node.prims->size ; ++i ) {
+      const Triangle& tri = triangles[node.prims->data[i]];
+      tri.intersect ( r );
+      ++hc;
+    }
+  } else {
+    float d = ( node.splitPos - r.getStart().value[node.axis] ) * r.getInvDirection().value[node.axis] ;  
+    KdTreenode &near = node.leftchild[(r.getDirection().value[node.axis] > 0.0) ? 0 : 1];
+    KdTreenode &far =  node.leftchild[(r.getDirection().value[node.axis] > 0.0) ? 1 : 0];
+    
+    float tMax = r.getMax();
+    float tMin = r.getMin();
+    if ( d >= tMin ) {
+      r.setMax(d);
+      traceall(near, r);
+    }
+     
+    if (d <= tMax && !r.didHitSomething() ) {
+      r.setMax(tMax);
+      r.setMin(d);
+      traceall(far, r);
+    }
+    r.setMin(tMin);
+  }
 }
 
 /**
@@ -152,9 +190,10 @@ const RGBvalue KdTree::trace ( Ray& r, unsigned int depth ) {
     return RGBvalue ( 0.0, 0.0, 0.0 );
 
   hc = 0;
-  RadianceRay rr ( r.getStart(), r.getDirection());
+  RadianceRay rr ( r.getStart(), r.getDirection(), tmax, tmin);
 //   traverse ( nodes.get(0), rr, tmax );
-  traverseIterative ( rr, tmin, tmax );
+ //  traverseIterative ( rr );
+  traceall(nodes.get(0), rr);
 //    RGBvalue result (hc / triangles.size(), 0.0, 0.0 );
   RGBvalue result ( 0.0, 0.0, 0.0 );
   if ( rr.didHitSomething() ) {
@@ -169,7 +208,6 @@ const RGBvalue KdTree::trace ( Ray& r, unsigned int depth ) {
     for ( it = lights.begin(); it!=lights.end(); ++it ) {
       const Light& light = *it;
       Vector3D l ( light.getPosition() -  i.intersectionPoint );
-      tmax = l.length();
       l.normalize();
       Ray intersectToLigth ( i.intersectionPoint, l );
       float dif = n * l;

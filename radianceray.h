@@ -23,7 +23,7 @@ A ray that gathers radiance when cast into a scene.
 */
 class RadianceRay {
   public:
-    RadianceRay(const Vector3D& s, const Vector3D& d):start(s), direction(d), invDirection(1.0/d.value[0], 1.0/d.value[1], 1.0/d.value[2]){};
+    RadianceRay(const Vector3D& s, const Vector3D& d, float max, float min):start(s), direction(d), invDirection(1.0/d.value[0], 1.0/d.value[1], 1.0/d.value[2]), tMax(max), tMin(min) {};
 
     ~RadianceRay();
     void setDirection(const Vector3D& direction) { this->direction = direction;  invDirection.value[0] = 1.0/direction.value[0]; invDirection.value[1] =  1.0/direction.value[1]; invDirection.value[2] = 1.0/direction.value[2]; }
@@ -34,13 +34,16 @@ class RadianceRay {
     const bool didHitSomething() const { return closestIntersection.triangle != 0 ; }
     Intersection& getClosestIntersection()  { return closestIntersection; }
     void setClosestIntersection(const Intersection& newInters) { closestIntersection = newInters; }
-    
-    
+    void setMax(float max) { tMax = max; }
+    float getMax() { return tMax; }    
+    void setMin(float min) { tMin = min; }
+    float getMin() { return tMin; }    
   private:
     Vector3D start;
     Vector3D direction;
     Vector3D invDirection;
-  
+    float tMax;
+    float tMin;
     // hit info
     Intersection closestIntersection;
 };

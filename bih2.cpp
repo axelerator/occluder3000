@@ -225,7 +225,7 @@ const RGBvalue BIH2::trace ( Ray& r, unsigned int depth ) {
     return RGBvalue ( 0.0, 0.0, 0.0 );
 
   RGBvalue result ( 0.0, 0.0, 0.0 );
-  RadianceRay rr ( r.getStart(), r.getDirection() );
+  RadianceRay rr ( r.getStart(), r.getDirection(), tmax, tmin );
 //   traverse(nodes[0], rr, tmin, tmax, 0);
 
 
