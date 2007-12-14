@@ -77,7 +77,6 @@ bool KdTree::traverseIterative ( RadianceRay& r, float tMin, float tMax) {
 
 bool KdTree::traverse ( const KdTreenode& node, RadianceRay& r, float tMax) {
   if ( node.axis == 3 ) {
-    IntersectionResult tempIR;
     for (unsigned char i = 0; i < node.prims->size ; ++i ) {
       const Triangle& tri = triangles[node.prims->data[i]];
       tri.intersect ( r );
