@@ -21,12 +21,12 @@ class Ray
     Ray();
     Ray(const Vector3D& s, const Vector3D& d);
     ~Ray();
-    void setDirection(const Vector3D& direction) { this->direction = direction;  invDirection.value[0] = 1.0/direction.value[0]; invDirection.value[1] =  1.0/direction.value[1]; invDirection.value[2] = 1.0/direction.value[2] ; hitSomething = false; hitDistance = UNENDLICH; }
-    void setStart(const Vector3D& start) {  this->start = start;    }
-    const Vector3D& getStart() const { return start; }
-    const Vector3D& getDirection() const { return direction; }
-    const Vector3D& getInvDirection() const { return invDirection; }
-    const bool didHitSomething() const { return hitSomething; }
+    inline void setDirection(const Vector3D& direction) { this->direction = direction;  invDirection.value[0] = 1.0/direction.value[0]; invDirection.value[1] =  1.0/direction.value[1]; invDirection.value[2] = 1.0/direction.value[2] ; hitSomething = false; hitDistance = UNENDLICH; }
+    inline void setStart(const Vector3D& start) {  this->start = start;    }
+    inline const Vector3D& getStart() const { return start; }
+    inline const Vector3D& getDirection() const { return direction; }
+    inline const Vector3D& getInvDirection() const { return invDirection; }
+    inline const bool didHitSomething() const { return hitSomething; }
   private:
 
   Vector3D start;

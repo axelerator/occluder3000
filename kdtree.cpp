@@ -11,7 +11,10 @@
 //
 #include "kdtree.h"
 #include "radianceray.h"
+
 #define MAX_PRIMCOUNT_PER_LEAF 3
+
+
 
 KdTree::KdTree ( const Scene &scene )
     : AccelerationStruct ( scene )
@@ -23,20 +26,55 @@ KdTree::KdTree ( const Scene &scene )
     void KdTree::deleteNode ( KdTreenode &node ) {
   if ( node.axis == 3 ) 
     delete  node.prims ;
-//   } else {
-//     deleteNode ( * ( node.children[0] ) );
-//     deleteNode ( * ( node.children[1] ) );
-//     delete node.children[0];
-//     delete node.children[1];
-//   }
 }
 
 KdTree::~KdTree() {
    deleteNode ( nodes.get(0) );
-//   delete tree;
-
 }
+
 static int hc = 0;
+bool KdTree::traverseIterative ( RadianceRay& r, float tMin, float tMax) {
+  KdTreenode *stack[128];
+  int stackpointer = 0;
+  stack[0] = 0;
+  KdTreenode *node = &nodes.get(0);
+  float d;
+
+    
+  do {
+    while( node->axis != 3 ) {
+      d = ( node->splitPos - r.getStart().value[node->axis] ) * r.getInvDirection().value[node->axis] ;
+//       if ( d <= tMin ) {
+//         node = node->leftchild + ((r.getDirection().value[node->axis] < 0.0) ? 0 : 1 );
+//       } else if ( d >= tMax ) {
+//         node = node->leftchild + ((r.getDirection().value[node->axis] < 0.0) ? 1 : 0 ) ;
+//       } else {
+        if (r.getDirection().value[node->axis] < 0.0) {
+          stack[++stackpointer] = node->leftchild;
+          node = node->leftchild + 1;
+        } else {
+          stack[++stackpointer] = node->leftchild + 1;
+          node = node->leftchild;
+//         }
+      }
+    }
+
+    for (unsigned char i = 0; i < node->prims->size ; ++i ) {
+      const Triangle& tri = triangles[node->prims->data[i]];
+      tri.intersect ( r );
+    }
+    if ( r.didHitSomething() )
+      return true;
+    // pop stack
+    node = stack[stackpointer];
+    --stackpointer;
+
+  } while ( node ) ;
+
+  return false;
+}
+
+
 bool KdTree::traverse ( const KdTreenode& node, RadianceRay& r, float tMax) {
   if ( node.axis == 3 ) {
     IntersectionResult tempIR;
@@ -116,7 +154,8 @@ const RGBvalue KdTree::trace ( Ray& r, unsigned int depth ) {
 
   hc = 0;
   RadianceRay rr ( r.getStart(), r.getDirection());
-  traverse ( nodes.get(0), rr, tmax );
+//   traverse ( nodes.get(0), rr, tmax );
+  traverseIterative ( rr, tmin, tmax );
 //    RGBvalue result (hc / triangles.size(), 0.0, 0.0 );
   RGBvalue result ( 0.0, 0.0, 0.0 );
   if ( rr.didHitSomething() ) {
@@ -153,6 +192,7 @@ void KdTree::construct() {
     prims.push_back ( i );
   subdivide ( nodes.getNextFree(), prims, bounds, 20 );
   std::cout << "Nodes: " << nodes.size() << std::endl;
+  assert( checkConsitency() );
 }
 
 
@@ -165,9 +205,9 @@ float KdTree::calculatecost ( KdTreenode &node, const std::vector<unsigned int> 
     const Triangle& tri = triangles[*iter];
     leftmost = fminf ( tri.getPoint ( 0 ).value[node.axis], fminf ( tri.getPoint ( 1 ).value[node.axis], tri.getPoint ( 2 ).value[node.axis] ) );
     rightmost = fmaxf ( tri.getPoint ( 0 ).value[node.axis], fmaxf ( tri.getPoint ( 1 ).value[node.axis], tri.getPoint ( 2 ).value[node.axis] ) );
-    if ( leftmost <= splitPos )
+    if ( leftmost < splitPos )
       ++left;
-    if ( rightmost >= splitPos )
+    if ( rightmost > splitPos )
       ++right;
   }
   float leftarea,rightarea;
@@ -249,9 +289,9 @@ void KdTree::subdivide ( KdTreenode &node, const std::vector<unsigned int> &prim
     const Triangle& tri = triangles[*iter];
     leftmost = fminf ( tri.getPoint ( 0 ).value[node.axis], fminf ( tri.getPoint ( 1 ).value[node.axis], tri.getPoint ( 2 ).value[node.axis] ) );
     rightmost = fmaxf ( tri.getPoint ( 0 ).value[node.axis], fmaxf ( tri.getPoint ( 1 ).value[node.axis], tri.getPoint ( 2 ).value[node.axis] ) );
-    if ( leftmost <= node.splitPos )
+    if ( leftmost < node.splitPos )
       left.push_back ( *iter );
-    if ( rightmost >= node.splitPos )
+    if ( rightmost > node.splitPos )
       right.push_back ( *iter );
   }
 
@@ -295,6 +335,48 @@ void KdTree::subdivide ( KdTreenode &node, const std::vector<unsigned int> &prim
   subdivide ( *(node.leftchild + 1), right, rightbounds, depth - 1 );
   
 }
+
+bool KdTree::checkConsitency() const {
+  std::set<unsigned int> missing;
+  for (unsigned int triIdx = 0; triIdx < triangles.size(); ++triIdx) {
+    missing.insert(triIdx);
+  }  
+  if ( !checkConsRec(&nodes.get(0), missing)) {
+    std::cout << "Nodes inconsistent." << std::endl;
+    return false;
+  }
+  
+  if ( !missing.empty() ) {
+    std::cout << missing.size() << "unassigned triangles" << std::endl;
+    return false;
+  }
+  return true;
+}
+
+bool KdTree::checkConsRec(KdTreenode * node, std::set<unsigned int>& missing) const {
+  //check if pointer is in nodes array;
+  bool nodefound = false;
+  for (unsigned int i = 0; i < nodes.size() && !nodefound; ++i) {
+    nodefound = ( &nodes.get(i) == node );
+  }
+  
+  if ( !nodefound ) {
+    std::cout << "Invalid reference found." << std::endl;
+    return false;
+  }
+  
+  if ( node->axis == 3 ) {
+    for ( unsigned int i = 0; i < node->prims->size; ++i) {
+      missing.erase(node->prims->data[i]);
+    }
+    return true;
+  } else {
+    return checkConsRec(node->leftchild, missing) && 
+           checkConsRec(node->leftchild + 1, missing);
+  }
+
+}
+
 
 
 #ifdef VISUAL_DEBUGGER

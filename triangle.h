@@ -26,6 +26,10 @@ class Triangle {
     Triangle(const Vector3D& v1, const Vector3D& v2, const Vector3D& v3, const Vector3D& vn1, const Vector3D& vn2, const Vector3D& vn3);    
     bool intersect(const Ray& r, IntersectionResult& ir) const;
     bool intersect(RadianceRay& r) const;
+    bool intersect_triangle(const Ray &r, float *t, float *u, float *v) const ;
+int intersect_triangle(const float orig[3], const float dir[3],
+                   const float vert0[3], const float vert1[3], const float vert2[3],
+                   float *t, float *u, float *v, float* edge1, float* edge2) const;
     const PhongMaterial& getMaterial() const { return mat; }
     Vector3D getNormalAt(const IntersectionResult& ir) const;
     Vector3D getNormalAt(const Intersection& ir) const;

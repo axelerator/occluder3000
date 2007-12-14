@@ -17,7 +17,7 @@
 #ifdef VISUAL_DEBUGGER    
   #include "glwidget.h"
 #endif
-
+#include <set>
 /**
 	@author Axel Tetzlaff <axel.tetzlaff@gmx.de>
 */
@@ -51,11 +51,14 @@ class KdTree : public AccelerationStruct {
     };
     typedef KdTreenode KdTreenode;
 
-    bool traverse(const KdTreenode& node, RadianceRay& r , float tMax );
+    bool traverse(const KdTreenode& node, RadianceRay& r, float tMax );
+    bool traverseIterative( RadianceRay& r , float tMin , float tMax );
     void subdivide ( KdTreenode &node, const std::vector<unsigned int> &prims, float *bounds, unsigned int depth );
     void deleteNode( KdTreenode &node );
     float calculatecost( KdTreenode &node, const std::vector<unsigned int> &prims, float *bounds,float splitpos );
-    
+    bool checkConsitency() const;
+    bool checkConsRec(KdTreenode *node, std::set<unsigned int>& missing) const ;
+
     SimpleVector<KdTreenode> nodes;
 #ifdef VISUAL_DEBUGGER    
     void drawContent(const KdTreenode& node, GLWidget* context, bool parentMarked)  const;
