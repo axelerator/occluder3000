@@ -38,6 +38,36 @@ class RadianceRay {
     float getMax() { return tMax; }    
     void setMin(float min) { tMin = min; }
     float getMin() { return tMin; }    
+    
+
+    void shade(Intersection& inters, RGBvalue& result) {
+      if (closestIntersection.triangle != 0 ) {
+        const Triangle &hitTriangle = * ( closestIntersection.triangle );
+        Vector3D n ( hitTriangle.getNormalAt ( closestIntersection ) );
+        const PhongMaterial& mat = hitTriangle.getMaterial();
+        const std::vector<Light> lights = scene->getLights();
+        std::vector<Light>::const_iterator it;
+        IntersectionResult doesntMatter;
+        float tmax;
+        for ( it = lights.begin(); it!=lights.end(); ++it ) {
+          const Light& light = *it;
+          Vector3D l ( light.getPosition() -  closestIntersection.intersectionPoint );
+          tmax = l.length();
+          l.normalize();
+          Ray intersectToLigth ( closestIntersection.intersectionPoint, l );
+          float dif = n * l;
+          if ( dif > 0.0 ) {
+            if ( 1 ) { //shadowtest
+              result.add ( dif * mat.diffuse[0] * light.getColor().getRGB() [0],
+                           dif * mat.diffuse[1] * light.getColor().getRGB() [1],
+                           dif * mat.diffuse[2] * light.getColor().getRGB() [2] );
+            }
+          }
+      
+        }
+      }    
+    }    
+    void setScene(const Scene& s) { scene = &s; }
   private:
     Vector3D start;
     Vector3D direction;
@@ -46,6 +76,7 @@ class RadianceRay {
     float tMin;
     // hit info
     Intersection closestIntersection;
+    Scene *scene;
 };
 
 #endif

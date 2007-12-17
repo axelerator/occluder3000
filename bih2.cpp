@@ -226,56 +226,8 @@ const RGBvalue BIH2::trace ( Ray& r, unsigned int depth ) {
 
   RGBvalue result ( 0.0, 0.0, 0.0 );
   RadianceRay rr ( r.getStart(), r.getDirection(), tmax, tmin );
-//   traverse(nodes[0], rr, tmin, tmax, 0);
-
-
   traverseIterative ( &nodes.get(0), rr, fmaxf(tmin, 0.0), tmax );
-  if ( rr.didHitSomething() ) {
-//    return RGBvalue(1.0, 0.0, 0.0);
-    const Intersection &i = rr.getClosestIntersection();
-    const Triangle &hitTriangle = * ( i.triangle );
-    Vector3D n ( hitTriangle.getNormalAt ( i ) );
-    const PhongMaterial& mat = hitTriangle.getMaterial();
-    const std::vector<Light> lights = scene.getLights();
-    std::vector<Light>::const_iterator it;
-    IntersectionResult doesntMatter;
-    for ( it = lights.begin(); it!=lights.end(); ++it ) {
-      const Light& light = *it;
-      Vector3D l ( light.getPosition() -  i.intersectionPoint);
-//       Vector3D l (   i.intersectionPoint - light.getPosition() );
-//        Vector3D l ( 0.0, 1.0, 0.0);
-      tmax = l.length();
-      l.normalize();
-      Ray intersectToLigth ( i.intersectionPoint, l );
-      
-      
-      //           RadianceRay rrr(i.intersectionPoint, l);
-      //         traverseIterative(nodes, rrr, 0.001, 10.0);
-      //         if ( !traverseShadow(nodes, intersectToLigth, 0.0, tmax, doesntMatter) ) {
-      //           if ( ! rrr.didHitSomething() ) {
-              float dif = n * l;
-//       float dif = 1.0;
-      if ( dif > 0.0 ) {
-//         bool hitt = false;
-//         for ( std::vector<Triangle>::iterator it2 = triangles.begin(); it2!=triangles.end(); ++it2 ) {
-//           if ( ( & ( *it2 ) != &hitTriangle ) && ( *it2 ).intersect ( intersectToLigth, doesntMatter ) ) {
-//             hitt = true;
-//             break;
-//           }
-//         }
-//         if ( ! hitt ) {
-              if ( !traverseShadow(&nodes.get(0), intersectToLigth, 0.0, tmax, doesntMatter, &hitTriangle) ) {
-          result.add ( dif * mat.diffuse[0] * light.getColor().getRGB() [0],
-                       dif * mat.diffuse[1] * light.getColor().getRGB() [1],
-                       dif * mat.diffuse[2] * light.getColor().getRGB() [2] );
-        }
-      }
-          
-//           result.add (  i.intersectionPoint[0],
-//                        i.intersectionPoint[1],
-//                         i.intersectionPoint[2] );
-      }
-  }
+  rr.shade(result);    
   return result;
 }
 

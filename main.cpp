@@ -364,6 +364,7 @@ int main ( int argc, char *argv[] ) {
   GLubyte *mem = 0;
   
   Light& l = scene.getLight(0);
+  RadianceRay::setScene(scene);
   l.setPosition( 2.0, 2.0, 2.0  );
 
   while (!profile && !done ) {

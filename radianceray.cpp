@@ -12,7 +12,8 @@
 #include "radianceray.h"
 
 // RadianceRay::RadianceRay() {}
-
+Scene RadianceRay::scene = 0;
 RadianceRay::~RadianceRay() {}
+
 
 
