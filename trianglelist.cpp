@@ -25,15 +25,15 @@ const RGBvalue Trianglelist::trace ( RadianceRay& rr, unsigned int depth ) {
     (*it).intersect( rr );
   }
   RGBvalue result ( 0.0, 0.0, 0.0 );
-  rr.shade( result );
+  rr.shade( result, depth );
 
   return result;
 }
 
-bool Trianglelist::isBlocked(Ray& r, const Triangle *ignoreTriangle) {
+bool Trianglelist::isBlocked(Ray& r) {
   for ( std::vector<Triangle>::iterator it = triangles.begin(); it!=triangles.end(); ++it ) {
     const Triangle& tri = (*it);
-    if ( (ignoreTriangle != &tri) && tri.intersect( r ) )
+    if ( tri.intersect( r ) )
       return true;
   }
   return false;

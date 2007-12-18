@@ -82,7 +82,7 @@ bool KdTree::traverseIterative ( RadianceRay& r ) {
   return false;
 }
 
-bool KdTree::traverseShadowIterative ( Ray& r, const Triangle *ignoreTriangle  ) {
+bool KdTree::traverseShadowIterative ( Ray& r ) {
   KdTreeStacknode stack[128];
   int stackpointer = 0;
   stack[0].node = 0;
@@ -116,7 +116,7 @@ bool KdTree::traverseShadowIterative ( Ray& r, const Triangle *ignoreTriangle  )
 
     for (unsigned char i = 0; i < node->prims->size ; ++i ) {
       const Triangle& tri = triangles[node->prims->data[i]];
-      if ( (ignoreTriangle != &tri) && tri.intersect ( r ) )
+      if ( tri.intersect ( r ) )
         return true;
     }
 
@@ -159,8 +159,8 @@ void KdTree::traceall(KdTreenode &node, RadianceRay& r) {
   }
 }
 
-bool KdTree::isBlocked(Ray& r, const Triangle *ignoreTriangle) {
- return traverseShadowIterative( r, ignoreTriangle );
+bool KdTree::isBlocked(Ray& r) {
+ return traverseShadowIterative( r );
 }
 
 /**
@@ -171,7 +171,7 @@ const RGBvalue KdTree::trace ( RadianceRay& r, unsigned int depth ) {
     return RGBvalue( 0.0, 0.0, 0.0 );
   traverseIterative ( r );
   RGBvalue result ( 0.0, 0.0, 0.0 );
-  r.shade(result);
+  r.shade(result, depth);
   return result;
 }
 

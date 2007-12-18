@@ -73,8 +73,8 @@ bool AccelerationStruct::trimRaytoBounds(Ray &r) {
     tmax = tzmax;
   if ( ( tmin >= t1 ) || ( tmax <= t0 ) ) 
     return false;
-  r.setMin(fmaxf(tmin, 0.0));
-  r.setMax(tmax);
+  r.setMin(fmaxf(tmin, r.getMin()));
+  r.setMax(fminf(tmax, r.getMax()));
   return true;
 }
 

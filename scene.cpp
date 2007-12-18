@@ -18,6 +18,7 @@ void Scene::addLight(const Light& l) {
   lights.push_back(l);
 }
 
+
 Scene::~Scene()
 {
 }

@@ -18,7 +18,7 @@
 #include <boost/regex.hpp>
 #include "debug.h"
 #include "accelerationstruct.h"
-
+#include "scene.h"
       #include <sys/types.h>
        #include <sys/stat.h>
        #include <unistd.h>
@@ -31,7 +31,9 @@ ObjectLoader::~ObjectLoader() {
 }
 
 
-bool ObjectLoader::loadOBJ(const std::string& filename, AccelerationStruct *tl) {
+bool ObjectLoader::loadOBJ(const std::string& filename, Scene& scene ) {
+    AccelerationStruct *tl = &scene.getGeometry();
+    std::string currentMat = "default";
     std::cout << "Loading monkey.." << std::endl;
     std::vector<std::string> file;
     std::string line;
@@ -129,7 +131,7 @@ bool ObjectLoader::loadOBJ(const std::string& filename, AccelerationStruct *tl) 
                     }
                     if (boundsOk) {
                       tl->addTriangle(Triangle(vertices[vidx[0]], vertices[vidx[1]], vertices[vidx[2]],
-                                               normals[nidx[0]], normals[nidx[1]], normals[nidx[2]] ));
+                                               normals[nidx[0]], normals[nidx[1]], normals[nidx[2]] , scene.getMaterial(currentMat)));
                       DEBUG("addTriangle(Triangle(vertices[" << vidx[0] << "] , vertices[" <<   vidx[1] << "], vertices[" << vidx[2] << "], normals[" << nidx[0] << "], normals[" << nidx[1] << "], normals[" << nidx[2] << "] ));") ;
                       ++facecount;                    
                     } else {
@@ -138,8 +140,9 @@ bool ObjectLoader::loadOBJ(const std::string& filename, AccelerationStruct *tl) 
                 } else
                   WARN("Face definition doesnt match syntax ("<< faceRE << ")");
 
-            }
-            else if ( line[0] == '#' ) 
+            } else if ( line[0] == 'u' ) {
+              currentMat = line.substr(7);
+            } else if ( line[0] == '#' ) 
               DEBUG("skipping commentary");;
 
         } 
@@ -150,7 +153,9 @@ bool ObjectLoader::loadOBJ(const std::string& filename, AccelerationStruct *tl) 
     return true;
 }
 
-bool ObjectLoader::loadRA2(const std::string& filename, AccelerationStruct *tl) {
+bool ObjectLoader::loadRA2(const std::string& filename, Scene& scene ) {
+    std::string currentMat = "default";
+    AccelerationStruct *tl = &scene.getGeometry();
     FILE *fp;
     
     struct stat buf;
@@ -177,7 +182,7 @@ bool ObjectLoader::loadRA2(const std::string& filename, AccelerationStruct *tl) 
              boundings[2*c] = p[pi].value[c];
           else if ( p[pi].value[c] > boundings[2*c+1] )
              boundings[2*c+1] = p[pi].value[c];
-      tl->addTriangle(Triangle(p[0], p[1], p[2]));
+      tl->addTriangle(Triangle(p[0], p[1], p[2], scene.getMaterial(currentMat)));
     }
     std::cout << "Scene boundaries x(min:" << boundings[0]  << ",max:" << boundings[1]  << ") y(min:" << boundings[2]  << ",max:" << boundings[3]  << ") z(min:" << boundings[4]  << ",max:" << boundings[5]  << ")" << std::endl;
     tl->setBounds(boundings);

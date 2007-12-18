@@ -12,8 +12,8 @@
 #include "triangle.h"
 #include "ray.h"
 #include "radianceray.h"
-Triangle::Triangle(const Vector3D& v1, const Vector3D& v2, const Vector3D& v3):
- u(v2-v1), v(v3-v1), nu(0.0, 0.0, 0.0), nv(0.0, 0.0, 0.0), center(v1 + 0.33*u + 0.33*v) {
+Triangle::Triangle(const Vector3D& v1, const Vector3D& v2, const Vector3D& v3, const PhongMaterial& mat):
+ u(v2-v1), v(v3-v1), nu(0.0, 0.0, 0.0), nv(0.0, 0.0, 0.0), center(v1 + 0.33*u + 0.33*v), mat(mat) {
   p[0] = v1;
   p[1] = v2;
   p[2] = v3;
@@ -23,8 +23,8 @@ Triangle::Triangle(const Vector3D& v1, const Vector3D& v2, const Vector3D& v3):
   n[2] = normal;  
 }
 
-Triangle::Triangle(const Vector3D& v1, const Vector3D& v2, const Vector3D& v3, const Vector3D& vn1, const Vector3D& vn2, const Vector3D& vn3):
- u(v2-v1), v(v3-v1), nu(vn2-vn1), nv(vn3-vn1), center(v1 + 0.33*u + 0.33*v) {
+Triangle::Triangle(const Vector3D& v1, const Vector3D& v2, const Vector3D& v3, const Vector3D& vn1, const Vector3D& vn2, const Vector3D& vn3, const PhongMaterial& mat):
+ u(v2-v1), v(v3-v1), nu(vn2-vn1), nv(vn3-vn1), center(v1 + 0.33*u + 0.33*v), mat(mat) {
   p[0] = v1;
   p[1] = v2;
   p[2] = v3;
@@ -73,7 +73,7 @@ float t,u,v;
      return 0;
 
    t = (this->v * qvec) * inv_det;
-   return ( t > r.getMin() && t < r.getMax() );
+   return ( (r.getIgnored() != this) && (t > r.getMin()) && (t < r.getMax()) );
 
 }
 
@@ -106,7 +106,7 @@ float t,u,v;
     return false;
 
   Intersection current(this, this->p[0] + (u * this->u) + (v * this->v), r.getStart());
-  if ( current < r.getClosestIntersection() ) {
+  if ( (r.getIgnored() != this) && (current < r.getClosestIntersection()) ) {
     current.e1 = this->u;
     current.e2 = this->v;
     current.u = u;

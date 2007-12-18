@@ -10,10 +10,8 @@
 //
 //
 #include "radianceray.h"
-
-// RadianceRay::RadianceRay() {}
-
 RadianceRay::~RadianceRay() {}
+
 
 
 

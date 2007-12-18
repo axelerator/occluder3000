@@ -26,8 +26,8 @@ public:
     AccelerationStruct(const Scene& scene);
     virtual ~AccelerationStruct();
     void addTriangle(const Triangle& t);
-    virtual const RGBvalue trace(RadianceRay& r, unsigned int depth = 0) = 0;
-    virtual bool isBlocked(Ray& r, const Triangle *ignoreTriangle) = 0;
+    virtual const RGBvalue trace(RadianceRay& r, unsigned int depth = 10) = 0;
+    virtual bool isBlocked(Ray& r) = 0;
     unsigned int getTriangleCount() const { return triangles.size(); }
     void setBounds(float* newBounds);
     virtual void construct() = 0;

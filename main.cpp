@@ -170,6 +170,8 @@ void renderr ( AccelerationStruct *tl, const Camera& cam, GLubyte *mem ) {
 
             currentRay.setDirection ( ( projectPoint - position ).normal() );
             currentRay.setStart ( projectPoint );
+            currentRay.setMin(0.0f);
+            currentRay.setMax(UNENDLICH);
             currentRay.getClosestIntersection().reset();
             rgb = tl->trace ( currentRay ).getRGB();
             mem[offset++] = ( GLubyte ) ( rgb[0]*255 );
@@ -302,11 +304,13 @@ int main ( int argc, char *argv[] ) {
     case 3: structure = new KdTree ( scene );break;
   }
   scene.setGeometry(structure);
+  scene.addMaterial("default", PhongMaterial(1.0, 1.0, 1.0, 1.0, 0.0, 0.0));
+  scene.addMaterial("mirror", PhongMaterial(1.0, 1.0, 1.0, 1.0, 0.0, 0.8));
   std::string filename ( argv[1] );
   if ( filename.find ( ".obj" ) != std::string::npos )
-    ObjectLoader::loadOBJ ( filename, structure );
+    ObjectLoader::loadOBJ ( filename, scene );
   else if ( filename.find ( ".ra2" ) != std::string::npos )
-    ObjectLoader::loadRA2 ( filename, structure );
+    ObjectLoader::loadRA2 ( filename, scene );
   else
     std::cerr << "Unknown file extension";
 

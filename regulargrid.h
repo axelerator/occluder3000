@@ -27,7 +27,7 @@ public:
     virtual ~RegularGrid();
     
     virtual const RGBvalue trace(RadianceRay& r, unsigned int depth = 0);
-    virtual bool isBlocked(Ray& r, const Triangle *ignoreTriangle) {return false;}
+    virtual bool isBlocked(Ray& r) {return false;}
     virtual void construct();
 //     virtual void drawGL();
 private:

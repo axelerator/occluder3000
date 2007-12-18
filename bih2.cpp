@@ -116,14 +116,11 @@ void BIH2::traverseIterative (RadianceRay& r ) {
 
 }
 
-bool BIH2::isBlocked(Ray& r, const Triangle *ignoreTriangle) {
-//   trimRaytoBounds( r );
-//   r.setMin(0.0);
-  return traverseShadow(r, ignoreTriangle);
-//   return false;
+bool BIH2::isBlocked(Ray& r) {
+  return traverseShadow(r);
 }
 
-bool BIH2::traverseShadow ( Ray& r, const Triangle *ignoreTriangle ) {
+bool BIH2::traverseShadow ( Ray& r ) {
   float tmin, tmax;
   Stack stack[STACKDEPTH];
   int stackpos = 1;
@@ -143,10 +140,8 @@ bool BIH2::traverseShadow ( Ray& r, const Triangle *ignoreTriangle ) {
       IntersectionResult ir;
       for ( unsigned int i = node->leafContent[0]; i <= node->leafContent[1]; ++i ) {
         Triangle& hitTriangle = triangles[triangleIndices[i]];
-        if ( ignoreTriangle != &hitTriangle )
-          if ( hitTriangle.intersect ( r ) ) {
+          if ( hitTriangle.intersect ( r ) ) 
             return true;
-          }
       }
     } else {
       // check ray direction to determine identity of 'near' and 'far' children
@@ -193,7 +188,7 @@ const RGBvalue BIH2::trace ( RadianceRay& r, unsigned int depth ) {
 /*  r.setMin(fmaxf(tmin, 0.0));
   r.setMax(tmax); */ 
   traverseIterative ( r );
-  r.shade(result);    
+  r.shade(result, depth);    
   return result;
 }
 

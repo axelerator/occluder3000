@@ -12,7 +12,7 @@
 #ifndef OBJECTLOADER_H
 #define OBJECTLOADER_H
 #include <string>
-
+class Scene;
 /**
 Util class to load .obj files
 
@@ -25,8 +25,8 @@ class ObjectLoader{
 public:
     ObjectLoader();
 
-    static bool loadOBJ(const std::string& filenam, AccelerationStruct *tl);
-    static bool loadRA2(const std::string& filename, AccelerationStruct *tl);
+    static bool loadOBJ(const std::string& filenam, Scene& scene);
+    static bool loadRA2(const std::string& filename, Scene& scene);
     ~ObjectLoader();
 private:
   typedef  float ra2_chunk[3];

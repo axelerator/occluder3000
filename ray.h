@@ -12,6 +12,7 @@
 #ifndef RAY_H
 #define RAY_H
 #include "vector3d.h"
+#include "triangle.h"
 /**
 	@author Axel Tetzlaff <axel.tetzlaff@gmx.de>
 */
@@ -19,7 +20,7 @@ class Ray
 {
   public:
     Ray();
-    Ray(const Vector3D& s, const Vector3D& d, float tmax = UNENDLICH, float tmin = 0.0f);
+    Ray(const Vector3D& s, const Vector3D& d, float tmax = UNENDLICH, float tmin = 0.0f, const Triangle* tri = 0);
     ~Ray();
     inline void setDirection(const Vector3D& direction) { this->direction = direction;  invDirection.value[0] = 1.0f/direction.value[0]; invDirection.value[1] =  1.0f/direction.value[1]; invDirection.value[2] = 1.0f/direction.value[2];}
     inline void setStart(const Vector3D& start) {  this->start = start;    }
@@ -30,6 +31,8 @@ class Ray
     float getMax() const { return tMax; }    
     void setMin(float min) { tMin = min; }
     float getMin() const { return tMin; }  
+    void setIgnore(const Triangle* tri) { ignore = tri; }
+    const Triangle* getIgnored() const { return ignore; }
   protected:
 
   Vector3D start;
@@ -37,6 +40,7 @@ class Ray
   Vector3D invDirection;
   float tMax;
   float tMin;
+  const Triangle *ignore; // Triangle that has to be ignored to avoid self intersections
 };
 
 #endif

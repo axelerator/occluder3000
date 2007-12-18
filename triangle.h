@@ -22,8 +22,9 @@ class Ray;
 */
 class Triangle {
   public:
-    Triangle(const Vector3D& v1, const Vector3D& v2, const Vector3D& v3);
-    Triangle(const Vector3D& v1, const Vector3D& v2, const Vector3D& v3, const Vector3D& vn1, const Vector3D& vn2, const Vector3D& vn3);    
+    Triangle(const Vector3D& v1, const Vector3D& v2, const Vector3D& v3, const PhongMaterial& mat);
+    Triangle(const Vector3D& v1, const Vector3D& v2, const Vector3D& v3, const Vector3D& vn1, const Vector3D& vn2, const Vector3D& vn3, const PhongMaterial& mat);    
+    Triangle& operator= (const Triangle& cpy) { memcpy(this, &cpy, sizeof(Triangle)); return *this; }
     bool intersect(const Ray& r) const;
     bool intersect(RadianceRay& r) const;
     const PhongMaterial& getMaterial() const { return mat; }
@@ -35,13 +36,13 @@ class Triangle {
   private:
 
     Vector3D p[3];
-    PhongMaterial mat;
     Vector3D u;
     Vector3D v;
     Vector3D nu;
     Vector3D nv;
     Vector3D n[3];
     Vector3D center;
+    const PhongMaterial& mat;
 };
 
 #endif

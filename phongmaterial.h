@@ -11,14 +11,15 @@
 //
 #ifndef PHONGMATERIAL_H
 #define PHONGMATERIAL_H
-
+#include <string.h>
 /**
 	@author Axel Tetzlaff <axel.tetzlaff@gmx.de>
 */
 class PhongMaterial{
 public:
-    PhongMaterial();
-
+    PhongMaterial(float r = 0.0f, float g = 0.0f, float b = 0.0f, float alpha = 0.0f, float refract = 0.0f, float reflection = 0.0f );
+    PhongMaterial(const PhongMaterial& mat) { memcpy(this, &mat, sizeof(PhongMaterial));}
+    PhongMaterial& operator=(const PhongMaterial& mat) { memcpy(this, &mat, sizeof(PhongMaterial)); return *this;}
     ~PhongMaterial();
     float diffuse[3];
     float alpha;
