@@ -26,11 +26,12 @@ public:
     RegularGrid(const Scene& scene, float cellsize);
     virtual ~RegularGrid();
     
-    virtual const RGBvalue trace(Ray& r, unsigned int depth = 0);
+    virtual const RGBvalue trace(RadianceRay& r, unsigned int depth = 0);
+    virtual bool isBlocked(Ray& r, const Triangle *ignoreTriangle) {return false;}
     virtual void construct();
 //     virtual void drawGL();
 private:
-    bool findIntersection(Ray& r, IntersectionResult& ir);
+    bool findIntersection(RadianceRay& r, IntersectionResult& ir);
     bool hasIntersection(Ray& r,  int ingoreTriangle);
 
     std::vector<int> **grid;

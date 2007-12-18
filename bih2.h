@@ -23,7 +23,8 @@ class BIH2 : public AccelerationStruct {
 
     ~BIH2();
 
-    virtual const RGBvalue trace ( Ray& r, unsigned int depth );
+    virtual const RGBvalue trace ( RadianceRay& r, unsigned int depth );
+    virtual bool isBlocked(Ray& r, const Triangle *ignoreTriangle);
     virtual void construct();
 
 #ifdef VISUAL_DEBUGGER
@@ -62,8 +63,8 @@ class BIH2 : public AccelerationStruct {
 
     void subdivide ( BihNode &thisNode, unsigned int start, unsigned int end, const float *currBounds, unsigned int depth );
     void traverse ( const BihNode& node, RadianceRay& r, float tmin, float tmax, unsigned int depth );
-    void traverseIterative ( const BihNode* node, RadianceRay& r, float tmin, float tmax );
-    bool traverseShadow ( const BihNode* startnode, Ray& r, float tmin, float tmax, IntersectionResult &ir, const Triangle *ignoreTriangle );
+    void traverseIterative ( RadianceRay& r );
+    bool traverseShadow ( Ray& r, const Triangle *ignoreTriangle );
 #ifdef VISUAL_DEBUGGER
     const void drawTree ( const BihNode &node, bool drawLeaves , GLWidget *context ) const;
     const Vector3D drawTreeWithNames ( const BihNode &node, int depth, GLWidget* context ) const;

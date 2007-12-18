@@ -27,7 +27,8 @@ class KdTree : public AccelerationStruct {
 
     ~KdTree();
 
-    virtual const RGBvalue trace ( Ray& r, unsigned int depth );
+    virtual const RGBvalue trace ( RadianceRay& r, unsigned int depth );
+    virtual bool isBlocked(Ray& r, const Triangle *ignoreTriangle);   
     virtual void construct();
 #ifdef VISUAL_DEBUGGER    
     virtual void draw ( GLWidget* context ) const;
@@ -59,6 +60,7 @@ class KdTree : public AccelerationStruct {
 
     bool traverse(const KdTreenode& node, RadianceRay& r, float tMax );
     bool traverseIterative( RadianceRay& r );
+    bool traverseShadowIterative( Ray& r, const Triangle *ignoreTriangle  );
     void subdivide ( KdTreenode &node, const std::vector<unsigned int> &prims, float *bounds, unsigned int depth );
     void deleteNode( KdTreenode &node );
     float calculatecost( KdTreenode &node, const std::vector<unsigned int> &prims, float *bounds,float splitpos );

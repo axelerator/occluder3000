@@ -19,23 +19,24 @@ class Ray
 {
   public:
     Ray();
-    Ray(const Vector3D& s, const Vector3D& d);
+    Ray(const Vector3D& s, const Vector3D& d, float tmax = UNENDLICH, float tmin = 0.0f);
     ~Ray();
-    inline void setDirection(const Vector3D& direction) { this->direction = direction;  invDirection.value[0] = 1.0/direction.value[0]; invDirection.value[1] =  1.0/direction.value[1]; invDirection.value[2] = 1.0/direction.value[2] ; hitSomething = false; hitDistance = UNENDLICH; }
+    inline void setDirection(const Vector3D& direction) { this->direction = direction;  invDirection.value[0] = 1.0f/direction.value[0]; invDirection.value[1] =  1.0f/direction.value[1]; invDirection.value[2] = 1.0f/direction.value[2];}
     inline void setStart(const Vector3D& start) {  this->start = start;    }
     inline const Vector3D& getStart() const { return start; }
     inline const Vector3D& getDirection() const { return direction; }
     inline const Vector3D& getInvDirection() const { return invDirection; }
-    inline const bool didHitSomething() const { return hitSomething; }
-  private:
+    void setMax(float max) { tMax = max; }
+    float getMax() const { return tMax; }    
+    void setMin(float min) { tMin = min; }
+    float getMin() const { return tMin; }  
+  protected:
 
   Vector3D start;
   Vector3D direction;
   Vector3D invDirection;
-
-  // hit info
-  bool hitSomething;
-  float hitDistance;
+  float tMax;
+  float tMin;
 };
 
 #endif

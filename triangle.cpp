@@ -48,145 +48,33 @@ Triangle::Triangle(const Vector3D& v1, const Vector3D& v2, const Vector3D& v3, c
 
 // #define TEST_CULL 1
 
+bool Triangle::intersect(const Ray& r) const {
+float t,u,v;
 
-int
-Triangle::intersect_triangle(const float orig[3], const float dir[3],
-                   const float vert0[3], const float vert1[3], const float vert2[3],
-                   float *t, float *u, float *v, float* edge1, float* edge2) const {
-   float tvec[3], pvec[3], qvec[3];
-   float det,inv_det;
-
-   /* find vectors for two edges sharing vert0 */
-   SUB(edge1, vert1, vert0);
-   SUB(edge2, vert2, vert0);
-
-   /* begin calculating determinant - also used to calculate U parameter */
-   CROSS(pvec, dir, edge2);
-
-   /* if determinant is near zero, ray lies in plane of triangle */
-   det = DOT(edge1, pvec);
-
-#ifdef TEST_CULL           /* define TEST_CULL if culling is desired */
-   if (det < EPSILON)
-      return 0;
-
-   /* calculate distance from vert0 to ray origin */
-   SUB(tvec, orig, vert0);
-
-   /* calculate U parameter and test bounds */
-   *u = DOT(tvec, pvec);
-   if (*u < 0.0 || *u > det)
-      return 0;
-
-   /* prepare to test V parameter */
-   CROSS(qvec, tvec, edge1);
-
-    /* calculate V parameter and test bounds */
-   *v = DOT(dir, qvec);
-   if (*v < 0.0 || *u + *v > det)
-      return 0;
-
-   /* calculate t, scale parameters, ray intersects triangle */
-   *t = DOT(edge2, qvec);
-   inv_det = 1.0 / det;
-   *t *= inv_det;
-   *u *= inv_det;
-   *v *= inv_det;
-#else                    /* the non-culling branch */
-   if (det > -EPSILON && det < EPSILON)
-     return 0;
-   inv_det = 1.0 / det;
-
-   /* calculate distance from vert0 to ray origin */
-   SUB(tvec, orig, vert0);
-
-   /* calculate U parameter and test bounds */
-   *u = DOT(tvec, pvec) * inv_det;
-   if (*u < 0.0 || *u > 1.0)
-     return 0;
-
-   /* prepare to test V parameter */
-   CROSS(qvec, tvec, edge1);
-
-   /* calculate V parameter and test bounds */
-   *v = DOT(dir, qvec) * inv_det;
-   if (*v < 0.0 || *u + *v > 1.0)
-     return 0;
-
-   /* calculate t, ray intersects triangle */
-   *t = DOT(edge2, qvec) * inv_det;
-#endif
-   return *t > 0.0;
-}
-
-bool Triangle::intersect_triangle(const Ray &r, float *t, float *u, float *v) const {
    float inv_det;
 
-   /* begin calculating determinant - also used to calculate U parameter */
    Vector3D pvec(r.getDirection() % this->v);
 
-   /* if determinant is near zero, ray lies in plane of triangle */
    float det = this->u * pvec;
 
-#ifdef TEST_CULL           /* define TEST_CULL if culling is desired */
-   if (det < EPSILON)
-      return 0;
-
-   /* calculate distance from p[0].value to ray origin */
-   Vector3D tvec(r.getStart() - p[0]);
-
-   /* calculate U parameter and test bounds */
-   *u = tvec * pvec;
-   if (*u < 0.0 || *u > det)
-      return 0;
-
-   /* prepare to test V parameter */
-   Vector3D qvec(tvec % this->u);
-
-    /* calculate V parameter and test bounds */
-   *v = r.direction * qvec;
-   if (*v < 0.0 || *u + *v > det)
-      return 0;
-
-   /* calculate t, scale parameters, ray intersects triangle */
-   *t = this->v * qvec;
-   inv_det = 1.0 / det;
-   *t *= inv_det;
-   *u *= inv_det;
-   *v *= inv_det;
-#else                    /* the non-culling branch */
    if (det > -EPSILON && det < EPSILON)
      return 0;
    inv_det = 1.0 / det;
 
-   /* calculate distance from p[0].value to ray origin */
    Vector3D tvec = r.getStart() - p[0].value;
 
-   /* calculate U parameter and test bounds */
-   *u = (tvec * pvec) * inv_det;
-   if (*u < 0.0 || *u > 1.0)
+   u = (tvec * pvec) * inv_det;
+   if (u < 0.0 || u > 1.0)
      return 0;
 
-   /* prepare to test V parameter */
    Vector3D qvec = tvec % this->u;
-
-   /* calculate V parameter and test bounds */
-   *v = (r.getDirection() * qvec) * inv_det;
-   if (*v < 0.0 || *u + *v > 1.0)
+   v = (r.getDirection() * qvec) * inv_det;
+   if (v < 0.0 || u + v > 1.0)
      return 0;
 
-   /* calculate t, ray intersects triangle */
-   *t = (this->v * qvec) * inv_det;
-#endif
-   return *t > 0.0;
-}
+   t = (this->v * qvec) * inv_det;
+   return ( t > r.getMin() && t < r.getMax() );
 
-bool Triangle::intersect(const Ray& r, IntersectionResult& ir) const {
-  if ( intersect_triangle(r, &(ir.t), &(ir.u), &(ir.v) )) {
-    (ir.orig = this->p[0]);
-    return true;
-  }
-  return false;
 }
 
 bool Triangle::intersect(RadianceRay& r) const {
@@ -214,7 +102,7 @@ float t,u,v;
      return 0;
 
    t = (this->v * qvec) * inv_det;
-   if ( t < r.getMin() || t > r.getMax() )
+   if ( t <= r.getMin() || t > r.getMax() )
     return false;
 
   Intersection current(this, this->p[0] + (u * this->u) + (v * this->v), r.getStart());

@@ -14,7 +14,6 @@
 #ifndef INLINE
 #include <cmath>
 
-
 /**
  * Create a zero vector.
  */

@@ -9,13 +9,11 @@
 #include <SDL/SDL.h>
 
 #include "vector3d.h"
-#include "ray.h"
+#include "radianceray.h"
 #include "triangle.h"
-#include "intersectionresult.h"
 #include <boost/regex.hpp>
 #include "accelerationstruct.h"
 #include "trianglelist.h"
-#include "bihlist.h"
 #include "debug.h"
 #include "regulargrid.h"
 #include "camera.h"
@@ -74,7 +72,7 @@ SDL_Surface *screen;
 float *output;
 unsigned char *result = 0;
 char done = 0;
-
+  Scene scene;
 
 void userEvents() {
   // Poll for events, and handle the ones we care about.
@@ -161,41 +159,9 @@ void renderr ( AccelerationStruct *tl, const Camera& cam, GLubyte *mem ) {
   Vector3D currentV;
 
   // Calculate the color for every single pixel
-  Ray currentRay;
-
-//   int range[4] = { 135, 145, 155, 160};
-//   unsigned int range[4] = { 0, 1000, 0, 1000};
-  
-
-//   unsigned int stride = resolution[0] * 3;
-//   unsigned int offset = 0;
-//   for ( unsigned int y = 0 ; y < resolution[1] ; ++y ) {
-//     for ( unsigned int x = 0; x < resolution[0]; ++x ) {
-//       
-//       
-//       // Calculate the current ray based on the current pixel and the camera
-//       currentU = projPlaneU * ( x );
-//       currentV = projPlaneV * ( y );
-//       projectPoint = projOrigin + currentU + currentV;
-// 
-//       currentRay.setDirection ( ( projectPoint - position ).normal() );
-//       currentRay.setStart ( projectPoint );
-//       
-//       if ( x < range[0] || x > range[1] || y < range[2] || y >range[3]) {
-//       mem[offset + 3*x] = 0;
-//       mem[offset + 3*x+1] = 0;
-//       mem[offset + 3*x+2] = 100;
-//       
-//       } else {
-//       
-//       const float *rgb = tl->trace ( currentRay ).getRGB();
-//       mem[offset + 3*x] = ( Uint8 ) ( rgb[0]*255 );
-//       mem[offset + 3*x+1] = ( Uint8 ) ( rgb[1]*255 );
-//       mem[offset + 3*x+2] = ( Uint8 ) ( rgb[2]*255 );
-//       }
-//     }
-//     offset += stride;
-//   }
+  RadianceRay currentRay(scene);
+  currentRay.setMin(0.0f);
+  currentRay.setMax(UNENDLICH);
     const float *rgb;
     unsigned int offset = 0;
     for ( unsigned int y = 0 ; y < resolution[1] ; ++y ) {
@@ -204,7 +170,7 @@ void renderr ( AccelerationStruct *tl, const Camera& cam, GLubyte *mem ) {
 
             currentRay.setDirection ( ( projectPoint - position ).normal() );
             currentRay.setStart ( projectPoint );
-
+            currentRay.getClosestIntersection().reset();
             rgb = tl->trace ( currentRay ).getRGB();
             mem[offset++] = ( GLubyte ) ( rgb[0]*255 );
             mem[offset++] = ( GLubyte ) ( rgb[1]*255 );
@@ -312,19 +278,19 @@ int main ( int argc, char *argv[] ) {
   glBufferData(GL_PIXEL_UNPACK_BUFFER_ARB, buf_size, 0, GL_STREAM_DRAW);
   
   
-  Scene scene;
+
   RGBvalue cred ( 0.6, 0.2, 0.2 );
   RGBvalue cgreen ( 0.2, 0.6, 0.2 );
   RGBvalue cblue ( 0.2, 0.2, 0.6 );
   RGBvalue cwhite ( 1.0, 1.0, 1.0 );
 
-  Light red ( Vector3D ( -2.0, 0.5,  1.0 ), cred );
-  Light blue ( Vector3D ( 0.0, 1.0, 0.0 ), cblue );
-  Light green ( Vector3D ( 2.0, 3.0, 1.0 ), cgreen );
+  Light red ( Vector3D ( -1.5, 1.5,  0.0 ), cred );
+  Light blue ( Vector3D ( 1.5, 1.5, 0.0 ), cblue );
+  Light green ( Vector3D ( 0.0, 1.5, -1.5 ), cgreen );
   Light white ( Vector3D ( 2.0, 2.0, 2.0 ), cwhite );
   scene.addLight ( red );
-  scene.addLight ( blue );
-  scene.addLight ( green );
+   scene.addLight ( blue );
+   scene.addLight ( green );
 //    scene.addLight ( white );
 
 
@@ -335,7 +301,7 @@ int main ( int argc, char *argv[] ) {
     case 2: structure = new BIH2 ( scene );break;
     case 3: structure = new KdTree ( scene );break;
   }
-
+  scene.setGeometry(structure);
   std::string filename ( argv[1] );
   if ( filename.find ( ".obj" ) != std::string::npos )
     ObjectLoader::loadOBJ ( filename, structure );
@@ -363,9 +329,8 @@ int main ( int argc, char *argv[] ) {
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, id);
   GLubyte *mem = 0;
   
-  Light& l = scene.getLight(0);
-  RadianceRay::setScene(scene);
-  l.setPosition( 2.0, 2.0, 2.0  );
+//   Light& l = scene.getLight(0);
+//   l.setPosition( 2.0, 2.0, 2.0  );
 
   while (!profile && !done ) {
     cam.setPosition ( Vector3D ( sin ( angle ) * ( 2.3 ), 1.0 + sin ( angle ) *0.5, cos ( angle ) * ( 2.3 ) ) );

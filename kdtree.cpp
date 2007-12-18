@@ -23,7 +23,7 @@ KdTree::KdTree ( const Scene &scene )
 #endif 
 {}
 
-    void KdTree::deleteNode ( KdTreenode &node ) {
+void KdTree::deleteNode ( KdTreenode &node ) {
   if ( node.axis == 3 ) 
     delete  node.prims ;
 }
@@ -46,9 +46,7 @@ bool KdTree::traverseIterative ( RadianceRay& r ) {
       d = ( node->splitPos - r.getStart().value[node->axis] ) * r.getInvDirection().value[node->axis] ;
       if ( d <= r.getMin() ) { // just far side
         node = node->leftchild + ((r.getDirection().value[node->axis] > 0.0) ? 1 : 0 );
-        r.setMin(d);
       } else if ( d >= r.getMax() ) { // just near side
-        r.setMax(d);
         node = node->leftchild + ((r.getDirection().value[node->axis] > 0.0) ? 0 : 1 ) ;
       } else {
         if (r.getDirection().value[node->axis] < 0.0) {
@@ -84,31 +82,53 @@ bool KdTree::traverseIterative ( RadianceRay& r ) {
   return false;
 }
 
-
-bool KdTree::traverse ( const KdTreenode& node, RadianceRay& r, float tMax) {
-  if ( node.axis == 3 ) {
-    for (unsigned char i = 0; i < node.prims->size ; ++i ) {
-      const Triangle& tri = triangles[node.prims->data[i]];
-      tri.intersect ( r );
-      ++hc;
+bool KdTree::traverseShadowIterative ( Ray& r, const Triangle *ignoreTriangle  ) {
+  KdTreeStacknode stack[128];
+  int stackpointer = 0;
+  stack[0].node = 0;
+  KdTreenode *node = &nodes.get(0);
+  float d ;
+  
+    
+  do {
+    while( node->axis != 3 ) {
+      d = ( node->splitPos - r.getStart().value[node->axis] ) * r.getInvDirection().value[node->axis] ;
+      if ( d <= r.getMin() ) { // just far side
+        node = node->leftchild + ((r.getDirection().value[node->axis] > 0.0) ? 1 : 0 );
+      } else if ( d >= r.getMax() ) { // just near side
+        node = node->leftchild + ((r.getDirection().value[node->axis] > 0.0) ? 0 : 1 ) ;
+      } else {
+        if (r.getDirection().value[node->axis] < 0.0) {
+          stack[++stackpointer].node = node->leftchild;
+          stack[stackpointer].tMin = r.getMin();
+          stack[stackpointer].tMax = r.getMax();
+          node = node->leftchild + 1;
+          r.setMax(d);
+        } else {
+          stack[++stackpointer].node = node->leftchild + 1;
+          stack[stackpointer].tMin = d;
+          stack[stackpointer].tMax = r.getMax();
+          node = node->leftchild;
+          r.setMax(d);
+      }
+      }
     }
-    return r.didHitSomething();
-  }
-  bool justFar = ( r.getDirection().value[node.axis]  < 0.0f ) ?
-                 r.getStart().value[node.axis] < node.splitPos:
-                 node.splitPos < r.getStart().value[node.axis];
-  unsigned int near=0, far=1;
-  if ( r.getDirection().value[node.axis] < 0.0f ) {
-    // near is right, far is left
-    near = 1; far = 0;
-  }
-  if ( !justFar ) {
-    if ( traverse ( *(node.leftchild +  near), r, tMax ) )
-      return true;
-  }
-  bool skipFar = (( node.splitPos - r.getStart().value[node.axis] ) * r.getInvDirection().value[node.axis]) > tMax;
-  return !skipFar && traverse ( *(node.leftchild + far), r, tMax ) ;
 
+    for (unsigned char i = 0; i < node->prims->size ; ++i ) {
+      const Triangle& tri = triangles[node->prims->data[i]];
+      if ( (ignoreTriangle != &tri) && tri.intersect ( r ) )
+        return true;
+    }
+
+    // pop stack
+    node = stack[stackpointer].node;
+    r.setMin(stack[stackpointer].tMin);
+    r.setMax(stack[stackpointer].tMax);
+    --stackpointer;
+
+  } while ( node ) ;
+
+  return false;
 }
 
 void KdTree::traceall(KdTreenode &node, RadianceRay& r) {
@@ -139,85 +159,19 @@ void KdTree::traceall(KdTreenode &node, RadianceRay& r) {
   }
 }
 
+bool KdTree::isBlocked(Ray& r, const Triangle *ignoreTriangle) {
+ return traverseShadowIterative( r, ignoreTriangle );
+}
+
 /**
  * Assumes normalized ray.
 **/
-const RGBvalue KdTree::trace ( Ray& r, unsigned int depth ) {
-  /*
-  * Ray-box intersection using IEEE numerical properties to ensure that the
-  * test is both robust and efficient, as described in:
-  *
-  *      Amy Williams, Steve Barrus, R. Keith Morley, and Peter Shirley
-  *      "An Efficient and Robust Ray-Box Intersection Algorithm"
-  *      Journal of graphics tools, 10(1):49-54, 2005
-  *
-  *      * slightly altered to find point of intersection *
-  */
-  float t0 = 0.0;
-  float t1 = UNENDLICH;
-  float tmin, tmax, tymin, tymax, tzmin, tzmax;
-  Vector3D parameters[2] = {Vector3D ( bounds[0], bounds[2], bounds[4] ),
-                            Vector3D ( bounds[1], bounds[3], bounds[5] ) };
-  const Vector3D &inv_direction = r.getInvDirection();
-  int sign[3];
-  sign[0] = ( inv_direction.value[0] < 0 );
-  sign[1] = ( inv_direction.value[1] < 0 );
-  sign[2] = ( inv_direction.value[2] < 0 );
-
-  tmin = ( parameters[sign[0]].value[0] - r.getStart().value[0] ) * inv_direction.value[0];
-  tmax = ( parameters[1-sign[0]].value[0] - r.getStart().value[0] ) * inv_direction.value[0];
-  tymin = ( parameters[sign[1]].value[1] - r.getStart().value[1] ) * inv_direction.value[1];
-  tymax = ( parameters[1-sign[1]].value[1] - r.getStart().value[1] ) * inv_direction.value[1];
-  if ( ( tmin > tymax ) || ( tymin > tmax ) ) {
-    return RGBvalue ( 0.0, 0.0, 0.0 );
-  }
-  if ( tymin > tmin )
-    tmin = tymin;
-  if ( tymax < tmax )
-    tmax = tymax;
-  tzmin = ( parameters[sign[2]].value[2] - r.getStart().value[2] ) * inv_direction.value[2];
-  tzmax = ( parameters[1-sign[2]].value[2] - r.getStart().value[2] ) * inv_direction.value[2];
-  if ( ( tmin > tzmax ) || ( tzmin > tmax ) ) {
-    return RGBvalue ( 0.0, 0.0, 0.0 );
-  }
-  if ( tzmin > tmin )
-    tmin = tzmin;
-  if ( tzmax < tmax )
-    tmax = tzmax;
-  if ( ( tmin < t1 ) && ( tmax > t0 ) ) {
-    ;
-  } else
-    return RGBvalue ( 0.0, 0.0, 0.0 );
-
-  hc = 0;
-  RadianceRay rr ( r.getStart(), r.getDirection(), tmax, tmin);
-//   traverse ( nodes.get(0), rr, tmax );
- //  traverseIterative ( rr );
-  traceall(nodes.get(0), rr);
-//    RGBvalue result (hc / triangles.size(), 0.0, 0.0 );
+const RGBvalue KdTree::trace ( RadianceRay& r, unsigned int depth ) {
+  if ( !trimRaytoBounds( r ) )
+    return RGBvalue( 0.0, 0.0, 0.0 );
+  traverseIterative ( r );
   RGBvalue result ( 0.0, 0.0, 0.0 );
-  if ( rr.didHitSomething() ) {
-//    return RGBvalue(1.0, 0.0, 0.0);
-    const Intersection &i = rr.getClosestIntersection();
-    const Triangle &hitTriangle = * ( i.triangle );
-    Vector3D n ( hitTriangle.getNormalAt ( i ) );
-    const PhongMaterial& mat = hitTriangle.getMaterial();
-    const std::vector<Light> lights = scene.getLights();
-    std::vector<Light>::const_iterator it;
-    IntersectionResult doesntMatter;
-    for ( it = lights.begin(); it!=lights.end(); ++it ) {
-      const Light& light = *it;
-      Vector3D l ( light.getPosition() -  i.intersectionPoint );
-      l.normalize();
-      Ray intersectToLigth ( i.intersectionPoint, l );
-      float dif = n * l;
-      if ( dif > 0.0 ) {
-        result.add ( dif * mat.diffuse[0] * light.getColor().getRGB() [0],
-                     dif * mat.diffuse[1] * light.getColor().getRGB() [1],
-                     dif * mat.diffuse[2] * light.getColor().getRGB() [2] );
-      }
-    }
-  }
+  r.shade(result);
   return result;
 }
 

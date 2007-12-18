@@ -22,6 +22,7 @@ class Intersection {
    Intersection(const Triangle *tri, const Vector3D& intersectionPoint, const Vector3D& rayStart): 
     triangle(tri), intersectionPoint(intersectionPoint), intersectionDistance((intersectionPoint - rayStart).length()) {};
    Intersection() : triangle(0), intersectionPoint(0.0, 0.0, 0.0), intersectionDistance(INFINITY){  }
+   void reset(){triangle = 0; intersectionDistance = INFINITY;}
    Intersection(const Intersection& i) : triangle(i.triangle), intersectionPoint(i.intersectionPoint), intersectionDistance(i.intersectionDistance){  }
    Intersection& operator=(const Intersection& i) {
                                                   memcpy(this, &i, sizeof(Intersection)); 

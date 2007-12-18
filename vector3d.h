@@ -226,6 +226,16 @@ public:
         return (*this);
     }
 
+   /**
+     * Normalize the vector, return legnth before
+     *
+     * @return The normalized vector.
+     */
+    inline float normalizeRL() {
+        float s = 1.0f / length();
+        this->operator *=( s );
+        return s;
+    }
 
     /**
      * @return the angle between this and the provided vector

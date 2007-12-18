@@ -55,13 +55,14 @@ void BIH2::traverse ( const BihNode& node, RadianceRay& r, float tmin, float tma
   }
 }
 
-void BIH2::traverseIterative ( const BihNode* startnode, RadianceRay& r, float tmin, float tmax ) {
+void BIH2::traverseIterative (RadianceRay& r ) {
 
   Stack stack[STACKDEPTH];
   int stackpos = 1;
-  stack[0].node = startnode;
-  stack[0].tmin = tmin;
-  stack[0].tmax = tmax;
+  float tmin,tmax;
+  stack[0].node = &nodes.get(0);
+  stack[0].tmin = r.getMin();
+  stack[0].tmax = r.getMax();
   const BihNode *node;
   while ( --stackpos > -1 ) {
 
@@ -115,13 +116,20 @@ void BIH2::traverseIterative ( const BihNode* startnode, RadianceRay& r, float t
 
 }
 
-bool BIH2::traverseShadow ( const BihNode* startnode, Ray& r, float tmin, float tmax, IntersectionResult &ir, const Triangle *ignoreTriangle ) {
+bool BIH2::isBlocked(Ray& r, const Triangle *ignoreTriangle) {
+//   trimRaytoBounds( r );
+//   r.setMin(0.0);
+  return traverseShadow(r, ignoreTriangle);
+//   return false;
+}
 
+bool BIH2::traverseShadow ( Ray& r, const Triangle *ignoreTriangle ) {
+  float tmin, tmax;
   Stack stack[STACKDEPTH];
   int stackpos = 1;
-  stack[0].node = startnode;
-  stack[0].tmin = tmin;
-  stack[0].tmax = tmax;
+  stack[0].node = &nodes.get(0);
+  stack[0].tmin = r.getMin();
+  stack[0].tmax = r.getMax();
   const BihNode *node;
   while ( --stackpos > -1 ) {
 
@@ -136,7 +144,7 @@ bool BIH2::traverseShadow ( const BihNode* startnode, Ray& r, float tmin, float 
       for ( unsigned int i = node->leafContent[0]; i <= node->leafContent[1]; ++i ) {
         Triangle& hitTriangle = triangles[triangleIndices[i]];
         if ( ignoreTriangle != &hitTriangle )
-          if ( hitTriangle.intersect ( r, ir ) ) {
+          if ( hitTriangle.intersect ( r ) ) {
             return true;
           }
       }
@@ -177,57 +185,15 @@ bool BIH2::traverseShadow ( const BihNode* startnode, Ray& r, float tmin, float 
   return false;
 }
 
-const RGBvalue BIH2::trace ( Ray& r, unsigned int depth ) {
-  /*
-   * Ray-box intersection using IEEE numerical properties to ensure that the
-   * test is both robust and efficient, as described in:
-   *
-   *      Amy Williams, Steve Barrus, R. Keith Morley, and Peter Shirley
-   *      "An Efficient and Robust Ray-Box Intersection Algorithm"
-   *      Journal of graphics tools, 10(1):49-54, 2005
-   *
-   *      * slightly altered to find point of intersection *
-   */
-  float t0 = 0.0;
-  float t1 = UNENDLICH;
-  float tmin, tmax, tymin, tymax, tzmin, tzmax;
-  Vector3D parameters[2] = {Vector3D ( bounds[0], bounds[2], bounds[4] ),
-                            Vector3D ( bounds[1], bounds[3], bounds[5] ) };
-  const Vector3D &inv_direction = r.getInvDirection();
-  int sign[3];
-  sign[0] = ( inv_direction.value[0] < 0 );
-  sign[1] = ( inv_direction.value[1] < 0 );
-  sign[2] = ( inv_direction.value[2] < 0 );
-
-  tmin = ( parameters[sign[0]].value[0] - r.getStart().value[0] ) * inv_direction.value[0];
-  tmax = ( parameters[1-sign[0]].value[0] - r.getStart().value[0] ) * inv_direction.value[0];
-  tymin = ( parameters[sign[1]].value[1] - r.getStart().value[1] ) * inv_direction.value[1];
-  tymax = ( parameters[1-sign[1]].value[1] - r.getStart().value[1] ) * inv_direction.value[1];
-  if ( ( tmin > tymax ) || ( tymin > tmax ) ) {
-    return RGBvalue ( 0.0, 0.0, 0.0 );
-  }
-  if ( tymin > tmin )
-    tmin = tymin;
-  if ( tymax < tmax )
-    tmax = tymax;
-  tzmin = ( parameters[sign[2]].value[2] - r.getStart().value[2] ) * inv_direction.value[2];
-  tzmax = ( parameters[1-sign[2]].value[2] - r.getStart().value[2] ) * inv_direction.value[2];
-  if ( ( tmin > tzmax ) || ( tzmin > tmax ) ) {
-    return RGBvalue ( 0.0, 0.0, 0.0 );
-  }
-  if ( tzmin > tmin )
-    tmin = tzmin;
-  if ( tzmax < tmax )
-    tmax = tzmax;
-  if ( ( tmin < t1 ) && ( tmax > t0 ) ) {
-    ;
-  } else
-    return RGBvalue ( 0.0, 0.0, 0.0 );
+const RGBvalue BIH2::trace ( RadianceRay& r, unsigned int depth ) {
+  if ( !trimRaytoBounds( r ) )
+    return RGBvalue( 0.0, 0.0, 0.0 );
 
   RGBvalue result ( 0.0, 0.0, 0.0 );
-  RadianceRay rr ( r.getStart(), r.getDirection(), tmax, tmin );
-  traverseIterative ( &nodes.get(0), rr, fmaxf(tmin, 0.0), tmax );
-  rr.shade(result);    
+/*  r.setMin(fmaxf(tmin, 0.0));
+  r.setMax(tmax); */ 
+  traverseIterative ( r );
+  r.shade(result);    
   return result;
 }
 
@@ -261,11 +227,9 @@ void BIH2::subdivide ( BihNode &thisNode, unsigned int start, unsigned int end, 
   }
 
   // determine longest axis of bounding box
-  const float bbLength[3] = {
-                               currBounds[1] - currBounds[0],
+  const float bbLength[3] = {  currBounds[1] - currBounds[0],
                                currBounds[3] - currBounds[2],
-                               currBounds[5] - currBounds[4]
-                             };
+                               currBounds[5] - currBounds[4] };
   unsigned char axis;
   if ( bbLength[0] > bbLength[1] )
     axis = 0;

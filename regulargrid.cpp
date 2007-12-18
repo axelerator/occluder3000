@@ -11,7 +11,8 @@
 //
 #include "regulargrid.h"
 #include "triaabb.h"
-#include "GL/gl.h"
+#include "radianceray.h"
+
 RegularGrid::RegularGrid(const Scene& scene, float cellsize):
 AccelerationStruct(scene), grid(0), cellsize(cellsize), cellsizeInvert(1.0/cellsize) {}
 
@@ -35,7 +36,7 @@ RegularGrid::~RegularGrid() {
     }
 }
 
-bool RegularGrid::findIntersection(Ray& r, IntersectionResult& ir) {
+bool RegularGrid::findIntersection(RadianceRay& r, IntersectionResult& ir) {
     const Triangle *hitTriangle = 0;
 
 // Fast Voxel Traversal by Amanatides and Woo
@@ -108,7 +109,7 @@ bool RegularGrid::findIntersection(Ray& r, IntersectionResult& ir) {
          std::vector<int>::const_iterator iter;
           for (iter =  grid[gridIdx]->begin() ; iter != grid[gridIdx]->end() ; ++iter ) {
           const Triangle& currTri = triangles[*iter];
-              if ( currTri.intersect(voxelRay, ir ) ) {
+              if ( currTri.intersect(voxelRay) ) {
                   float currentZ = ( ir.calcPOI() - r.getStart() ).lengthSquare();
                   if ( currentZ < zBuffer ) {
                       zBuffer = currentZ;
@@ -195,7 +196,7 @@ bool RegularGrid::hasIntersection(Ray& r, int ingoreTriangle) {
          std::vector<int>::const_iterator iter;
           for (iter =  grid[gridIdx]->begin() ; iter != grid[gridIdx]->end() ; ++iter ) {
           const Triangle& currTri = triangles[*iter];
-              if (ingoreTriangle != *iter && currTri.intersect(voxelRay, ir ) ) {
+              if (ingoreTriangle != *iter && currTri.intersect(voxelRay ) ) {
                 return true;
               }
           }
@@ -208,7 +209,7 @@ bool RegularGrid::hasIntersection(Ray& r, int ingoreTriangle) {
   return false;
 }
 
-const RGBvalue RegularGrid::trace ( Ray& r, unsigned int depth ) {
+const RGBvalue RegularGrid::trace ( RadianceRay& r, unsigned int depth ) {
     IntersectionResult ir; // will store hit info for triangles in current voxel and ray
 
     if ( findIntersection(r, ir) ) {

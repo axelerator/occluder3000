@@ -21,6 +21,9 @@ public:
 
     ~PhongMaterial();
     float diffuse[3];
+    float alpha;
+    float refract;
+    float reflection;
 };
 
 #endif

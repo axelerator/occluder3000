@@ -27,11 +27,12 @@ public:
     virtual ~AccelerationStruct();
     void addTriangle(const Triangle& t);
     virtual const RGBvalue trace(RadianceRay& r, unsigned int depth = 0) = 0;
+    virtual bool isBlocked(Ray& r, const Triangle *ignoreTriangle) = 0;
     unsigned int getTriangleCount() const { return triangles.size(); }
     void setBounds(float* newBounds);
     virtual void construct() = 0;
     const Triangle& getTriangle(unsigned int idx) const { return triangles[idx]; }
-
+    bool trimRaytoBounds(Ray &ray);
 protected:
     std::vector<Triangle> triangles;
     float bounds[6]; //xmin,xmax,ymin,ymax,zmin,zmax
