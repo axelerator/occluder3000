@@ -11,14 +11,15 @@
 //
 #include "radianceray.h"
 
-Vector3D refractRay(const Vector3D& s, const Vector3D& n, double nFrom, double nTo) {
-  Vector3D e = s;
+Vector3D refractRay(const Vector3D& e, const Vector3D& n, double nFrom, double nTo) {
   float ne = e * n;
-
   float reflection = 1.0 - pow((nFrom/nTo), 2.0) * (1.0 - pow(ne, 2.0));
 
   if (reflection < 0.0) {
-    return Vector3D(0.0);
+          Vector3D vpar( ne * n );
+          Vector3D reflDir(e - ( 2 * vpar ));
+          reflDir.normalize();  
+          return reflDir;
   }
 
   return Vector3D(((e - (n * ne)) * (nFrom/nTo) - (n * sqrt(reflection))).normal());
@@ -65,23 +66,23 @@ RadianceRay::~RadianceRay() {}
           result = direct;
         if ( depth > 0 && mat.alpha < 1.0 ) {
           Vector3D refrDirIn = refractRay(direction, n, 1.0, 1.3);
-//           Vector3D refrDirIn = direction;
           RadianceRay reflectedRay( closestIntersection.intersectionPoint, refrDirIn, scene);
           reflectedRay.setIgnore(closestIntersection.triangle);          
          
           const Intersection &inters = scene.getGeometry().getClosestIntersection( reflectedRay );
           
-          Vector3D refrDirOut = refractRay(refrDirIn, inters.triangle->getNormalAt( inters ) * -1.0, 1.3, 1.0);
-//           Vector3D refrDirOut = refrDirIn;
-
-          RadianceRay r2 = RadianceRay(
-            inters.intersectionPoint, 
-            refrDirOut, scene
-          );
-          r2.setIgnore(inters.triangle );
-
-          RGBvalue refracted = scene.getGeometry().trace(r2, depth - 1 );
-          result = RGBvalue::mix(result, refracted, mat.alpha);
+          if ( inters.triangle != 0 ) {
+            Vector3D refrDirOut = refractRay(refrDirIn, inters.triangle->getNormalAt( inters ) * -1.0, 1.3, 1.0);
+  
+            RadianceRay r2 = RadianceRay(
+              inters.intersectionPoint, 
+              refrDirOut, scene
+            );
+            r2.setIgnore(inters.triangle );
+  
+            RGBvalue refracted = scene.getGeometry().trace(r2, depth - 1 );          
+            result = RGBvalue::mix(result, refracted, mat.alpha);
+          }
         }
       }    
     }    

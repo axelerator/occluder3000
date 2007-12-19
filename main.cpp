@@ -313,7 +313,7 @@ int main ( int argc, char *argv[] ) {
   scene.addMaterial("red", PhongMaterial(1.0, 0.0, 0.0, 1.0, 0.0, 0.0));
   scene.addMaterial("green", PhongMaterial(0.0, 1.0, 0.0, 1.0, 0.0, 0.0));
   scene.addMaterial("mirror", PhongMaterial(1.0, 1.0, 1.0, 1.0, 0.0, 0.8));
-  scene.addMaterial("glass", PhongMaterial(1.0, 1.0, 1.0, 0.3, 0.3, 0.0));
+  scene.addMaterial("glass", PhongMaterial(0.2, 0.5, 1.0, 0.4, 0.3, 0.0));
   std::string filename ( argv[1] );
   if ( filename.find ( ".obj" ) != std::string::npos )
     ObjectLoader::loadOBJ ( filename, scene );
