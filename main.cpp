@@ -166,13 +166,19 @@ void renderr ( AccelerationStruct *tl, const Camera& cam, GLubyte *mem ) {
     unsigned int offset = 0;
     for ( unsigned int y = 0 ; y < resolution[1] ; ++y ) {
         for ( unsigned int x = 0; x < resolution[0]; ++x ) {
-            projectPoint += projPlaneU;
 
             currentRay.setDirection ( ( projectPoint - position ).normal() );
             currentRay.setStart ( projectPoint );
             currentRay.setMin(0.0f);
             currentRay.setMax(UNENDLICH);
             currentRay.getClosestIntersection().reset();
+            projectPoint += projPlaneU;
+            
+//             if ( x < 27 || x > 32 || y < 37 | y > 50) {
+//               offset += 3;
+//               continue;
+//               }
+            
             rgb = tl->trace ( currentRay ).getRGB();
             mem[offset++] = ( GLubyte ) ( rgb[0]*255 );
             mem[offset++] = ( GLubyte ) ( rgb[1]*255 );
@@ -266,6 +272,7 @@ int main ( int argc, char *argv[] ) {
   }  
   glClearColor (0.0, 0.0, 0.0, 0.0);
   glShadeModel(GL_FLAT);
+  glDisable(GL_DEPTH_TEST);
   glEnable(GL_TEXTURE_2D);
 
   GLuint buf_size = width * height * 3;
@@ -278,8 +285,6 @@ int main ( int argc, char *argv[] ) {
 
   glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, id);
   glBufferData(GL_PIXEL_UNPACK_BUFFER_ARB, buf_size, 0, GL_STREAM_DRAW);
-  
-  
 
   RGBvalue cred ( 0.6, 0.2, 0.2 );
   RGBvalue cgreen ( 0.2, 0.6, 0.2 );
@@ -289,11 +294,11 @@ int main ( int argc, char *argv[] ) {
   Light red ( Vector3D ( -1.5, 1.5,  0.0 ), cred );
   Light blue ( Vector3D ( 1.5, 1.5, 0.0 ), cblue );
   Light green ( Vector3D ( 0.0, 1.5, -1.5 ), cgreen );
-  Light white ( Vector3D ( 2.0, 2.0, 2.0 ), cwhite );
-  scene.addLight ( red );
-   scene.addLight ( blue );
-   scene.addLight ( green );
-//    scene.addLight ( white );
+  Light white ( Vector3D ( 0.0, 0.9, 0.0 ), cwhite );
+//   scene.addLight ( red );
+//    scene.addLight ( blue );
+//    scene.addLight ( green );
+   scene.addLight ( white );
 
 
   AccelerationStruct *structure = 0;
@@ -305,7 +310,10 @@ int main ( int argc, char *argv[] ) {
   }
   scene.setGeometry(structure);
   scene.addMaterial("default", PhongMaterial(1.0, 1.0, 1.0, 1.0, 0.0, 0.0));
+  scene.addMaterial("red", PhongMaterial(1.0, 0.0, 0.0, 1.0, 0.0, 0.0));
+  scene.addMaterial("green", PhongMaterial(0.0, 1.0, 0.0, 1.0, 0.0, 0.0));
   scene.addMaterial("mirror", PhongMaterial(1.0, 1.0, 1.0, 1.0, 0.0, 0.8));
+  scene.addMaterial("glass", PhongMaterial(1.0, 1.0, 1.0, 0.3, 0.3, 0.0));
   std::string filename ( argv[1] );
   if ( filename.find ( ".obj" ) != std::string::npos )
     ObjectLoader::loadOBJ ( filename, scene );
@@ -327,7 +335,7 @@ int main ( int argc, char *argv[] ) {
   Camera cam ( position, target, lookUp, 1.0, width, height );
 
   std::cout << "start rendering..." << std::endl;
-  float angle = 9.7;
+  float angle = -2.0;
 
   unsigned int frame = 0;
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, id);
@@ -335,9 +343,10 @@ int main ( int argc, char *argv[] ) {
   
 //   Light& l = scene.getLight(0);
 //   l.setPosition( 2.0, 2.0, 2.0  );
-
   while (!profile && !done ) {
-    cam.setPosition ( Vector3D ( sin ( angle ) * ( 2.3 ), 1.0 + sin ( angle ) *0.5, cos ( angle ) * ( 2.3 ) ) );
+ cam.setPosition ( Vector3D ( sin(angle), 1.0, 1.5));
+
+//     cam.setPosition ( Vector3D ( sin ( angle ) * ( 2.3 ), 1.0 + sin ( angle ) *0.5, cos ( angle ) * ( 2.3 ) ) );
 //     cam.setPosition ( Vector3D ( sin ( angle ) * ( 0.3 ), 1.0 + sin ( angle ) *0.2, cos ( angle ) * ( 2.1 ) ) );
 //     l.setPosition( sin ( angle*0.33 ) * ( 2.1 ), 4.0 , cos ( angle*0.33 ) * ( 2.1 ) );
     mem = (GLubyte *)glMapBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, GL_WRITE_ONLY);

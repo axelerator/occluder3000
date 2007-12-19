@@ -26,13 +26,7 @@ class BIH2 : public AccelerationStruct {
     virtual const RGBvalue trace ( RadianceRay& r, unsigned int depth );
     virtual bool isBlocked(Ray& r);
     virtual void construct();
-
-#ifdef VISUAL_DEBUGGER
-    virtual void draw ( GLWidget* context ) const;
-    virtual void drawSchema ( GLWidget* context ) const;
-    virtual void drawWithNames ( GLWidget* context ) const;
-    virtual void select ( int selected );
-#endif
+    virtual const Intersection& getClosestIntersection(RadianceRay& r);
 
 
     bool isConsistent();
@@ -40,14 +34,9 @@ class BIH2 : public AccelerationStruct {
     struct BihNode {
 
       unsigned char type;
-#ifdef VISUAL_DEBUGGER
-      int idx;
-      float bounds[6];
-#endif
       struct BihNode *leftchild;
 
       union {
-        
         float planes[2];
         unsigned int leafContent[2];
       };
@@ -65,13 +54,7 @@ class BIH2 : public AccelerationStruct {
     void traverse ( const BihNode& node, RadianceRay& r, float tmin, float tmax, unsigned int depth );
     void traverseIterative ( RadianceRay& r );
     bool traverseShadow ( Ray& r );
-#ifdef VISUAL_DEBUGGER
-    const void drawTree ( const BihNode &node, bool drawLeaves , GLWidget *context ) const;
-    const Vector3D drawTreeWithNames ( const BihNode &node, int depth, GLWidget* context ) const;
-    const Vector3D drawSchemaR ( const BihNode &node, int depth, GLWidget* context ) const;
-#endif
     bool checkConsistency ( BihNode *node );
-
 
     unsigned int *triangleIndices;
     unsigned int minimalPrimitiveCount;

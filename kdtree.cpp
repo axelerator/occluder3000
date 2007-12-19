@@ -15,13 +15,7 @@
 #define MAX_PRIMCOUNT_PER_LEAF 3
 
 
-
-KdTree::KdTree ( const Scene &scene )
-    : AccelerationStruct ( scene )
-#ifdef VISUAL_DEBUGGER
-    , nodeId ( 0 ), markednode ( 0 )
-#endif 
-{}
+KdTree::KdTree ( const Scene &scene ) : AccelerationStruct ( scene ){}
 
 void KdTree::deleteNode ( KdTreenode &node ) {
   if ( node.axis == 3 ) 
@@ -163,6 +157,11 @@ bool KdTree::isBlocked(Ray& r) {
  return traverseShadowIterative( r );
 }
 
+const Intersection& KdTree::getClosestIntersection(RadianceRay& r) {
+    traverseIterative ( r );
+    return r.getClosestIntersection();
+}
+
 /**
  * Assumes normalized ray.
 **/
@@ -222,10 +221,6 @@ float KdTree::calculatecost ( KdTreenode &node, const std::vector<unsigned int> 
 }
 
 void KdTree::subdivide ( KdTreenode &node, const std::vector<unsigned int> &prims, float *bounds, unsigned int depth ) {
-#ifdef VISUAL_DEBUGGER
-  node.idx = ++nodeId;
-  memcpy ( node.bounds, bounds, 6 * sizeof ( float ) );
-#endif
   if ( prims.size() <= MAX_PRIMCOUNT_PER_LEAF || !depth ) {
     node.axis = 3;
     assert(prims.size() <= 256);
@@ -367,133 +362,3 @@ bool KdTree::checkConsRec(KdTreenode * node, std::set<unsigned int>& missing) co
   }
 
 }
-
-
-
-#ifdef VISUAL_DEBUGGER
-void KdTree::drawContent ( const KdTreenode& node, GLWidget* context, bool parentMarked ) const {
-  parentMarked |= ( node.idx == markednode );
-
-  if ( node.axis == 3 ) {
-    glEnable ( GL_LIGHTING );
-    glColor3f ( 1.0, 1.0, 1.0 );
-    if ( parentMarked ) {
-      std::vector<unsigned int>::const_iterator iter = node.prims->begin();
-      for ( ; iter != node.prims->end(); ++iter ) {
-        const Triangle& t = triangles[*iter];
-        t.drawGL();
-      }
-    }
-    glDisable ( GL_LIGHTING );
-    if ( node.idx == markednode ) {
-      glColor3f ( 1.0, 1.0, 1.0 );
-    } else {
-      glColor3f ( 0.3, 0.3, 0.3 );
-    }
-
-    glPolygonMode ( GL_FRONT_AND_BACK, GL_LINE );
-    float dims[3] = { node.bounds[1] - node.bounds[0], node.bounds[3] - node.bounds[2], node.bounds[5] - node.bounds[4] };
-    float center[3] = {node.bounds[0] + dims[0] * 0.5, node.bounds[2] + dims[1] * 0.5, node.bounds[4] + dims[2] * 0.5};
-    context->drawMinicube ( center[0], center[1], center[2], dims );
-    glPolygonMode ( GL_FRONT_AND_BACK, GL_FILL );
-  } else {
-
-    if ( node.idx == markednode ) {
-      glEnable ( GL_BLEND );
-      glDisable ( GL_LIGHTING );
-      glDisable ( GL_DEPTH_TEST );
-      glColor4f ( 0.3, 0.0, 1.0, 0.3 );
-      glBegin ( GL_QUADS );
-      switch ( node.axis ) {
-        case 0:
-          glVertex3f ( node.splitPos, node.bounds[2], node.bounds[4] );
-          glVertex3f ( node.splitPos, node.bounds[2], node.bounds[5] );
-          glVertex3f ( node.splitPos, node.bounds[3], node.bounds[5] );
-          glVertex3f ( node.splitPos, node.bounds[3], node.bounds[4] );
-          break;
-        case 1:
-          glVertex3f ( node.bounds[0], node.splitPos, node.bounds[4] );
-          glVertex3f ( node.bounds[1], node.splitPos, node.bounds[4] );
-          glVertex3f ( node.bounds[1], node.splitPos, node.bounds[5] );
-          glVertex3f ( node.bounds[0], node.splitPos, node.bounds[5] );
-          break;
-        case 2:
-          glVertex3f ( node.bounds[0], node.bounds[2], node.splitPos );
-          glVertex3f ( node.bounds[0], node.bounds[3], node.splitPos );
-          glVertex3f ( node.bounds[1], node.bounds[3], node.splitPos );
-          glVertex3f ( node.bounds[1], node.bounds[2], node.splitPos );
-          break;
-      }
-      glEnd();
-      glDisable ( GL_BLEND );
-      glEnable ( GL_LIGHTING );
-      glEnable ( GL_DEPTH_TEST );
-    }
-
-
-    drawContent ( * ( node.children[0] ), context, parentMarked );
-    drawContent ( * ( node.children[1] ), context, parentMarked );
-  }
-}
-
-void KdTree::draw ( GLWidget* context ) const {
-  drawContent ( *tree, context, false );
-}
-static float leftMax = 0.0;
-
-const Vector3D KdTree::drawTree ( const KdTreenode& node, unsigned int depth,  GLWidget* context ) const {
-  if ( node.axis == 3 ) {
-    if ( node.idx == markednode )
-      glColor3f ( 0.2, 0.2, 1.0 );
-    else
-      glColor3f ( 0.2, 0.2, 0.2 );
-    Vector3D pos ( leftMax += 0.06, 1.0 - depth * 0.04, 0.0 );
-    glPushName ( node.idx );
-    context->drawMinicube ( pos[0], pos[1], pos[2], 0.02 );
-    glPopName();
-    return pos;
-  }
-
-
-
-  Vector3D currLeft = drawTree ( * ( node.children[0] ), depth + 1,context );
-  Vector3D currRight = drawTree ( * ( node.children[1] ), depth + 1, context );
-  float xpos = ( currLeft[0] + currRight[0] ) * 0.5f;
-  if ( node.idx == markednode ) {
-    glColor3f ( 0.2, 0.2, 1.0 );
-  } else
-    glColor3f ( 0.2, 0.2, 0.2 );
-  Vector3D nodePos = Vector3D ( xpos , ( float ) ( 1.0 - depth * 0.04f ), ( float ) 0.0f );
-  glPushName ( node.idx );
-  context->drawMinicube ( nodePos[0], nodePos[1], nodePos[2], 0.02 );
-  glPopName();
-  glBegin ( GL_LINES );
-  glVertex3fv ( nodePos.value );
-  glVertex3fv ( currLeft.value );
-  glVertex3fv ( nodePos.value );
-  glVertex3fv ( currRight.value );
-  glEnd();
-  return nodePos;
-}
-
-void KdTree::drawSchema ( GLWidget* context ) const {
-  leftMax = 0.0;
-  glDisable ( GL_LIGHTING );
-  drawTree ( *tree, 0, context );
-}
-
-void KdTree::drawWithNames ( GLWidget* context ) const {
-  leftMax = 0.0;
-  glDisable ( GL_LIGHTING );
-  drawTree ( *tree, 0, context );
-}
-
-void KdTree::keyReleaseEvent ( QKeyEvent* event ) {
-  AccelerationStruct::keyReleaseEvent ( event );
-}
-
-void KdTree::select ( int selected ) {
-  markednode = selected;
-}
-#endif
-

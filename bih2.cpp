@@ -192,15 +192,15 @@ const RGBvalue BIH2::trace ( RadianceRay& r, unsigned int depth ) {
   return result;
 }
 
-
+const Intersection&  BIH2::getClosestIntersection(RadianceRay& r) {
+  traverseIterative ( r );
+  return r.getClosestIntersection();
+}
 void BIH2::construct() {
   const unsigned int objectCount = triangles.size();
   triangleIndices = ( unsigned int * ) malloc ( objectCount * sizeof ( unsigned int ) );
   for ( unsigned int i = 0 ; i < objectCount ; ++i )
     triangleIndices[i] = i;
-#ifdef VISUAL_DEBUGGER
-  nodes[0].idx = 0;
-#endif
   subdivide ( nodes.getNextFree(), 0, objectCount-1, bounds, 0 );
   std::cout << "construction done. Nodecount:" << nodes.size() << std::endl;
   std::cout << "consistency check: " << ( isConsistent() ?"true":"false" ) << std::endl;
@@ -209,9 +209,6 @@ void BIH2::construct() {
 void BIH2::subdivide ( BihNode &thisNode, unsigned int start, unsigned int end, const float *currBounds, unsigned int depth ) {
   assert ( end < triangles.size() );
   assert ( start <= end );
-#ifdef VISUAL_DEBUGGER
-  memcpy ( thisNode.bounds, currBounds, 6 * sizeof ( float ) );
-#endif
   // determine if we hit a termination condition
   if ( ( ( end - start ) < minimalPrimitiveCount )
        || ( depth > maxDepth ) ) {
@@ -297,8 +294,6 @@ void BIH2::subdivide ( BihNode &thisNode, unsigned int start, unsigned int end, 
       break;
   }
 
-
-
   if ( left == end + 1 )
     subdivide ( thisNode, start, end, leftBounds, depth );
   else if ( left == start )
@@ -319,10 +314,6 @@ void BIH2::subdivide ( BihNode &thisNode, unsigned int start, unsigned int end, 
     }
 
     thisNode.leftchild = nodes.getNextFreePair();
-#ifdef VISUAL_DEBUGGER
-    leftNode->idx = occupied - 2;
-    rightNode->idx = occupied - 1;
-#endif
     thisNode.planes[0] = leftMax;
     thisNode.planes[1] = rightMin;
 
@@ -332,173 +323,7 @@ void BIH2::subdivide ( BihNode &thisNode, unsigned int start, unsigned int end, 
   }
 }
 
-
-#ifdef VISUAL_DEBUGGER
-#include "glwidget.h"
-
-const void BIH2::drawTree ( const BihNode &node, bool drawLeaves, GLWidget *context ) const {
-  if ( node.type == 3 ) {
-    if ( drawLeaves || node.idx == markednode )
-      for ( int i = node.leafContent[0]; i <= node.leafContent[1]; ++i ) {
-        const Triangle& t = triangles[triangleIndices[i]];
-        glColor3f ( 1.0, 1.0, 1.0 );
-        glEnable ( GL_LIGHTING );
-        t.drawGL();
-        glDisable ( GL_LIGHTING );
-      }
-    return;
-  }
-
-  if ( node.idx == markednode ) {
-    glPolygonMode ( GL_FRONT_AND_BACK, GL_LINE );
-    float dims[3] = { node.bounds[1] - node.bounds[0], node.bounds[3] - node.bounds[2], node.bounds[5] - node.bounds[4] };
-    float center[3] = {node.bounds[0] + dims[0] * 0.5, node.bounds[2] + dims[1] * 0.5, node.bounds[4] + dims[2] * 0.5};
-    context->drawMinicube ( center[0], center[1], center[2], dims );
-    glPolygonMode ( GL_FRONT_AND_BACK, GL_FILL );
-  }
-
-  drawTree ( * ( node.left ), drawLeaves || node.idx == markednode, context );
-  drawTree ( * ( node.right ), drawLeaves || node.idx == markednode, context );
-  if ( node.idx == markednode ) {
-    glBegin ( GL_QUADS );
-    switch ( node.type ) {
-      case 0: glColor3f ( 0.3, 0.0, 0.0 );
-        glVertex3f ( node.planes[0], node.bounds[2], node.bounds[4] );
-        glVertex3f ( node.planes[0], node.bounds[2], node.bounds[5] );
-        glVertex3f ( node.planes[0], node.bounds[3], node.bounds[5] );
-        glVertex3f ( node.planes[0], node.bounds[3], node.bounds[4] );
-        glColor3f ( 0.0, 0.0, 0.3 );
-        glVertex3f ( node.planes[1], node.bounds[2], node.bounds[4] );
-        glVertex3f ( node.planes[1], node.bounds[2], node.bounds[5] );
-        glVertex3f ( node.planes[1], node.bounds[3], node.bounds[5] );
-        glVertex3f ( node.planes[1], node.bounds[3], node.bounds[4] );
-        break;
-      case 1: glColor3f ( 0.3, 0.0, 0.0 );
-        glVertex3f ( node.bounds[0], node.planes[1], node.bounds[4] );
-        glVertex3f ( node.bounds[1], node.planes[1], node.bounds[4] );
-        glVertex3f ( node.bounds[1], node.planes[1], node.bounds[5] );
-        glVertex3f ( node.bounds[0], node.planes[1], node.bounds[5] );
-        glColor3f ( 0.0, 0.0, 0.3 );
-        glVertex3f ( node.bounds[0], node.planes[0], node.bounds[4] );
-        glVertex3f ( node.bounds[1], node.planes[0], node.bounds[4] );
-        glVertex3f ( node.bounds[1], node.planes[0], node.bounds[5] );
-        glVertex3f ( node.bounds[0], node.planes[0], node.bounds[5] );
-        break;
-      case 2: glColor3f ( 0.3, 0.0, 0.0 );
-        glVertex3f ( node.bounds[0], node.bounds[2], node.planes[0] );
-        glVertex3f ( node.bounds[0], node.bounds[3], node.planes[0] );
-        glVertex3f ( node.bounds[1], node.bounds[3], node.planes[0] );
-        glVertex3f ( node.bounds[1], node.bounds[2], node.planes[0] );
-        glColor3f ( 0.0, 0.0, 0.3 );
-        glVertex3f ( node.bounds[0], node.bounds[2], node.planes[1] );
-        glVertex3f ( node.bounds[0], node.bounds[3], node.planes[1] );
-        glVertex3f ( node.bounds[1], node.bounds[3], node.planes[1] );
-        glVertex3f ( node.bounds[1], node.bounds[2], node.planes[1] );
-        break;
-    }
-    glEnd();
-  }
-}
-
-
-
-void BIH2::draw ( GLWidget* context ) const {
-  glEnable ( GL_LIGHTING );
-  glColor3f ( 1.0, 1.0, 1.0 );
-  drawTree ( nodes[0], false, context );
-}
-
-void BIH2::select ( int selected ) {
-  markednode = selected;
-  if ( selected < occupied ) {
-    BihNode *n = nodes + selected;
-    if ( n->type == 3 )
-      std::cout  << "Leaf: triangles:" << n->leafContent[0] << " .. " << n->leafContent[1] << std::endl;
-    else
-      std::cout  << "Split: left:" << n->planes[0] << "  right:" << n->planes[1];
-    switch ( n->type ) {
-      case 0: std::cout << " x-axis";break;
-      case 1: std::cout << " y-axis";break;
-      case 2: std::cout << " z-axis";break;
-    }
-    std::cout << std::endl;
-
-  } else {
-    std::cout  << "out of range";
-  }
-}
-
-static float leftMax = 0.0;
-const Vector3D BIH2::drawTreeWithNames ( const BihNode &node, int depth, GLWidget* context ) const {
-  if ( node.type == 3 ) {
-    glPushName ( node.idx );
-    Vector3D pos ( leftMax += 0.06, 1.0 - depth * 0.04, 0.0 );
-    context->drawMinicube ( pos[0], pos[1], pos[2], 0.02 );
-    glPopName();
-    return pos;
-  }
-
-  Vector3D currLeft = drawTreeWithNames ( * ( node.left ), depth + 1, context );
-  Vector3D currRight = drawTreeWithNames ( * ( node.right ), depth + 1, context );
-  float xpos = ( currLeft[0] + currRight[0] ) * 0.5f;
-  glPushName ( node.idx );
-  Vector3D nodePos = Vector3D ( xpos , ( float ) ( 1.0 - depth * 0.04f ), ( float ) 0.0f );
-  context->drawMinicube ( nodePos[0], nodePos[1], nodePos[2], 0.02 );
-  glPopName();
-  glBegin ( GL_LINES );
-  glVertex3fv ( nodePos.value );
-  glVertex3fv ( currLeft.value );
-  glVertex3fv ( nodePos.value );
-  glVertex3fv ( currRight.value );
-  glEnd();
-  return nodePos;
-}
-
-void BIH2::drawWithNames ( GLWidget* context ) const {
-  leftMax = 0.0;
-  drawTreeWithNames ( nodes[0], 0, context );
-}
-
-
-
-const Vector3D BIH2::drawSchemaR ( const BihNode &node, int depth, GLWidget* context ) const {
-  if ( node.type == 3 ) {
-    if ( node.idx == markednode )
-      glColor3f ( 0.2, 0.2, 1.0 );
-    else
-      glColor3f ( 0.2, 0.2, 0.2 );
-    Vector3D pos ( leftMax += 0.06, 1.0 - depth * 0.04, 0.0 );
-    context->drawMinicube ( pos[0], pos[1], pos[2], 0.02 );
-    return pos;
-  }
-
-  Vector3D currLeft = drawSchemaR ( * ( node.left ), depth + 1, context );
-  Vector3D currRight = drawSchemaR ( * ( node.right ), depth + 1, context );
-  float xpos = ( currLeft[0] + currRight[0] ) * 0.5f;
-  if ( node.idx == markednode ) {
-    glColor3f ( 0.2, 0.2, 1.0 );
-  } else
-    glColor3f ( 0.2, 0.2, 0.2 );
-  Vector3D nodePos = Vector3D ( xpos , ( float ) ( 1.0 - depth * 0.04f ), ( float ) 0.0f );
-  context->drawMinicube ( nodePos[0], nodePos[1], nodePos[2], 0.02 );
-  glBegin ( GL_LINES );
-  glVertex3fv ( nodePos.value );
-  glVertex3fv ( currLeft.value );
-  glVertex3fv ( nodePos.value );
-  glVertex3fv ( currRight.value );
-  glEnd();
-  return nodePos;
-}
-
-void BIH2::drawSchema ( GLWidget* context ) const {
-  leftMax = 0.0;
-  glDisable ( GL_LIGHTING );
-  drawSchemaR ( nodes[0], 0, context );
-}
-#endif
-
 bool BIH2::isConsistent() {
-
   return checkConsistency ( &nodes.get(0) );
 }
 

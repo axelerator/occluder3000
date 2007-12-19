@@ -14,9 +14,6 @@
 #include <vector>
 #include <simplevector.h>
 #include <accelerationstruct.h>
-#ifdef VISUAL_DEBUGGER    
-  #include "glwidget.h"
-#endif
 #include <set>
 /**
 	@author Axel Tetzlaff <axel.tetzlaff@gmx.de>
@@ -28,23 +25,13 @@ class KdTree : public AccelerationStruct {
     ~KdTree();
 
     virtual const RGBvalue trace ( RadianceRay& r, unsigned int depth );
+    virtual const Intersection& getClosestIntersection(RadianceRay& r);    
     virtual bool isBlocked(Ray& r);   
     virtual void construct();
-#ifdef VISUAL_DEBUGGER    
-    virtual void draw ( GLWidget* context ) const;
-    virtual void drawSchema ( GLWidget* context ) const;
-    virtual void drawWithNames ( GLWidget* context ) const;
-    virtual void keyReleaseEvent ( QKeyEvent* event );
-    virtual void select ( int selected );
-#endif
   private:
     struct KdTreenode  {
       unsigned char axis;
       float splitPos;
-#ifdef VISUAL_DEBUGGER
-      float bounds[6];
-      unsigned int idx;
-#endif
       union {
         KdTreenode *leftchild;
         SmallStaticArray<unsigned int> *prims;
@@ -68,13 +55,6 @@ class KdTree : public AccelerationStruct {
     bool checkConsRec(KdTreenode *node, std::set<unsigned int>& missing) const ;
     void traceall(KdTreenode &node, RadianceRay& r);
     SimpleVector<KdTreenode> nodes;
-#ifdef VISUAL_DEBUGGER    
-    void drawContent(const KdTreenode& node, GLWidget* context, bool parentMarked)  const;
-    const Vector3D drawTree(const KdTreenode& node, unsigned int depth, GLWidget* context ) const;
-    unsigned int nodeId;
-    unsigned int markednode ;
-#endif
-
 };
 
 #endif
