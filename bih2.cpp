@@ -15,15 +15,15 @@
 
 #define STACKDEPTH 512
 
-BIH2::BIH2 ( const Scene& scene )
+BIH::BIH ( const Scene& scene )
     : AccelerationStruct ( scene ), triangleIndices ( 0 ), minimalPrimitiveCount ( 3 ), maxDepth ( 64 ),
      markednode ( 0 ) {}
 
 
-BIH2::~BIH2() {
+BIH::~BIH() {
 }
 
-void BIH2::traverse ( const BihNode& node, RadianceRay& r, float tmin, float tmax, unsigned int depth ) {
+void BIH::traverse ( const BihNode& node, RadianceRay& r, float tmin, float tmax, unsigned int depth ) {
   if ( node.type == 3 ) {
     IntersectionResult ir;
     for ( unsigned int i = node.leafContent[0]; i <= node.leafContent[1]; ++i ) {
@@ -55,7 +55,7 @@ void BIH2::traverse ( const BihNode& node, RadianceRay& r, float tmin, float tma
   }
 }
 
-void BIH2::traverseIterative (RadianceRay& r ) {
+void BIH::traverseIterative (RadianceRay& r ) {
 
   Stack stack[STACKDEPTH];
   int stackpos = 1;
@@ -116,11 +116,11 @@ void BIH2::traverseIterative (RadianceRay& r ) {
 
 }
 
-bool BIH2::isBlocked(Ray& r) {
+bool BIH::isBlocked(Ray& r) {
   return traverseShadow(r);
 }
 
-bool BIH2::traverseShadow ( Ray& r ) {
+bool BIH::traverseShadow ( Ray& r ) {
   float tmin, tmax;
   Stack stack[STACKDEPTH];
   int stackpos = 1;
@@ -180,7 +180,7 @@ bool BIH2::traverseShadow ( Ray& r ) {
   return false;
 }
 
-const RGBvalue BIH2::trace ( RadianceRay& r, unsigned int depth ) {
+const RGBvalue BIH::trace ( RadianceRay& r, unsigned int depth ) {
   if ( !trimRaytoBounds( r ) )
     return RGBvalue( 0.0, 0.0, 0.0 );
 
@@ -192,11 +192,11 @@ const RGBvalue BIH2::trace ( RadianceRay& r, unsigned int depth ) {
   return result;
 }
 
-const Intersection&  BIH2::getClosestIntersection(RadianceRay& r) {
+const Intersection&  BIH::getClosestIntersection(RadianceRay& r) {
   traverseIterative ( r );
   return r.getClosestIntersection();
 }
-void BIH2::construct() {
+void BIH::construct() {
   const unsigned int objectCount = triangles.size();
   triangleIndices = ( unsigned int * ) malloc ( objectCount * sizeof ( unsigned int ) );
   for ( unsigned int i = 0 ; i < objectCount ; ++i )
@@ -206,7 +206,7 @@ void BIH2::construct() {
   std::cout << "consistency check: " << ( isConsistent() ?"true":"false" ) << std::endl;
 }
 
-void BIH2::subdivide ( BihNode &thisNode, unsigned int start, unsigned int end, const float *currBounds, unsigned int depth ) {
+void BIH::subdivide ( BihNode &thisNode, unsigned int start, unsigned int end, const float *currBounds, unsigned int depth ) {
   assert ( end < triangles.size() );
   assert ( start <= end );
   // determine if we hit a termination condition
@@ -323,11 +323,11 @@ void BIH2::subdivide ( BihNode &thisNode, unsigned int start, unsigned int end, 
   }
 }
 
-bool BIH2::isConsistent() {
+bool BIH::isConsistent() {
   return checkConsistency ( &nodes.get(0) );
 }
 
-bool BIH2::checkConsistency ( BihNode *node ) {
+bool BIH::checkConsistency ( BihNode *node ) {
   if ( node->type > 3 )
     return false;
 

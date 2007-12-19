@@ -295,17 +295,17 @@ int main ( int argc, char *argv[] ) {
   Light blue ( Vector3D ( 1.5, 1.5, 0.0 ), cblue );
   Light green ( Vector3D ( 0.0, 1.5, -1.5 ), cgreen );
   Light white ( Vector3D ( 0.0, 0.9, 0.0 ), cwhite );
-//   scene.addLight ( red );
-//    scene.addLight ( blue );
-//    scene.addLight ( green );
-   scene.addLight ( white );
+  scene.addLight ( red );
+   scene.addLight ( blue );
+   scene.addLight ( green );
+//    scene.addLight ( white );
 
 
   AccelerationStruct *structure = 0;
   switch ( accellStruc ) {
     case 0: structure = new Trianglelist ( scene );break;
     case 1: structure = new RegularGrid ( scene, 0.2 );break;
-    case 2: structure = new BIH2 ( scene );break;
+    case 2: structure = new BIH ( scene );break;
     case 3: structure = new KdTree ( scene );break;
   }
   scene.setGeometry(structure);
@@ -344,9 +344,9 @@ int main ( int argc, char *argv[] ) {
 //   Light& l = scene.getLight(0);
 //   l.setPosition( 2.0, 2.0, 2.0  );
   while (!profile && !done ) {
- cam.setPosition ( Vector3D ( sin(angle), 1.0, 1.5));
+//  cam.setPosition ( Vector3D ( sin(angle), 1.0, 1.5));
 
-//     cam.setPosition ( Vector3D ( sin ( angle ) * ( 2.3 ), 1.0 + sin ( angle ) *0.5, cos ( angle ) * ( 2.3 ) ) );
+    cam.setPosition ( Vector3D ( sin ( angle ) * ( 2.3 ), 1.0 + sin ( angle ) *0.5, cos ( angle ) * ( 2.3 ) ) );
 //     cam.setPosition ( Vector3D ( sin ( angle ) * ( 0.3 ), 1.0 + sin ( angle ) *0.2, cos ( angle ) * ( 2.1 ) ) );
 //     l.setPosition( sin ( angle*0.33 ) * ( 2.1 ), 4.0 , cos ( angle*0.33 ) * ( 2.1 ) );
     mem = (GLubyte *)glMapBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, GL_WRITE_ONLY);

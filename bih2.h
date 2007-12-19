@@ -17,11 +17,11 @@
 /**
 	@author Axel Tetzlaff <axel.tetzlaff@gmx.de>
 */
-class BIH2 : public AccelerationStruct {
+class BIH : public AccelerationStruct {
   public:
-    BIH2 ( const Scene& scene );
+    BIH ( const Scene& scene );
 
-    ~BIH2();
+    ~BIH();
 
     virtual const RGBvalue trace ( RadianceRay& r, unsigned int depth );
     virtual bool isBlocked(Ray& r);
