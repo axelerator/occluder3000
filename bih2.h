@@ -51,7 +51,6 @@ class BIH : public AccelerationStruct {
     typedef Stack Stack;
 
     void subdivide ( BihNode &thisNode, unsigned int start, unsigned int end, const float *currBounds, unsigned int depth );
-    void traverse ( const BihNode& node, RadianceRay& r, float tmin, float tmax, unsigned int depth );
     void traverseIterative ( RadianceRay& r );
     bool traverseShadow ( Ray& r );
     bool checkConsistency ( BihNode *node );

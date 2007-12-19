@@ -23,38 +23,6 @@ BIH::BIH ( const Scene& scene )
 BIH::~BIH() {
 }
 
-void BIH::traverse ( const BihNode& node, RadianceRay& r, float tmin, float tmax, unsigned int depth ) {
-  if ( node.type == 3 ) {
-    IntersectionResult ir;
-    for ( unsigned int i = node.leafContent[0]; i <= node.leafContent[1]; ++i ) {
-      Triangle& hitTriangle = triangles[triangleIndices[i]];
-      hitTriangle.intersect ( r );
-
-    }
-  } else {
-    // check ray direction to determine identity of 'near' and 'far' children
-    unsigned int near=0, far=1;
-    if ( r.getDirection().value [node.type] < 0.0f ) {
-      // near is right, far is left
-      near = 1; far = 0;
-    }
-
-    float tNear = ( node.planes[near] - r.getStart().value[node.type] ) * r.getInvDirection().value[node.type];
-    float tFar = ( node.planes[far] - r.getStart().value[node.type] )  * r.getInvDirection().value[node.type];
-    if ( tmin > tNear ) {
-      tmin = fmaxf ( tmin, tFar );
-      traverse ( node.leftchild[far], r, tmin, tmax, depth + 1 );
-    } else
-      if ( tmax  < tFar ) {
-        tmax = fminf ( tmax, tNear );
-        traverse ( node.leftchild[near], r, tmin, tmax, depth + 1 );
-      } else {
-        traverse ( node.leftchild[near], r, tmin, fminf ( tmax, tNear ) , depth + 1 );
-        traverse ( node.leftchild[far],  r, fmaxf ( tmin, tFar ), tmax, depth + 1 );
-      }
-  }
-}
-
 void BIH::traverseIterative (RadianceRay& r ) {
 
   Stack stack[STACKDEPTH];

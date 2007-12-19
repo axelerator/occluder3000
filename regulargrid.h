@@ -27,11 +27,11 @@ public:
     virtual ~RegularGrid();
     
     virtual const RGBvalue trace(RadianceRay& r, unsigned int depth = 0);
-    virtual bool isBlocked(Ray& r) {return false;}
+    virtual bool isBlocked(Ray& r);
     virtual void construct();
-//     virtual void drawGL();
+    virtual const Intersection& getClosestIntersection(RadianceRay& r);    
 private:
-    bool findIntersection(RadianceRay& r, IntersectionResult& ir);
+    const Intersection& findIntersection(RadianceRay& r);
     bool hasIntersection(Ray& r,  int ingoreTriangle);
 
     std::vector<int> **grid;
@@ -40,7 +40,6 @@ private:
     unsigned int cellCount[3];
     Box gridBox; // the boundingbox of the whole grid
     unsigned int slabSize; // amount of boxes in 'one x-y plane'
-
     
 };
 
