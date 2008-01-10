@@ -20,6 +20,7 @@ class Trianglelist : public AccelerationStruct
   public:
     Trianglelist(const Scene& scene);
     virtual const RGBvalue trace(RadianceRay& r, unsigned int depth = 0);
+    virtual bool trace ( RayPacket& rp, unsigned int depth = 5 );    
     virtual bool isBlocked(Ray& r);
     virtual ~Trianglelist();
     virtual void construct();

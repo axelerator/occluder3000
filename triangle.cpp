@@ -11,6 +11,7 @@
 //
 #include "triangle.h"
 #include "ray.h"
+#include "raypacket.h"
 #include "radianceray.h"
 Triangle::Triangle(const Vector3D& v1, const Vector3D& v2, const Vector3D& v3, const PhongMaterial& mat):
  u(v2-v1), v(v3-v1), nu(0.0, 0.0, 0.0), nv(0.0, 0.0, 0.0), center(v1 + 0.33*u + 0.33*v), mat(mat) {
@@ -116,6 +117,47 @@ float t,u,v;
   return true;
 }
 
+void Triangle::intersect(RayPacket& rp) const {
+  float t,u,v;
+   Vector3D tvec = rp.getOrigin() - p[0].value;
+   Vector3D qvec = tvec % this->u;
+
+   float inv_det;
+
+    for( unsigned int i = 0; i < rp.getRayCount() ; ++i ){
+
+      Vector3D pvec(rp.getDirection(i) % this->v);
+    
+      float det = this->u * pvec;
+    
+      if (det > -EPSILON && det < EPSILON)
+        continue;
+      inv_det = 1.0 / det;
+    
+    
+      u = (tvec * pvec) * inv_det;
+      if (u < 0.0 || u > 1.0)
+        continue;
+    
+      v = (rp.getDirection(i) * qvec) * inv_det;
+      if (v < 0.0 || u + v > 1.0)
+        continue;
+    
+      t = (this->v * qvec) * inv_det;
+      if ( t <= rp.getMin(i) || t > rp.getMax(i) )
+        continue;
+    
+      Intersection current(this, this->p[0] + (u * this->u) + (v * this->v), rp.getOrigin());
+      if ( (current < rp.getClosestIntersection(i)) ) {
+        current.e1 = this->u;
+        current.e2 = this->v;
+        current.u = u;
+        current.v = v;      
+        rp.getClosestIntersection(i) = current;
+      }
+    }
+}
+
 Vector3D Triangle::getNormalAt(const IntersectionResult& ir) const {
   return Vector3D(n[0] + (nu * ir.u) + (nv * ir.v));
 }
@@ -125,6 +167,10 @@ Vector3D Triangle::getNormalAt(const Intersection& ir) const {
 }
 
 const Vector3D& Triangle::getPoint(unsigned int i) const{
+  return p[i];
+}
+
+Vector3D& Triangle::getPoint(unsigned int i) {
   return p[i];
 }
 

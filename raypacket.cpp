@@ -1,5 +1,5 @@
 //
-// C++ Implementation: radianceray
+// C++ Implementation: raypacket
 //
 // Description:
 //
@@ -9,11 +9,43 @@
 // Copyright: See COPYING file that comes with this distribution
 //
 //
-#include "radianceray.h"
+#include "raypacket.h"
 
-Vector3D refractRay(const Vector3D& e, const Vector3D& n, double nFrom, double nTo) {
+RayPacket::RayPacket(const Scene& scene, const Vector3D& eye) : origin(eye), scene(scene) {}
+
+RayPacket::~RayPacket() {}
+
+bool RayPacket::set(const Vector3D& origin, const Vector3D& u, const Vector3D& v, const Vector3D& packetu ) {
+  unsigned int rayIdx = 0;
+  Vector3D lastd(origin);
+  const Vector3D d(lastd - this->origin); 
+  const bool sign[3] = { d.value[0] > 0, d.value[1] > 0, d.value[2] > 0 } ;
+  bool incoherent = false;
+  for ( unsigned int y = 0; y < PACKET_WIDTH; ++y ) {
+    for (unsigned int x = 0 ; x < PACKET_WIDTH; ++x ) {
+       tmin[rayIdx] = 0.0;
+       tmax[rayIdx] = UNENDLICH;
+       closestIntersection[rayIdx].reset();
+       direction[rayIdx] = lastd - this->origin;
+       for( unsigned int c = 0; c < 3 ; ++c )
+          if ( (direction[rayIdx].value[c] > 0) != sign[c] )
+            incoherent = true;
+       direction[rayIdx].normalize();
+       invDirection[rayIdx].value[0] = 1.0f / direction[rayIdx].value[0];
+       invDirection[rayIdx].value[1] = 1.0f / direction[rayIdx].value[1];
+       invDirection[rayIdx].value[2] = 1.0f / direction[rayIdx].value[2];
+       lastd += u;
+       rayIdx++;
+    }
+    lastd += v;
+    lastd -= packetu;
+  }  
+    return !incoherent;
+}
+
+Vector3D RayPacket::refractRay(const Vector3D& e, const Vector3D& n, float nFrom, float nTo) {
   float ne = e * n;
-  float reflection = 1.0 - pow((nFrom/nTo), 2.0) * (1.0 - pow(ne, 2.0));
+  float reflection = 1.0 - powf((nFrom/nTo), 2.0) * (1.0 - pow(ne, 2.0));
 
   if (reflection < 0.0) {
           Vector3D vpar( ne * n );
@@ -25,9 +57,10 @@ Vector3D refractRay(const Vector3D& e, const Vector3D& n, double nFrom, double n
   return Vector3D(((e - (n * ne)) * (nFrom/nTo) - (n * sqrt(reflection))).normal());
 }
 
-RadianceRay::~RadianceRay() {}
-
-   void RadianceRay::shade(RGBvalue& result, unsigned int depth) {
+void RayPacket::shade( unsigned int depth) {
+  for( unsigned int i = 0; i < getRayCount() ; ++i ){
+      const Intersection &closestIntersection = this->closestIntersection[i];
+      col[i].set(0.0f, 0.0f, 0.0f);
       if (closestIntersection.triangle != 0 ) {
         const Triangle &hitTriangle = * ( closestIntersection.triangle );
         Vector3D n ( hitTriangle.getNormalAt ( closestIntersection ) );
@@ -52,20 +85,20 @@ RadianceRay::~RadianceRay() {}
             }
           }
         }
-        if (depth > 0 && mat.reflection > 0.0) {
-          Vector3D vpar( ( n * direction ) * n );
-          Vector3D reflDir(direction - ( 2 * vpar ));
+        if (depth > 0 && mat.reflection > 0.0f) {
+          Vector3D vpar( ( n * direction[i] ) * n );
+          Vector3D reflDir(direction[i] - ( 2 * vpar ));
           reflDir.normalize();
           RadianceRay reflectedRay( closestIntersection.intersectionPoint, reflDir, scene);
           reflectedRay.setIgnore(&hitTriangle);
           RGBvalue reflected;
           reflected = scene.getGeometry().trace( reflectedRay, depth - 1);
-          result = RGBvalue::mix(reflected, direct, mat.reflection);
+          col[i] = RGBvalue::mix(reflected, direct, mat.reflection);
         }
         else
-          result = direct;
-        if ( depth > 0 && mat.alpha < 1.0 ) {
-          Vector3D refrDirIn = refractRay(direction, n, 1.0, 1.3);
+          col[i] = direct;
+        if ( depth > 0 && mat.alpha < 1.0f ) {
+          Vector3D refrDirIn(refractRay(direction[i], n, 1.0f, 1.3f));
           RadianceRay reflectedRay( closestIntersection.intersectionPoint, refrDirIn, scene);
           reflectedRay.setIgnore(closestIntersection.triangle);          
          
@@ -81,12 +114,10 @@ RadianceRay::~RadianceRay() {}
             r2.setIgnore(inters.triangle );
   
             RGBvalue refracted = scene.getGeometry().trace(r2, depth - 1 );          
-            result = RGBvalue::mix(result, refracted, mat.alpha);
+            col[i] = RGBvalue::mix(col[i], refracted, mat.alpha);
           }
         }
       }  
-    }    
-
-
-
+  }
+}
 

@@ -12,6 +12,7 @@
 #include "trianglelist.h"
 #include "debug.h"
 #include "radianceray.h"
+#include "raypacket.h"
 
 Trianglelist::Trianglelist ( const Scene& scene ) :
     AccelerationStruct ( scene ) {}
@@ -28,6 +29,16 @@ const RGBvalue Trianglelist::trace ( RadianceRay& rr, unsigned int depth ) {
   rr.shade( result, depth );
 
   return result;
+}
+
+bool Trianglelist::trace ( RayPacket& rp, unsigned int depth ) {
+  for ( std::vector<Triangle>::iterator it = triangles.begin(); it!=triangles.end(); ++it ) {
+    (*it).intersect( rp );
+  }
+
+  rp.shade( depth );
+
+  return true;
 }
 
 bool Trianglelist::isBlocked(Ray& r) {

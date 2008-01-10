@@ -17,6 +17,7 @@
 class Intersection;
 class RadianceRay;
 class Ray;
+class RayPacket;
 /**
   @author Axel Tetzlaff <axel.tetzlaff@gmx.de>
 */
@@ -27,10 +28,12 @@ class Triangle {
     Triangle& operator= (const Triangle& cpy) { memcpy(this, &cpy, sizeof(Triangle)); return *this; }
     bool intersect(const Ray& r) const;
     bool intersect(RadianceRay& r) const;
+    void intersect(RayPacket& rp) const;
     const PhongMaterial& getMaterial() const { return mat; }
     Vector3D getNormalAt(const IntersectionResult& ir) const;
     Vector3D getNormalAt(const Intersection& ir) const;
     const Vector3D& getPoint(unsigned int i) const;
+    Vector3D& getPoint(unsigned int i);
     const Vector3D& getCenter() const { return center; }
     ~Triangle();
   private:

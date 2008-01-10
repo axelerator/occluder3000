@@ -20,17 +20,20 @@
 template <class T>
 class SimpleVector {
   public:
-    SimpleVector(int initSize = 10) : reserved(initSize), idxInChunk(0), chunkCount(1), occupied(0), activeChunk(0) {
-      assert(initSize > 0);
-      chunks = (Chunk*) malloc( chunkCount * sizeof(Chunk) );
-      chunks[0].offset = 0;
-      chunks[0].data = (T*) malloc( initSize * sizeof(T) );
-      activeChunk = chunks;
+    SimpleVector(unsigned int initSize = 10) : reserved(initSize), idxInChunk(0), chunkCount(1), occupied(0), activeChunk(0) {
+      init(initSize);
     }
     ~SimpleVector() {
-      for (unsigned int i = 0; i < chunkCount; ++i)
-        free(chunks[i].data);
-      free(chunks);
+      freeAll();
+    }
+    void clear(unsigned int initSize = 10) {
+      freeAll();
+      reserved = initSize;
+      idxInChunk = 0;
+      chunkCount = 1;
+      occupied = 0;
+      activeChunk = 0;
+      init(initSize);
     }
     T& get ( unsigned int i ) const { 
       assert ( i < occupied ); 
@@ -72,6 +75,20 @@ class SimpleVector {
     
     unsigned int size() const {assert( occupied == activeChunk->offset + idxInChunk); return occupied;}
   private:
+    void freeAll() {
+      for (unsigned int i = 0; i < chunkCount; ++i)
+        free(chunks[i].data);
+      free(chunks);    
+    }
+    
+    void init(int unsigned initSize) {
+      assert(initSize > 0);
+      chunks = (Chunk*) malloc( chunkCount * sizeof(Chunk) );
+      chunks[0].offset = 0;
+      chunks[0].data = (T*) malloc( initSize * sizeof(T) );
+      activeChunk = chunks;     
+    }
+  
     unsigned int reserved;
     unsigned int idxInChunk;
     unsigned int chunkCount;

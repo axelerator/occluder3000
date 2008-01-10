@@ -11,6 +11,7 @@
 //
 #include "kdtree.h"
 #include "radianceray.h"
+#include "raypacket.h"
 
 #define MAX_PRIMCOUNT_PER_LEAF 3
 
@@ -26,36 +27,28 @@ KdTree::~KdTree() {
    deleteNode ( nodes.get(0) );
 }
 
-static int hc = 0;
 bool KdTree::traverseIterative ( RadianceRay& r ) {
   KdTreeStacknode stack[128];
   int stackpointer = 0;
   stack[0].node = 0;
   KdTreenode *node = &nodes.get(0);
   float d ;
+  unsigned int leftIsNear[] = { (r.getDirection().value[0] > 0.0) ? 1 : 0,
+    (r.getDirection().value[1] > 0.0) ? 1 : 0 ,(r.getDirection().value[2] > 0.0) ? 1 : 0 } ;
   
-    
   do {
     while( node->axis != 3 ) {
       d = ( node->splitPos - r.getStart().value[node->axis] ) * r.getInvDirection().value[node->axis] ;
       if ( d <= r.getMin() ) { // just far side
-        node = node->leftchild + ((r.getDirection().value[node->axis] > 0.0) ? 1 : 0 );
+        node = node->leftchild + leftIsNear[node->axis];
       } else if ( d >= r.getMax() ) { // just near side
-        node = node->leftchild + ((r.getDirection().value[node->axis] > 0.0) ? 0 : 1 ) ;
+        node = node->leftchild + 1 - leftIsNear[node->axis];
       } else {
-        if (r.getDirection().value[node->axis] < 0.0) {
-          stack[++stackpointer].node = node->leftchild;
-          stack[stackpointer].tMin = r.getMin();
-          stack[stackpointer].tMax = r.getMax();
-          node = node->leftchild + 1;
-          r.setMax(d);
-        } else {
-          stack[++stackpointer].node = node->leftchild + 1;
+          stack[++stackpointer].node = node->leftchild + leftIsNear[node->axis] ;
           stack[stackpointer].tMin = d;
           stack[stackpointer].tMax = r.getMax();
-          node = node->leftchild;
+          node = node->leftchild + 1 - leftIsNear[node->axis];
           r.setMax(d);
-      }
       }
     }
 
@@ -70,7 +63,6 @@ bool KdTree::traverseIterative ( RadianceRay& r ) {
     r.setMin(stack[stackpointer].tMin);
     r.setMax(stack[stackpointer].tMax);
     --stackpointer;
-
   } while ( node ) ;
 
   return false;
@@ -81,9 +73,8 @@ bool KdTree::traverseShadowIterative ( Ray& r ) {
   int stackpointer = 0;
   stack[0].node = 0;
   KdTreenode *node = &nodes.get(0);
-  float d ;
+  float d;    
   
-    
   do {
     while( node->axis != 3 ) {
       d = ( node->splitPos - r.getStart().value[node->axis] ) * r.getInvDirection().value[node->axis] ;
@@ -93,7 +84,7 @@ bool KdTree::traverseShadowIterative ( Ray& r ) {
         node = node->leftchild + ((r.getDirection().value[node->axis] > 0.0) ? 0 : 1 ) ;
       } else {
         if (r.getDirection().value[node->axis] < 0.0) {
-          stack[++stackpointer].node = node->leftchild;
+          stack[++stackpointer].node = node->leftchild ;
           stack[stackpointer].tMin = r.getMin();
           stack[stackpointer].tMax = r.getMax();
           node = node->leftchild + 1;
@@ -125,32 +116,104 @@ bool KdTree::traverseShadowIterative ( Ray& r ) {
   return false;
 }
 
-void KdTree::traceall(KdTreenode &node, RadianceRay& r) {
-  if ( node.axis == 3 ) {
-        for (unsigned char i = 0; i < node.prims->size ; ++i ) {
-      const Triangle& tri = triangles[node.prims->data[i]];
-      tri.intersect ( r );
-      ++hc;
-    }
-  } else {
-    float d = ( node.splitPos - r.getStart().value[node.axis] ) * r.getInvDirection().value[node.axis] ;  
-    KdTreenode &near = node.leftchild[(r.getDirection().value[node.axis] > 0.0) ? 0 : 1];
-    KdTreenode &far =  node.leftchild[(r.getDirection().value[node.axis] > 0.0) ? 1 : 0];
-    
-    float tMax = r.getMax();
-    float tMin = r.getMin();
-    if ( d >= tMin ) {
-      r.setMax(d);
-      traceall(near, r);
-    }
+void KdTree::traversePacket ( RayPacket& rp ) {
+  KdTreeStacknode stack[128];
+  int stackpointer = 0;
+  stack[0].node = 0;
+  KdTreenode *node = &nodes.get(0);
+  float d, dmin, dmax, splitdist = 0.0 ;
+  static unsigned int i, idx[] = { 0, rp.getPacketWidth()-1, rp.getRayCount() - rp.getPacketWidth(), rp.getRayCount()-1 };
+  float tmax = fmaxf(fmaxf(fmaxf( rp.getMax(idx[0]), rp.getMax(idx[1])), rp.getMax(idx[2])),rp.getMax(idx[3]));
+  float tmin = fminf(fminf(fminf( rp.getMin(idx[0]), rp.getMin(idx[1])), rp.getMin(idx[2])),rp.getMin(idx[3]));
+  bool inNearNode = false;
+  unsigned int leftIsNear = (rp.getDirection(0).value[node->axis] > 0.0) ? 1 : 0 ;
+  bool needFront;
+  bool needBack;
+  do {
+    while( node->axis != 3 ) {
+      splitdist = node->splitPos - rp.getOrigin().value[node->axis];
+      dmin = dmax = splitdist * rp.getInvDirection(0).value[node->axis];
+      for(i = 1 ; i < rp.getRayCount() ; ++i){
+        d = splitdist * rp.getInvDirection(i).value[node->axis];
+        if ( d < dmin)
+          dmin = d;
+        else if (d > dmax)
+          dmax = d;
+      }
+      
+     needFront = false;
+     needBack = false;
      
-    if (d <= tMax && !r.didHitSomething() ) {
-      r.setMax(tMax);
-      r.setMin(d);
-      traceall(far, r);
+     for( i = 0 ; i < rp.getRayCount() ; ++i ){
+       d = splitdist * rp.getInvDirection(i).value[node->axis];
+       needBack |= ( d > tmin );
+       needFront |= (d < tmax);
+     }
+
+      
+     if ( needBack && needFront) {
+          inNearNode = true;
+          stack[++stackpointer].node = node->leftchild + ( 1 - leftIsNear);
+          stack[stackpointer].tMin = dmax;
+          stack[stackpointer].tMax = tmax;
+          node = node->leftchild + leftIsNear;
+          tmax = dmin;
+     } else if ( needBack ) { // just far side
+        node = node->leftchild + leftIsNear;
+        tmin = dmin;
+     } else { // just near side
+        tmax = dmax;
+        node = node->leftchild + (1 - leftIsNear) ;
+      }
+     
+/*      if ( dmax <= tmin ) { // just far side
+        node = node->leftchild + leftIsNear;
+        inNearNode = false;
+      } else if ( dmin >= tmax ) { // just near side
+        inNearNode = true;
+        node = node->leftchild + (1 - leftIsNear) ;
+      } else {
+          inNearNode = true;
+          stack[++stackpointer].node = node->leftchild + ( 1 - leftIsNear);
+          stack[stackpointer].tMin = dmax;
+          stack[stackpointer].tMax = tmax;
+          node = node->leftchild + leftIsNear;
+          tmax = dmin;
+     }*/     
     }
-    r.setMin(tMin);
-  }
+    // calc precise tmax for all rays in packet
+//     if ( inNearNode ) 
+//       for (i = 0 ; i < rp.getPacketWidth() ; ++i ) {
+//         rp.setMax(i, splitdist * rp.getInvDirection(i).value[node->axis] );
+//         rp.setMin(i, tmin );
+//         }
+//     else
+//       for (i = 0 ; i < rp.getPacketWidth() ; ++i ) {
+//         rp.setMax(i, tmax );
+//         rp.setMin(i, splitdist * rp.getInvDirection(i).value[node->axis] );
+//         }
+   
+
+    for ( i = 0; i < node->prims->size ; ++i ) {
+      const Triangle& tri = triangles[node->prims->data[i]];
+      tri.intersect ( rp );
+    }
+    
+    // pop stack
+    node = stack[stackpointer].node;
+    tmin = stack[stackpointer].tMin;
+    tmax = stack[stackpointer].tMax;
+    inNearNode = false;
+    --stackpointer;
+  } while ( node ) ;
+}
+
+bool KdTree::trace ( RayPacket& rp, unsigned int depth ) {
+  if ( !trimRaytoBounds(rp) )
+    return false; // full miss
+   traversePacket ( rp );  
+
+  return true;
 }
 
 bool KdTree::isBlocked(Ray& r) {
@@ -175,13 +238,14 @@ const RGBvalue KdTree::trace ( RadianceRay& r, unsigned int depth ) {
 }
 
 void KdTree::construct() {
+  nodes.clear();
   unsigned int triCount = triangles.size();
   std::vector<unsigned int> prims;
   prims.reserve ( triCount );
   for ( unsigned int i = 0; i < triCount; ++i )
     prims.push_back ( i );
   subdivide ( nodes.getNextFree(), prims, bounds, 20 );
-  std::cout << "Nodes: " << nodes.size() << std::endl;
+//   std::cout << "Nodes: " << nodes.size() << std::endl;
   assert( checkConsitency() );
 }
 

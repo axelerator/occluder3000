@@ -21,6 +21,7 @@
 //#define DEBUG_ENABLE
 #include "bih2.h"
 #include "kdtree.h"
+#include "raypacket.h"
 
 class Tile {
   public:
@@ -178,7 +179,8 @@ void renderr ( AccelerationStruct *tl, const Camera& cam, GLubyte *mem ) {
 //               offset += 3;
 //               continue;
 //               }
-            
+            if ( x == 147 && y == 116)
+            rgb = 0;
             rgb = tl->trace ( currentRay ).getRGB();
             mem[offset++] = ( GLubyte ) ( rgb[0]*255 );
             mem[offset++] = ( GLubyte ) ( rgb[1]*255 );
@@ -190,12 +192,88 @@ void renderr ( AccelerationStruct *tl, const Camera& cam, GLubyte *mem ) {
 
 }
 
+void renderrPackets ( AccelerationStruct *tl, const Camera& cam, GLubyte *mem ) {
+  unsigned int resolution[2] = { cam.resolution[0],  cam.resolution[1]};
+  if ( result == 0 )
+    result = new unsigned char[resolution[0]*resolution[1]*3];
+
+  Vector3D u ( cam.u );
+  Vector3D v ( cam.v );
+  Vector3D projOrigin ( cam.projOrigin );
+  Vector3D position ( cam.position );
+
+  const Vector3D projPlaneU( u / resolution[0] );
+  const Vector3D projPlaneV( v / resolution[1] );
+  
+  unsigned int packetsX = resolution[0] / RayPacket::getPacketWidth();
+  unsigned int packetsY = resolution[1] / RayPacket::getPacketWidth();
+
+  const Vector3D packetU( u / packetsX );
+  const Vector3D packetV( v / packetsY);
+
+  Vector3D projectPoint(projOrigin);
+  Vector3D currentU;
+  Vector3D currentV;
+
+  // Calculate the color for every single pixel
+  RayPacket packet(scene, cam.position);
+  const float *rgb;
+  unsigned int offset = 0;
+  const int stride = 3 * resolution[0];
+  unsigned int packetIdx;
+  memset(mem, 0, sizeof(GLubyte) * cam.resolution[0] * cam.resolution[1]);
+  // for tracing incoherent packets with single rays
+  RadianceRay singleRay(scene);
+    for ( unsigned int y = 0 ; y < packetsY ; ++y ) {
+        offset = y * packet.getPacketWidth() * stride;        
+        for ( unsigned int x = 0; x < packetsX; ++x ) {
+            if ( ! packet.set( projOrigin + y * packetV + x * packetU, projPlaneU, projPlaneV, packetU ) ) {
+              packetIdx = 0; // For incoherent packets, trace single rays
+              for( unsigned int pv = 0; pv < packet.getPacketWidth() ; ++pv ){
+                for( unsigned int pu = 0; pu < packet.getPacketWidth() ; ++pu ){
+                  singleRay.setDirection ( packet.getDirection(packetIdx++));
+                  singleRay.setStart ( packet.getOrigin() );
+                  singleRay.setMin(0.0f);
+                  singleRay.setMax(UNENDLICH);
+                  singleRay.getClosestIntersection().reset();
+                  offset = ( y * packet.getPacketWidth()  + pv) * stride  + ( x * packet.getPacketWidth() + pu ) * 3;
+                  rgb = tl->trace( singleRay ).getRGB();
+                  mem[offset++] = ( GLubyte ) ( rgb[0]*255 );
+                  mem[offset++] = ( GLubyte ) ( rgb[1]*255 );
+                  mem[offset++] = ( GLubyte ) ( rgb[2]*255 );
+                }
+              }            
+            } else {
+            if ( tl->trace(packet) ) {
+              packet.shade();
+              packetIdx = 0;
+              for( unsigned int pv = 0; pv < packet.getPacketWidth() ; ++pv ){
+                offset = ( y * packet.getPacketWidth()  + pv) * stride  +  x * packet.getPacketWidth() * 3;
+                for( unsigned int pu = 0; pu < packet.getPacketWidth() ; ++pu ){
+                  rgb = packet.getColor(packetIdx++).getRGB();
+                  mem[offset++] = ( GLubyte ) ( rgb[0]*255 );
+                  mem[offset++] = ( GLubyte ) ( rgb[1]*255 );
+                  mem[offset++] = ( GLubyte ) ( rgb[2]*255 );
+                }
+              }
+            }
+          }
+        }
+    }
+}
+
 void printUsage() {
   std::cout << "Usage: pmrrt OBJ-FILE [OPTIONS]\n\n";
   std::cout << "\tOptions:\n\t\t -p, --profile\t\t render only one frame for profiling" << std::endl;
   std::cout << "\t\t\t -r, --resolution <width>x<height>\t\t render with the given screen resolution" << std::endl;
   std::cout << "\t\t\t -as={grid,bih}\t\t Use regular grid or bih-tree to acellerate rendering" << std::endl;
 
+}
+
+double gettime() {
+  struct timeval t;
+  gettimeofday(&t,0);
+  return t.tv_sec+t.tv_usec/1000000.0;
 }
 
 // Entry point
@@ -325,14 +403,14 @@ int main ( int argc, char *argv[] ) {
   std::cout << "Triangles in scene: " << structure->getTriangleCount() << std::endl;
   std::cout << "constructing acceleration structure" << std::endl;
 
-  structure->construct();
+
 
   std::cout << " done \n";
   Vector3D position ( -0.5001, 0.25001, 4.1 );
-  Vector3D target ( 0.5 );
+  Vector3D target ( 0.0, 0.5, 0.0 );
   Vector3D lookUp ( 0.0, 1.0, 0.0 );
 
-  Camera cam ( position, target, lookUp, 1.0, width, height );
+  Camera cam ( position, target, lookUp, 0.9, width, height );
 
   std::cout << "start rendering..." << std::endl;
   float angle = -2.0;
@@ -343,14 +421,33 @@ int main ( int argc, char *argv[] ) {
   
 //   Light& l = scene.getLight(0);
 //   l.setPosition( 2.0, 2.0, 2.0  );
+  unsigned int tids[10];
+  float tvel[10];
+  for (unsigned int i = 0; i < 10; ++i) {
+    tids[i] = 141 + (int) (120.0 * (rand() / (RAND_MAX + 1.0)));
+    tvel[i] = (rand() / (RAND_MAX + 1.0)) * 0.04;
+  }
+  double start, total;
   while (!profile && !done ) {
+//   for (unsigned int i = 0; i < 10; ++i) {
+//     Triangle& rt = structure->getTriangle(tids[i]);
+//     rt.getPoint(0).value[1] += tvel[i]; 
+//     if ( rt.getPoint(0).value[1] > 1.0) {
+//     tids[i] = 141 + (int) (120.0 * (rand() / (RAND_MAX + 1.0)));
+//     tvel[i] = (rand() / (RAND_MAX + 1.0)) * 0.04;    
+//     }
+//     
+//   }
+  start = gettime();
+  structure->construct();
 //  cam.setPosition ( Vector3D ( sin(angle), 1.0, 1.5));
 
     cam.setPosition ( Vector3D ( sin ( angle ) * ( 2.3 ), 1.0 + sin ( angle ) *0.5, cos ( angle ) * ( 2.3 ) ) );
 //     cam.setPosition ( Vector3D ( sin ( angle ) * ( 0.3 ), 1.0 + sin ( angle ) *0.2, cos ( angle ) * ( 2.1 ) ) );
 //     l.setPosition( sin ( angle*0.33 ) * ( 2.1 ), 4.0 , cos ( angle*0.33 ) * ( 2.1 ) );
     mem = (GLubyte *)glMapBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, GL_WRITE_ONLY);
-    renderr ( structure, cam, mem );
+    renderrPackets( structure, cam, mem );
+//     renderr( structure, cam, mem );
     glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER_ARB);
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0,0, width, height, GL_RGB, GL_UNSIGNED_BYTE, 0); 
     
@@ -363,15 +460,17 @@ int main ( int argc, char *argv[] ) {
     glEnd();
     SDL_GL_SwapBuffers();
     userEvents();
-    angle += 0.1;
+    angle += 0.03;
     ++frame;
+    total = gettime() - start;
+    std::cout << "total : " << total << std::endl;
   }
   if (profile) {
     cam.setPosition ( Vector3D ( sin ( angle ) * ( 2.3 ), 1.0 + sin ( angle ) *0.5, cos ( angle ) * ( 2.3 ) ) );
 //     cam.setPosition ( Vector3D ( sin ( angle ) * ( 0.3 ), 1.0 + sin ( angle ) *0.2, cos ( angle ) * ( 2.1 ) ) );
 //     l.setPosition( sin ( angle*0.33 ) * ( 2.1 ), 4.0 , cos ( angle*0.33 ) * ( 2.1 ) );
     mem = (GLubyte *)glMapBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, GL_WRITE_ONLY);
-    renderr ( structure, cam, mem );
+    renderrPackets( structure, cam, mem );
     glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER_ARB);
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0,0, width, height, GL_RGB, GL_UNSIGNED_BYTE, 0); 
     

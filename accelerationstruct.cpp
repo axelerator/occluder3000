@@ -10,7 +10,7 @@
 //
 //
 #include "accelerationstruct.h"
-
+#include "raypacket.h"
 
 AccelerationStruct::AccelerationStruct(const Scene& scene) : scene ( scene )  {}
 
@@ -78,3 +78,57 @@ bool AccelerationStruct::trimRaytoBounds(Ray &r) {
   return true;
 }
 
+/**
+  All rays in packet are expected to have directions with
+  same sign in all components
+  @return false if whole packet misses scene
+**/
+bool AccelerationStruct::trimRaytoBounds(RayPacket &raypacket) {
+
+  float t0 = 0.0;
+  float t1 = UNENDLICH;
+  float tmin, tmax, tymin, tymax, tzmin, tzmax;
+  int sign[3]; // for all rays in packet the same
+  sign[0] = ( raypacket.getInvDirection(0).value[0] < 0 );
+  sign[1] = ( raypacket.getInvDirection(0).value[1] < 0 );
+  sign[2] = ( raypacket.getInvDirection(0).value[2] < 0 );
+  Vector3D parameters[2] = {Vector3D ( bounds[0], bounds[2], bounds[4] ),
+                            Vector3D ( bounds[1], bounds[3], bounds[5] ) };
+  const Vector3D& origin = raypacket.getOrigin();
+  unsigned int anyHit = 0;
+  for ( unsigned int i = 0; i < raypacket.getRayCount(); ++i) {
+    const Vector3D &inv_direction = raypacket.getInvDirection(i);
+    
+    tmin = ( parameters[sign[0]].value[0] - origin.value[0] ) * inv_direction.value[0];
+    tmax = ( parameters[1-sign[0]].value[0] - origin.value[0] ) * inv_direction.value[0];
+    tymin = ( parameters[sign[1]].value[1] - origin.value[1] ) * inv_direction.value[1];
+    tymax = ( parameters[1-sign[1]].value[1] - origin.value[1] ) * inv_direction.value[1];
+    if ( ( tmin > tymax ) || ( tymin > tmax ) ) {
+      raypacket.setMiss(i, true);
+      continue;
+    }
+    if ( tymin > tmin )
+      tmin = tymin;
+    if ( tymax < tmax )
+      tmax = tymax;
+    tzmin = ( parameters[sign[2]].value[2] - origin.value[2] ) * inv_direction.value[2];
+    tzmax = ( parameters[1-sign[2]].value[2] - origin.value[2] ) * inv_direction.value[2];
+    if ( ( tmin > tzmax ) || ( tzmin > tmax ) ) {
+      raypacket.setMiss(i, true);
+      continue;
+    }
+    if ( tzmin > tmin )
+      tmin = tzmin;
+    if ( tzmax < tmax )
+      tmax = tzmax;
+    if ( ( tmin >= t1 ) || ( tmax <= t0 ) )  {
+      raypacket.setMiss(i, true);
+      continue;
+    }
+    raypacket.setMin(i, tmin);
+    raypacket.setMax(i, tmax);
+    raypacket.setMiss(i, false);
+    ++anyHit;
+  }
+  return anyHit;
+}

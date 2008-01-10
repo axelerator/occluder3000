@@ -13,7 +13,7 @@
 #define BIH2_H
 #include "accelerationstruct.h"
 #include "simplevector.h"
-
+class RayPacket;
 /**
 	@author Axel Tetzlaff <axel.tetzlaff@gmx.de>
 */
@@ -24,10 +24,10 @@ class BIH : public AccelerationStruct {
     ~BIH();
 
     virtual const RGBvalue trace ( RadianceRay& r, unsigned int depth );
+    virtual bool trace ( RayPacket& rp, unsigned int depth = 5 );
     virtual bool isBlocked(Ray& r);
     virtual void construct();
     virtual const Intersection& getClosestIntersection(RadianceRay& r);
-
 
     bool isConsistent();
   private:
@@ -53,6 +53,8 @@ class BIH : public AccelerationStruct {
     void subdivide ( BihNode &thisNode, unsigned int start, unsigned int end, const float *currBounds, unsigned int depth );
     void traverseIterative ( RadianceRay& r );
     bool traverseShadow ( Ray& r );
+    void recurse(RayPacket& rp);
+    
     bool checkConsistency ( BihNode *node );
 
     unsigned int *triangleIndices;
