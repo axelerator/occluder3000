@@ -31,9 +31,7 @@ public:
     void addMaterial(const std::string& name, const PhongMaterial& mat) {
       material.insert(std::pair<std::string, PhongMaterial>(name, mat));
     }
-    const PhongMaterial& getMaterial(std::string name) {
-      return material[name];
-    }
+    const PhongMaterial& getMaterial(const std::string& name) ;
     void addLight(const Light& l);
     const std::vector<Light> &getLights() const { return lights; }
     Light &getLight(int i) { return lights[i]; }
@@ -44,6 +42,7 @@ private:
   std::vector<Light> lights;
   AccelerationStruct *geometry;
   std::map<std::string, PhongMaterial> material;
+  PhongMaterial defaultMaterial;
 };
 
 #endif

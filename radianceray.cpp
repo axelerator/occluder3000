@@ -42,9 +42,9 @@ RadianceRay::~RadianceRay() {}
           Vector3D l ( light.getPosition() -  closestIntersection.intersectionPoint );
           tmax = l.normalizeRL();
           
-          Ray intersectToLigth ( closestIntersection.intersectionPoint, l, tmax, 0.0f, &hitTriangle );
           float dif = n * l;
           if ( dif > 0.0 ) {
+            Ray intersectToLigth ( closestIntersection.intersectionPoint, l, tmax, 0.0f, &hitTriangle );
             if ( !scene.getGeometry().isBlocked(intersectToLigth) ) { //shadowtest
               direct.add ( dif * mat.diffuse[0] * light.getColor().getRGB() [0],
                            dif * mat.diffuse[1] * light.getColor().getRGB() [1],

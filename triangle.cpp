@@ -13,18 +13,17 @@
 #include "ray.h"
 #include "raypacket.h"
 #include "radianceray.h"
-Triangle::Triangle(const Vector3D& v1, const Vector3D& v2, const Vector3D& v3, const PhongMaterial& mat):
- u(v2-v1), v(v3-v1), nu(0.0, 0.0, 0.0), nv(0.0, 0.0, 0.0), center(v1 + 0.33*u + 0.33*v), mat(mat) {
+Triangle::Triangle(const Vector3D& v1, const Vector3D& v2, const Vector3D& v3, const PhongMaterial& mat): normal((u%v).normal()), u(v2-v1), v(v3-v1), nu(0.0, 0.0, 0.0), nv(0.0, 0.0, 0.0), 
+center(v1 + 0.33*u + 0.33*v), mat(mat) {
   p[0] = v1;
   p[1] = v2;
   p[2] = v3;
-  Vector3D normal((u%v).normal());
   n[0] = normal;
   n[1] = normal;
-  n[2] = normal;  
+  n[2] = normal;
 }
 
-Triangle::Triangle(const Vector3D& v1, const Vector3D& v2, const Vector3D& v3, const Vector3D& vn1, const Vector3D& vn2, const Vector3D& vn3, const PhongMaterial& mat):
+Triangle::Triangle(const Vector3D& v1, const Vector3D& v2, const Vector3D& v3, const Vector3D& vn1, const Vector3D& vn2, const Vector3D& vn3, const PhongMaterial& mat):normal((u%v).normal()),
  u(v2-v1), v(v3-v1), nu(vn2-vn1), nv(vn3-vn1), center(v1 + 0.33*u + 0.33*v), mat(mat) {
   p[0] = v1;
   p[1] = v2;
@@ -36,6 +35,7 @@ Triangle::Triangle(const Vector3D& v1, const Vector3D& v2, const Vector3D& v3, c
   n[1].normalize();
   n[2].normalize();
 }
+
 
 #define CROSS(dest,v1,v2) \
           dest[0]=v1[1]*v2[2]-v1[2]*v2[1]; \
@@ -75,8 +75,10 @@ float t,u,v;
 
    t = (this->v * qvec) * inv_det;
    return ( (r.getIgnored() != this) && (t > r.getMin()) && (t < r.getMax()) );
-
 }
+
+
+
 
 bool Triangle::intersect(RadianceRay& r) const {
 float t,u,v;
@@ -91,13 +93,13 @@ float t,u,v;
      return 0;
    inv_det = 1.0 / det;
 
-   Vector3D tvec = r.getStart() - p[0].value;
+   Vector3D tvec(r.getStart() - p[0].value);
 
    u = (tvec * pvec) * inv_det;
    if (u < 0.0 || u > 1.0)
      return 0;
 
-   Vector3D qvec = tvec % this->u;
+   Vector3D qvec( tvec % this->u );
    v = (r.getDirection() * qvec) * inv_det;
    if (v < 0.0 || u + v > 1.0)
      return 0;
@@ -117,16 +119,18 @@ float t,u,v;
   return true;
 }
 
-void Triangle::intersect(RayPacket& rp) const {
-  float t,u,v;
-   Vector3D tvec = rp.getOrigin() - p[0].value;
-   Vector3D qvec = tvec % this->u;
+void Triangle::intersect(RayPacket& rp, unsigned int idx) const {
+//   float t,u,v;
+//    Vector3D tvec(rp.origin - p[0].value);
+//    Vector3D qvec(tvec % this->u);
+// 
+//    float inv_det;
+    for( unsigned int i = 0; i < rp.getR4Count() ; ++i ){
+       intersect( rp.r4[i], idx);
+       }
+       
 
-   float inv_det;
-
-    for( unsigned int i = 0; i < rp.getRayCount() ; ++i ){
-
-      Vector3D pvec(rp.getDirection(i) % this->v);
+/*      Vector3D pvec(rp.getDirection(i) % this->v);
     
       float det = this->u * pvec;
     
@@ -154,8 +158,59 @@ void Triangle::intersect(RayPacket& rp) const {
         current.u = u;
         current.v = v;      
         rp.getClosestIntersection(i) = current;
-      }
-    }
+      }*/
+//     }
+}
+
+bool Triangle::intersect(Ray4& rp, unsigned int idx) const {
+
+   const SSEVec3D p04(p[0]);
+   const SSEVec3D tvec(rp.origin - p04);
+   const SSEVec3D qvec(tvec % this->u);
+   const SSEVec3D v4(this->v);
+   const SSEVec3D u4(this->u);
+   const SSEVec3D pvec(rp.direction % v4);
+   const SSE4 det(u4 * pvec);
+   
+  __m128 hitMask = _mm_or_ps(_mm_cmplt_ps(det.v.sse, EPSILON4INV ), _mm_cmplt_ps(EPSILON4, det.v.sse ));
+  if ( ! ( _mm_movemask_ps(hitMask) ))
+    return false;
+    
+  const SSE4 inv_det( _mm_div_ps(ONE , det.v.sse) );
+  const SSE4 u( _mm_mul_ps( tvec * pvec , inv_det.v.sse ) );
+
+  hitMask = _mm_and_ps(hitMask, _mm_and_ps(_mm_cmpgt_ps(u.v.sse, _mm_setzero_ps() ), _mm_cmplt_ps(u.v.sse, ONE )));
+  if ( ! ( _mm_movemask_ps(hitMask) ))
+    return false;  
+
+   __m128 v = _mm_mul_ps( rp.direction * qvec, inv_det.v.sse );
+  hitMask = _mm_and_ps(hitMask, _mm_and_ps(_mm_cmpgt_ps(v, _mm_setzero_ps() ), 
+  _mm_cmplt_ps(_mm_add_ps(u.v.sse, v), ONE )));
+  if ( ! ( _mm_movemask_ps(hitMask) ))
+    return false;  
+  
+  const __m128 t = _mm_mul_ps( (v4 * qvec), inv_det.v.sse);
+  hitMask = _mm_and_ps(hitMask, _mm_and_ps(_mm_cmpgt_ps(t, rp.tmin.v.sse ), _mm_cmpgt_ps(rp.tmax.v.sse, t )));
+  if ( ! ( _mm_movemask_ps(hitMask) ))
+    return false;  
+     
+  hitMask = _mm_and_ps(_mm_cmplt_ps(t, rp.t.v.sse), hitMask);
+  
+  rp.mask |= _mm_movemask_ps(hitMask);
+  
+  // update u,v,t for closer hits
+  static __m128 one;
+  memset(&one, 0xff, sizeof(__m128));  
+  const __m128 inv_closerhits = _mm_andnot_ps(hitMask, one);
+  rp.u = _mm_or_ps(_mm_and_ps(u.v.sse, hitMask), _mm_and_ps(rp.u.v.sse, inv_closerhits));
+  rp.v = _mm_or_ps(_mm_and_ps(v, hitMask), _mm_and_ps(rp.v.v.sse, inv_closerhits));
+  rp.t = _mm_or_ps(_mm_and_ps(t, hitMask), _mm_and_ps(rp.t.v.sse, inv_closerhits));
+  
+  Intfloat triidx;
+  triidx.i = idx;
+  __m128 idxf = _mm_set1_ps(triidx.f);
+  rp.hitTriangle = _mm_or_ps(_mm_and_ps(idxf, hitMask) , _mm_and_ps(rp.hitTriangle.v.sse, inv_closerhits)); 
+  return true;
 }
 
 Vector3D Triangle::getNormalAt(const IntersectionResult& ir) const {
@@ -176,4 +231,5 @@ Vector3D& Triangle::getPoint(unsigned int i) {
 
 Triangle::~Triangle()
 {}
+
 

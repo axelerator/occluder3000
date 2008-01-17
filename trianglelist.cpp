@@ -32,13 +32,18 @@ const RGBvalue Trianglelist::trace ( RadianceRay& rr, unsigned int depth ) {
 }
 
 bool Trianglelist::trace ( RayPacket& rp, unsigned int depth ) {
+  unsigned int i = 0;
   for ( std::vector<Triangle>::iterator it = triangles.begin(); it!=triangles.end(); ++it ) {
-    (*it).intersect( rp );
+    (*it).intersect( rp, i++ );
   }
-
-  rp.shade( depth );
-
   return true;
+}
+
+const Intersection& Trianglelist::getClosestIntersection(RadianceRay& r) {
+  for ( std::vector<Triangle>::iterator it = triangles.begin(); it!=triangles.end(); ++it ) {
+    (*it).intersect( r );
+  }
+  return r.getClosestIntersection();
 }
 
 bool Trianglelist::isBlocked(Ray& r) {

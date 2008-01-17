@@ -11,13 +11,19 @@
 //
 #include "scene.h"
 
-Scene::Scene()
-{}
+Scene::Scene() : defaultMaterial( 1.0, 1.0, 1.0, 1.0, 0.0, 0.0 ){
+}
 
 void Scene::addLight(const Light& l) {
   lights.push_back(l);
 }
 
+const PhongMaterial& Scene::getMaterial(const std::string& name)  {
+  if (material.find(name) == material.end())
+    return defaultMaterial;
+  else
+    return material[name];
+}
 
 Scene::~Scene()
 {

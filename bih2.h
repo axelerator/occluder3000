@@ -13,6 +13,7 @@
 #define BIH2_H
 #include "accelerationstruct.h"
 #include "simplevector.h"
+#include "sse4.h"
 class RayPacket;
 /**
 	@author Axel Tetzlaff <axel.tetzlaff@gmx.de>
@@ -49,6 +50,13 @@ class BIH : public AccelerationStruct {
     };
 
     typedef Stack Stack;
+
+    struct MultiStack {
+      const BihNode *node;
+      __m128 tmin,tmax;
+    };
+
+    typedef MultiStack MultiStack;
 
     void subdivide ( BihNode &thisNode, unsigned int start, unsigned int end, const float *currBounds, unsigned int depth );
     void traverseIterative ( RadianceRay& r );

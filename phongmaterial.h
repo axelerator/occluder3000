@@ -12,6 +12,7 @@
 #ifndef PHONGMATERIAL_H
 #define PHONGMATERIAL_H
 #include <string.h>
+#include "sse4.h"
 /**
 	@author Axel Tetzlaff <axel.tetzlaff@gmx.de>
 */
@@ -22,6 +23,7 @@ public:
     PhongMaterial& operator=(const PhongMaterial& mat) { memcpy(this, &mat, sizeof(PhongMaterial)); return *this;}
     ~PhongMaterial();
     float diffuse[3];
+//     SSEVec3D dif4;
     float alpha;
     float refract;
     float reflection;

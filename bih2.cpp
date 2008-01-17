@@ -17,26 +17,26 @@
 #define STACKDEPTH 512
 
 BIH::BIH ( const Scene& scene )
-    : AccelerationStruct ( scene ), triangleIndices ( 0 ), minimalPrimitiveCount ( 3 ), maxDepth ( 64 ),
-     markednode ( 0 ) {}
+    : AccelerationStruct ( scene ), triangleIndices ( 0 ), minimalPrimitiveCount (3 ), maxDepth ( 64 ),
+    markednode ( 0 ) {}
 
 
-BIH::~BIH() {
-}
+BIH::~BIH() {}
 
-void BIH::traverseIterative (RadianceRay& r ) {
+void BIH::traverseIterative ( RadianceRay& r ) {
 
   Stack stack[STACKDEPTH];
   int stackpos = 1;
   float tmin,tmax, tNear, tFar;
-  stack[0].node = &nodes.get(0);
+  stack[0].node = &nodes.get ( 0 );
   stack[0].tmin = r.getMin();
   stack[0].tmax = r.getMax();
   const BihNode *node;
-  unsigned int near, far, nearP[3] = { 0, 0, 0 }, farP[3] = { 1, 1, 1 }, i;
+  unsigned int near, far, nearP[3] = { 0, 0, 0 }
+                                     , farP[3] = { 1, 1, 1 }, i;
   // check ray direction to determine identity of 'near' and 'far' children
   for ( unsigned int i = 0; i < 3; ++i )
-    if ( r.getDirection().value[i] < 0.0f ) 
+    if ( r.getDirection().value[i] < 0.0f )
       // near is right, far is left
       nearP[i] = 1, farP[i] = 0;
   while ( --stackpos > -1 ) {
@@ -70,25 +70,26 @@ void BIH::traverseIterative (RadianceRay& r ) {
       Triangle& hitTriangle = triangles[triangleIndices[i]];
       hitTriangle.intersect ( r );
     }
-  }  
+  }
 }
 
-bool BIH::isBlocked(Ray& r) {
-  return traverseShadow(r);
+bool BIH::isBlocked ( Ray& r ) {
+  return traverseShadow ( r );
 }
 
 bool BIH::traverseShadow ( Ray& r ) {
   Stack stack[STACKDEPTH];
   int stackpos = 1;
   float tmin,tmax, tNear, tFar;
-  stack[0].node = &nodes.get(0);
+  stack[0].node = &nodes.get ( 0 );
   stack[0].tmin = r.getMin();
   stack[0].tmax = r.getMax();
   const BihNode *node;
-  unsigned int near, far, nearP[3] = { 0, 0, 0 }, farP[3] = { 1, 1, 1 }, i;
+  unsigned int near, far, nearP[3] = { 0, 0, 0 }
+                                     , farP[3] = { 1, 1, 1 }, i;
   // check ray direction to determine identity of 'near' and 'far' children
   for ( unsigned int i = 0; i < 3; ++i )
-    if ( r.getDirection().value[i] < 0.0f ) 
+    if ( r.getDirection().value[i] < 0.0f )
       // near is right, far is left
       nearP[i] = 1, farP[i] = 0;
   while ( --stackpos > -1 ) {
@@ -120,93 +121,95 @@ bool BIH::traverseShadow ( Ray& r ) {
     }
     for ( i = node->leafContent[0]; i <= node->leafContent[1]; ++i ) {
       Triangle& hitTriangle = triangles[triangleIndices[i]];
-      if (hitTriangle.intersect ( r ))
+      if ( hitTriangle.intersect ( r ) )
         return true;
     }
-  }  
+  }
   return false;
 }
 
 const RGBvalue BIH::trace ( RadianceRay& r, unsigned int depth ) {
-  if ( !trimRaytoBounds( r ) )
-    return RGBvalue( 0.0, 0.0, 0.0 );
+  if ( !trimRaytoBounds ( r ) )
+    return RGBvalue ( 0.0, 0.0, 0.0 );
 
   RGBvalue result ( 0.0, 0.0, 0.0 );
   traverseIterative ( r );
-  r.shade(result, depth);    
+  r.shade ( result, depth );
   return result;
 }
 
-const Intersection&  BIH::getClosestIntersection(RadianceRay& r) {
+const Intersection&  BIH::getClosestIntersection ( RadianceRay& r ) {
   traverseIterative ( r );
   return r.getClosestIntersection();
 }
 
-void BIH::recurse(RayPacket& rp) {
-  Stack stack[STACKDEPTH];
-  int stackpos = 1;
-  static unsigned int idx[] = { 0, rp.getPacketWidth()-1, rp.getRayCount() - rp.getPacketWidth(), rp.getRayCount()-1 };
-  const BihNode *node = 0;
-  float tmin, tmax, tNear, tFar, pnear, pfar;
-  stack[0].node = &nodes.get(0);
-  stack[0].tmin = fminf(fminf(fminf( rp.getMin(idx[0]), rp.getMin(idx[1])), rp.getMin(idx[2])),rp.getMin(idx[3]));
-  stack[0].tmax = fmaxf(fmaxf(fmaxf( rp.getMax(idx[0]), rp.getMax(idx[1])), rp.getMax(idx[2])),rp.getMax(idx[3]));
-//  const BihNode *node;
-  unsigned int near, far, nearP[3] = { 0, 0, 0 }, farP[3] = { 1, 1, 1 }, i;
-  // check ray direction to determine identity of 'near' and 'far' children
-  for ( unsigned int i = 0; i < 3; ++i )
-    if ( rp.getDirection(0).value[i] < 0.0f ) 
-      // near is right, far is left
-      nearP[i] = 1, farP[i] = 0;
-  while ( --stackpos > -1 ) {
+void BIH::recurse ( RayPacket& rp ) {
 
-    const Stack &current = stack[stackpos];
+  MultiStack stack[STACKDEPTH];
+  int stackpos = 1;
+  const BihNode *node = 0;
+  __m128 tmin, tmax, tNear4, tFar4;
+  
+  stack[0].node = &nodes.get ( 0 );
+  stack[0].tmin = rp.shaft.tmin.v.sse;
+  stack[0].tmax = rp.shaft.tmax.v.sse;
+//  const BihNode *node;
+  unsigned int near, far, nearP[3] = { 0, 0, 0 }
+      , farP[3] = { 1, 1, 1 }, i;
+  // check ray direction to determine identity of 'near' and 'far' children
+  if ( rp.shaft.direction.c[0].v.f[0] < 0.0f )
+    // near is right, far is left
+    nearP[0] = 1, farP[0] = 0;
+  if ( rp.shaft.direction.c[1].v.f[0] < 0.0f )
+    // near is right, far is left
+    nearP[1] = 1, farP[1] = 0;
+  if ( rp.shaft.direction.c[2].v.f[0] < 0.0f )
+    // near is right, far is left
+    nearP[2] = 1, farP[2] = 0;
+
+  while ( --stackpos > -1 ) {
+    const MultiStack &current = stack[stackpos];
     // pop from stack
     tmin = current.tmin;
     tmax = current.tmax;
     node = current.node;
 
     while ( node->type != 3 ) {
-      near = 0, far = 1;
-      if ( rp.getDirection(0).value[node->type] < 0.0f )  
-        // near is right, far is left
-        near = 1, far = 0;
-      pnear = node->planes[near] - rp.getOrigin().value[node->type];
-      pfar = node->planes[far] - rp.getOrigin().value[node->type];
-      tNear = pnear * rp.getInvDirection(0).value[node->type];
-      tFar  = pfar  * rp.getInvDirection(0).value[node->type];
+      near = nearP[node->type];
+      far = farP[node->type];
       
-      for ( unsigned int i = 1; i < 4; ++i ) {
-        tNear = fmaxf(tNear, pnear * rp.getInvDirection(idx[i]).value[node->type]);
-        tFar  = fminf(tFar, pfar  * rp.getInvDirection(idx[i]).value[node->type]);
-      }    
-    
-      if ( tmin > tNear ) {
-        tmin = fmaxf ( tmin, tFar );
+      __m128 currDist = _mm_sub_ps(_mm_set1_ps( node->planes[near] ),rp.shaft.origin.c[node->type].v.sse ) ;
+       tNear4 = _mm_mul_ps( currDist, rp.shaft.inv_direction.c[node->type].v.sse );
+      
+      currDist = _mm_sub_ps(_mm_set1_ps( node->planes[far] ),rp.shaft.origin.c[node->type].v.sse ) ;
+       tFar4 = _mm_mul_ps( currDist, rp.shaft.inv_direction.c[node->type].v.sse );
+      
+      if ( !_mm_movemask_ps( _mm_cmple_ps( tmin, tNear4 ) ) ) {
+        tmin = _mm_max_ps ( tmin, tFar4 );
         node = node->leftchild + far;
-      } else if ( tmax  < tFar ) {
-        tmax = fminf ( tmax, tNear );
+      } else if ( !_mm_movemask_ps( _mm_cmpge_ps( tmax, tFar4) )) {
+        tmax = _mm_min_ps ( tmax, tNear4 );
         node = node->leftchild + near;
       } else {
-        stack[stackpos].tmin = fmaxf ( tmin, tFar );
+        stack[stackpos].tmin = _mm_max_ps ( tmin, tFar4 );
         stack[stackpos].tmax = tmax;
         stack[stackpos++].node = node->leftchild + far;
-        tmax = fminf ( tmax, tNear );
+        tmax = _mm_min_ps ( tmax, tNear4 );
         node = node->leftchild + near;
       }
     }
     for ( i = node->leafContent[0]; i <= node->leafContent[1]; ++i ) {
       Triangle& hitTriangle = triangles[triangleIndices[i]];
-      hitTriangle.intersect ( rp );
+      hitTriangle.intersect ( rp, triangleIndices[i] );
     }
-  }  
+  }
 }
 
-bool BIH::trace ( RayPacket& rp, unsigned int depth ) {
-  if ( !trimRaytoBounds(rp) )
-    return false; // full miss
-   recurse ( rp );  
 
+bool BIH::trace ( RayPacket& rp, unsigned int depth ) {
+  if ( !trimRaytoBounds ( rp ) )
+    return false; // full miss
+  recurse ( rp );
   return true;
 }
 
@@ -234,9 +237,11 @@ void BIH::subdivide ( BihNode &thisNode, unsigned int start, unsigned int end, c
   }
 
   // determine longest axis of bounding box
-  const float bbLength[3] = {  currBounds[1] - currBounds[0],
-                               currBounds[3] - currBounds[2],
-                               currBounds[5] - currBounds[4] };
+  const float bbLength[3] = {
+                              currBounds[1] - currBounds[0],
+                              currBounds[3] - currBounds[2],
+                              currBounds[5] - currBounds[4]
+                            };
   unsigned char axis;
   if ( bbLength[0] > bbLength[1] )
     axis = 0;
@@ -334,12 +339,12 @@ void BIH::subdivide ( BihNode &thisNode, unsigned int start, unsigned int end, c
 
     thisNode.type = axis;
     subdivide ( *thisNode.leftchild, start, left-1, leftBounds, depth );
-    subdivide ( *(thisNode.leftchild + 1), left, end, rightBounds, depth );
+    subdivide ( * ( thisNode.leftchild + 1 ), left, end, rightBounds, depth );
   }
 }
 
 bool BIH::isConsistent() {
-  return checkConsistency ( &nodes.get(0) );
+  return checkConsistency ( &nodes.get ( 0 ) );
 }
 
 bool BIH::checkConsistency ( BihNode *node ) {
