@@ -40,8 +40,13 @@ public:
     bool trimRaytoBounds(Ray &ray);
     bool trimRaytoBounds(RayPacket &raypacket);
     bool trimRaytoBounds(Ray4 &r4);
+    void addVertex(const Vector3D& v) {vertices.push_back(v);}
+    const Vector3D& getVertex(const unsigned int i) const {assert(i < vertices.size());  return vertices[i]; }
+    Vector3D& getVertex(const unsigned int i) {assert(i < vertices.size()); return vertices[i]; }
+    const unsigned int getVertexCount() const { return vertices.size(); }
 protected:
     std::vector<Triangle> triangles;
+    std::vector<Vector3D> vertices;
     float bounds[6]; //xmin,xmax,ymin,ymax,zmin,zmax
     bool boundsSet; // becomes true when setBounds is called
     const Scene& scene;

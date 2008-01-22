@@ -100,16 +100,20 @@ void RayPacket::shade ( GLubyte *fbuffer, unsigned int stride, unsigned int dept
 
         SSEVec3D l4 ( light.getPosition() );
         l4 -= poi;
+        SSEVec3D l4unnorm = l4;
 //             assert(_mm_movemask_ps(_mm_cmpngt_ps(normals.length(), ONE)));
         SSE4 tmax;
         tmax.v.sse = l4.normalizeRL();
         SSE4 dif =  _mm_max_ps ( _mm_setzero_ps (), normals * l4 );
 
+
         for ( unsigned int c = 0; c < 4 ; ++c ) {
           if ( dif.v.f[c] > 0.0f ) {
             triidx.f = currTile.hitTriangle.v.f[c];
             const Triangle& tri = scene.getGeometry().getTriangle ( triidx.i );
-            Ray intersectToLigth ( poi.get ( c ), l4.get ( c ), tmax.v.f[c], 0.0f, &tri );
+//             Ray intersectToLigth ( poi.get ( c ), l4.get ( c ), tmax.v.f[c], 0.00f, &tri );
+            const Vector3D rtg =  (light.getPosition() - poi.get ( c ));
+            Ray intersectToLigth ( poi.get ( c ),rtg.normal(), rtg.length(), 0.00f, &tri );
             dif.v.f[c] = ( scene.getGeometry().isBlocked ( intersectToLigth ) ) ? 0.0 : dif.v.f[c];
           }
         }

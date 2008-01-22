@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <string>
 #include <vector>
+#include <boost/regex.hpp>
+
 #include <fstream>
 #include <iostream>
 #include <sys/time.h>
@@ -11,7 +13,6 @@
 #include "vector3d.h"
 #include "radianceray.h"
 #include "triangle.h"
-#include <boost/regex.hpp>
 #include "accelerationstruct.h"
 #include "trianglelist.h"
 #include "debug.h"

@@ -19,7 +19,7 @@ class RadianceRay;
 class Ray;
 class RayPacket;
 class Ray4;
-
+class AccelerationStruct;
 /* Evil cast to store 4 Triindices in 128Bitfloat */
 typedef union {
   unsigned int i;
@@ -31,8 +31,8 @@ typedef union {
 */
 class Triangle {
   public:
-    Triangle(const Vector3D& v1, const Vector3D& v2, const Vector3D& v3, const PhongMaterial& mat);
-    Triangle(const Vector3D& v1, const Vector3D& v2, const Vector3D& v3, const Vector3D& vn1, const Vector3D& vn2, const Vector3D& vn3, const PhongMaterial& mat);    
+    Triangle(const unsigned int v1,const unsigned int v2,const unsigned int v3, const PhongMaterial& mat, const AccelerationStruct &ast);
+    Triangle(const unsigned int v1,const unsigned int v2,const unsigned int v3, const Vector3D& vn1, const Vector3D& vn2, const Vector3D& vn3, const PhongMaterial& mat,  const AccelerationStruct &ast);    
     Triangle& operator= (const Triangle& cpy) { memcpy(this, &cpy, sizeof(Triangle)); return *this; }
     bool intersect(const Ray& r) const;
     bool intersect(RadianceRay& r) const;
@@ -41,25 +41,23 @@ class Triangle {
     const PhongMaterial& getMaterial() const { return mat; }
     Vector3D getNormalAt(const IntersectionResult& ir) const;
     Vector3D getNormalAt(const Intersection& ir) const;
-    Vector3D getNormal() const { return n[0];}
+    Vector3D getNormal() const { return normal;}
     SSEVec3D getNormalsAt() const { return SSEVec3D(normal);}
-    
     const Vector3D& getPoint(unsigned int i) const;
-    Vector3D& getPoint(unsigned int i);
     const Vector3D& getCenter() const { return center; }
     ~Triangle();
   private:
 
-    Vector3D p[3];
-    Vector3D normal;
+    const unsigned int p0, p1, p2;
+
     Vector3D u;
     Vector3D v;
+    Vector3D normal;
     Vector3D nu;
     Vector3D nv;
-    Vector3D n[3];
     Vector3D center;
     const PhongMaterial& mat;
-  
+    const AccelerationStruct &as;
 
 };
 

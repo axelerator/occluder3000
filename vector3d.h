@@ -232,9 +232,10 @@ public:
      * @return The normalized vector.
      */
     inline float normalizeRL() {
-        float s = 1.0f / length();
+        const float l = length();
+        const float s = 1.0f / l;
         this->operator *=( s );
-        return s;
+        return l;
     }
 
     /**

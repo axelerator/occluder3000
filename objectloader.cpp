@@ -19,9 +19,9 @@
 #include "debug.h"
 #include "accelerationstruct.h"
 #include "scene.h"
-      #include <sys/types.h>
-       #include <sys/stat.h>
-       #include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 ObjectLoader::ObjectLoader()
 {
 }
@@ -44,7 +44,7 @@ bool ObjectLoader::loadOBJ(const std::string& filename, Scene& scene ) {
     }
     DEBUG("Read " << file.size() << " lines.");
 
-    int vertexcount = 0;
+//     int vertexcount = 0;
     int facecount = 0;
 
     // regular expressions for normals, vertices, and faces
@@ -52,7 +52,7 @@ bool ObjectLoader::loadOBJ(const std::string& filename, Scene& scene ) {
     std::string vertexRE = "v (-?[0-9]+\\.[0-9]+) (-?[0-9]+\\.[0-9]+) (-?[0-9]+\\.[0-9]+)\\s*";
     std::string faceRE = "f (\\d+)\\/(\\d*)\\/(\\d*) (\\d+)\\/(\\d*)\\/(\\d*) (\\d+)\\/(\\d*)\\/(\\d*)";
 
-    std::vector<Vector3D> vertices;
+//     std::vector<Vector3D> vertices;
     std::vector<Vector3D> normals;
     boost::regex re;
     boost::regex facere;
@@ -76,7 +76,7 @@ bool ObjectLoader::loadOBJ(const std::string& filename, Scene& scene ) {
         if ( !line.empty()) {
             if ( ( line[0] == 'v' ) &&  ( line[1] == 'n' )) {
                 DEBUG("Reading normal");
-                ++vertexcount;
+//                 ++vertexcount;
                   boost::cmatch matches;
                 if (boost::regex_match(line.c_str(), matches, normalre)) {
                     const std::string m1(matches[1].first, matches[1].second);
@@ -88,14 +88,14 @@ bool ObjectLoader::loadOBJ(const std::string& filename, Scene& scene ) {
                 }
            } else if ( line[0] == 'v' ) {
                 DEBUG("Reading vertex");
-                ++vertexcount;
-                  boost::cmatch matches;
+                boost::cmatch matches;
                 if (boost::regex_match(line.c_str(), matches, re)) {
+//                     ++vertexcount;
                     const std::string m1(matches[1].first, matches[1].second);
                     const std::string m2(matches[2].first, matches[2].second);
                     const std::string m3(matches[3].first, matches[3].second);
-                    Vector3D newV(atof(m1.c_str()),atof(m2.c_str()),atof(m3.c_str()));
-                    vertices.push_back(newV);
+                    const Vector3D newV(atof(m1.c_str()),atof(m2.c_str()),atof(m3.c_str()));
+                    tl->addVertex(newV);
                     
                     unsigned int twoI;
                     for (unsigned int i = 0; i < 3; ++i) {
@@ -117,7 +117,7 @@ bool ObjectLoader::loadOBJ(const std::string& filename, Scene& scene ) {
                     bool boundsOk = true;
                     int vidx[3];
                     int nidx[3];
-                    int vertexCount = vertices.size();
+                    int vertexCount = tl->getVertexCount();
                     int normalCount = normals.size();
                     for ( unsigned int i = 0; (i < 3) && boundsOk; ++i) {
                       std::string vmatch(matches[i*3 +1 ].first, matches[i*3 +1 ].second);
@@ -130,8 +130,10 @@ bool ObjectLoader::loadOBJ(const std::string& filename, Scene& scene ) {
                       }
                     }
                     if (boundsOk) {
-                      tl->addTriangle(Triangle(vertices[vidx[0]], vertices[vidx[1]], vertices[vidx[2]],
-                                               normals[nidx[0]], normals[nidx[1]], normals[nidx[2]] , scene.getMaterial(currentMat)));
+/*                      tl->addTriangle(Triangle(tl->getVertex(vidx[0]),tl->getVertex(vidx[1]),tl->getVertex(vidx[2]),
+                                               normals[nidx[0]], normals[nidx[1]], normals[nidx[2]] , scene.getMaterial(currentMat)));*/
+                      tl->addTriangle(Triangle(vidx[0], vidx[1], vidx[2],
+                                               normals[nidx[0]], normals[nidx[1]], normals[nidx[2]] , scene.getMaterial(currentMat), *tl));
                       DEBUG("addTriangle(Triangle(vertices[" << vidx[0] << "] , vertices[" <<   vidx[1] << "], vertices[" << vidx[2] << "], normals[" << nidx[0] << "], normals[" << nidx[1] << "], normals[" << nidx[2] << "] ));") ;
                       ++facecount;                    
                     } else {
@@ -147,7 +149,7 @@ bool ObjectLoader::loadOBJ(const std::string& filename, Scene& scene ) {
 
         } 
     }
-    std::cout << "done loading monkey(" << vertices.size() << ": vertices, " << facecount << " faces, " << normals.size() << " normals)" << std::endl;
+    std::cout << "done loading monkey(" << tl->getVertexCount() << ": vertices, " << facecount << " faces, " << normals.size() << " normals)" << std::endl;
     std::cout << "Scene boundaries x(min:" << boundings[0]  << ",max:" << boundings[1]  << ") y(min:" << boundings[2]  << ",max:" << boundings[3]  << ") z(min:" << boundings[4]  << ",max:" << boundings[5]  << ")" << std::endl;
     tl->setBounds(boundings);
     return true;
@@ -175,14 +177,15 @@ bool ObjectLoader::loadRA2(const std::string& filename, Scene& scene ) {
     
     float boundings[6] = {UNENDLICH, -UNENDLICH, UNENDLICH, -UNENDLICH, UNENDLICH, -UNENDLICH};
     for ( unsigned int i = 0; i < trianglecount; ++i) {
-      Vector3D p[] = {Vector3D(currentchunk[i][0]), Vector3D(currentchunk[i][1]), Vector3D(currentchunk[i][2])};
-      for (unsigned char pi = 0; pi < 3; ++pi)
-        for (unsigned char c = 0; c < 3; ++c) 
-          if ( p[pi].value[c] < boundings[2*c] )
-             boundings[2*c] = p[pi].value[c];
-          else if ( p[pi].value[c] > boundings[2*c+1] )
-             boundings[2*c+1] = p[pi].value[c];
-      tl->addTriangle(Triangle(p[0], p[1], p[2], scene.getMaterial(currentMat)));
+//       for (int t3 = 0; t3 < 3; ++t3)
+//         tl->addVertex(Vector3D(currentchunk[i][t3]));
+//       for (unsigned char pi = 0; pi < 3; ++pi)
+//         for (unsigned char c = 0; c < 3; ++c) 
+//           if ( p[pi].value[c] < boundings[2*c] )
+//              boundings[2*c] = p[pi].value[c];
+//           else if ( p[pi].value[c] > boundings[2*c+1] )
+//              boundings[2*c+1] = p[pi].value[c];
+      //tl->addTriangle(Triangle(currentchunk[i][0], currentchunk[i][1], currentchunk[i][2], scene.getMaterial(currentMat), *tl));
     }
     std::cout << "Scene boundaries x(min:" << boundings[0]  << ",max:" << boundings[1]  << ") y(min:" << boundings[2]  << ",max:" << boundings[3]  << ") z(min:" << boundings[4]  << ",max:" << boundings[5]  << ")" << std::endl;
     tl->setBounds(boundings);
