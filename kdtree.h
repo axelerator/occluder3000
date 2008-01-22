@@ -46,6 +46,12 @@ class KdTree : public AccelerationStruct {
       float tMax;
     } KdTreeStacknode;
 
+    typedef struct {
+      KdTreenode *node;
+      __m128 tMin;
+      __m128 tMax;
+    } KdTreePacektStacknode;
+
     bool traverse(const KdTreenode& node, RadianceRay& r, float tMax );
     bool traverseIterative( RadianceRay& r );
     void traversePacket( RayPacket& rp );

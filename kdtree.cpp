@@ -211,9 +211,50 @@ void KdTree::traversePacket ( RayPacket& rp ) {
 bool KdTree::trace ( RayPacket& rp, unsigned int depth ) {
   if ( !trimRaytoBounds(rp) )
     return false; // full miss
-//    traversePacket ( rp );  
- return false; 
-//   return true;
+
+  KdTreePacektStacknode stack[128];
+  int stackpointer = 0;
+  stack[0].node = 0;
+  KdTreenode *node = &nodes.get(0);
+  __m128 d ;
+  unsigned int leftIsNear[] = { (rp.shaft.direction.c[0].v.f[0] > 0.0) ? 1 : 0,
+    (rp.shaft.direction.c[1].v.f[0] > 0.0) ? 1 : 0 ,(rp.shaft.direction.c[2].v.f[0] > 0.0) ? 1 : 0 } ;
+  
+  do {
+    while( node->axis != 3 ) {
+
+      d = _mm_mul_ps(_mm_sub_ps(_mm_set1_ps(node->splitPos), (rp.shaft.origin.c[node->axis]).v.sse), rp.shaft.inv_direction.c[node->axis].v.sse);
+      if ( _mm_movemask_ps(_mm_cmple_ps(d, rp.shaft.tmin.v.sse)) == 15 ) { // just far side
+        node = node->leftchild + leftIsNear[node->axis];
+      } else if ( _mm_movemask_ps(_mm_cmpnlt_ps(d, rp.shaft.tmax.v.sse) ) == 15) { // just near side
+        node = node->leftchild + 1 - leftIsNear[node->axis];
+      } else {
+          stack[++stackpointer].node = node->leftchild + leftIsNear[node->axis] ;
+          stack[stackpointer].tMin = d;
+          stack[stackpointer].tMax = rp.shaft.tmax.v.sse;
+          node = node->leftchild + 1 - leftIsNear[node->axis];
+          rp.shaft.tmax = d;
+      }
+    }
+
+    for (unsigned char i = 0; i < node->prims->size ; ++i ) {
+      const Triangle& tri = triangles[node->prims->data[i]];
+      tri.intersect ( rp, node->prims->data[i] );
+    }
+
+    int earlyExit = 15;
+    for (unsigned int i = 0; i < rp.getR4Count(); ++i)
+      earlyExit &= rp.r4[i].mask;
+    if ( earlyExit == 15 )
+      return true;
+    // pop stack
+    node = stack[stackpointer].node;
+    rp.shaft.tmin = stack[stackpointer].tMin;
+    rp.shaft.tmax = stack[stackpointer].tMax;
+    --stackpointer;
+  } while ( node ) ;
+
+  return true;
 }
 
 bool KdTree::isBlocked(Ray& r) {

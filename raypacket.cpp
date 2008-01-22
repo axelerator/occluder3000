@@ -21,8 +21,16 @@ bool RayPacket::set ( const Vector3D& origin, const Vector3D& u, const Vector3D&
   Vector3D d0 ( origin - this->origin );
 
   shaft.set ( this->origin, d0, packetu, packetv, &scene.getGeometry() );
+
+//   int m1 = _mm_movemask_ps( rp->dx4 );
+//   int m2 = _mm_movemask_ps( rp->dy4 );
+//   int m3 = _mm_movemask_ps( rp->dz4 );
+//   if (((m1 == 0) || (m1 == 15)) && ((m2 == 0) || (m2 == 15)) && ((m3 == 0) || (m3 == 15))) valid = true;
+// 
+
+// TODO: this is still wrong:
   bool incoherent = (
-                      ( ( shaft.direction.c[0].v.f[0] < 0 ) == ( shaft.direction.c[0].v.f[3] < 0 ) )
+                      (    ( shaft.direction.c[0].v.f[0] < 0 ) == ( shaft.direction.c[0].v.f[3] < 0 ) )
                       && ( ( shaft.direction.c[1].v.f[0] < 0 ) == ( shaft.direction.c[1].v.f[3] < 0 ) )
                       && ( ( shaft.direction.c[2].v.f[0] < 0 ) == ( shaft.direction.c[2].v.f[3] < 0 ) )
                     );

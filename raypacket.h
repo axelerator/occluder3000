@@ -65,7 +65,7 @@ class Ray4 {
       tmin.v.sse = _mm_setzero_ps();
       tmax.v.sse = _mm_set1_ps(100000.0);
       t = tmax;
-      mask = dead = 0;
+      mask = /*dead =*/ 0;
       this->geometry = ac;
     }
        
@@ -78,7 +78,7 @@ class Ray4 {
     SSE4 hitTriangle;
     const AccelerationStruct *geometry;
     SSEVec3D inv_direction;
-    int dead;
+//     int dead;
 };
 
 #define PACKET_WIDTH 4

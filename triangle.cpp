@@ -101,6 +101,8 @@ void Triangle::intersect(RayPacket& rp, unsigned int idx) const {
 //    Vector3D qvec(tvec % this->u);
 // 
 //    float inv_det;
+    intersect( rp.shaft, idx);
+
     for( unsigned int i = 0; i < rp.getR4Count() ; ++i ){
        intersect( rp.r4[i], idx);
        }
