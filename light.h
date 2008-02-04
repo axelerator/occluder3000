@@ -28,11 +28,13 @@ public:
     const SSEVec3D& getColor4() const {return col4; }
     ~Light();
     void setPosition(float x, float y, float z);
+    const Vector3D& getDirection() const {return direction;}
 private:
     Vector3D position;
     SSEVec3D pos4;
     RGBvalue color;
     SSEVec3D col4;
+    Vector3D direction;
 };
 
 #endif

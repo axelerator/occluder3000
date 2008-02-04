@@ -12,7 +12,7 @@
 #include "kdtree.h"
 #include "radianceray.h"
 #include "raypacket.h"
-
+#include "stats.h"
 #define MAX_PRIMCOUNT_PER_LEAF 3
 
 
@@ -27,7 +27,7 @@ KdTree::~KdTree() {
    deleteNode ( nodes.get(0) );
 }
 
-bool KdTree::traverseIterative ( RadianceRay& r ) {
+bool KdTree::traverseIterative ( RadianceRay& r ) const {
   KdTreeStacknode stack[128];
   int stackpointer = 0;
   stack[0].node = 0;
@@ -38,6 +38,7 @@ bool KdTree::traverseIterative ( RadianceRay& r ) {
   
   do {
     while( node->axis != 3 ) {
+      statsinc("Traversalsteps per Frame");
       d = ( node->splitPos - r.getStart().value[node->axis] ) * r.getInvDirection().value[node->axis] ;
       if ( d <= r.getMin() ) { // just far side
         node = node->leftchild + leftIsNear[node->axis];
@@ -51,7 +52,7 @@ bool KdTree::traverseIterative ( RadianceRay& r ) {
           r.setMax(d);
       }
     }
-
+    statsinc("Traversalsteps per Frame");
     for (unsigned char i = 0; i < node->prims->size ; ++i ) {
       const Triangle& tri = triangles[node->prims->data[i]];
       tri.intersect ( r );
@@ -68,7 +69,7 @@ bool KdTree::traverseIterative ( RadianceRay& r ) {
   return false;
 }
 
-bool KdTree::traverseShadowIterative ( Ray& r ) {
+bool KdTree::traverseShadowIterative ( Ray& r ) const {
   KdTreeStacknode stack[128];
   int stackpointer = 0;
   stack[0].node = 0;
@@ -116,7 +117,7 @@ bool KdTree::traverseShadowIterative ( Ray& r ) {
   return false;
 }
 
-void KdTree::traversePacket ( RayPacket& rp ) {
+void KdTree::traversePacket ( RayPacket& rp ) const {
 //   KdTreeStacknode stack[128];
 //   int stackpointer = 0;
 //   stack[0].node = 0;
@@ -208,7 +209,7 @@ void KdTree::traversePacket ( RayPacket& rp ) {
 //   } while ( node ) ;
 }
 
-bool KdTree::trace ( RayPacket& rp, unsigned int depth ) {
+bool KdTree::trace ( RayPacket& rp, unsigned int depth ) const {
   if ( !trimRaytoBounds(rp) )
     return false; // full miss
 
@@ -222,7 +223,7 @@ bool KdTree::trace ( RayPacket& rp, unsigned int depth ) {
   
   do {
     while( node->axis != 3 ) {
-
+      statsinc("Traversalsteps per Frame");
       d = _mm_mul_ps(_mm_sub_ps(_mm_set1_ps(node->splitPos), (rp.shaft.origin.c[node->axis]).v.sse), rp.shaft.inv_direction.c[node->axis].v.sse);
       if ( _mm_movemask_ps(_mm_cmple_ps(d, rp.shaft.tmin.v.sse)) == 15 ) { // just far side
         node = node->leftchild + leftIsNear[node->axis];
@@ -236,7 +237,7 @@ bool KdTree::trace ( RayPacket& rp, unsigned int depth ) {
           rp.shaft.tmax = d;
       }
     }
-
+    statsinc("Traversalsteps per Frame");
     for (unsigned char i = 0; i < node->prims->size ; ++i ) {
       const Triangle& tri = triangles[node->prims->data[i]];
       tri.intersect ( rp, node->prims->data[i] );
@@ -257,11 +258,11 @@ bool KdTree::trace ( RayPacket& rp, unsigned int depth ) {
   return true;
 }
 
-bool KdTree::isBlocked(Ray& r) {
+bool KdTree::isBlocked(Ray& r) const {
  return traverseShadowIterative( r );
 }
 
-const Intersection& KdTree::getClosestIntersection(RadianceRay& r) {
+const Intersection& KdTree::getClosestIntersection(RadianceRay& r) const {
     traverseIterative ( r );
     return r.getClosestIntersection();
 }
@@ -269,7 +270,7 @@ const Intersection& KdTree::getClosestIntersection(RadianceRay& r) {
 /**
  * Assumes normalized ray.
 **/
-const RGBvalue KdTree::trace ( RadianceRay& r, unsigned int depth ) {
+const RGBvalue KdTree::trace ( RadianceRay& r, unsigned int depth ) const {
   if ( !trimRaytoBounds( r ) )
     return RGBvalue( 0.0, 0.0, 0.0 );
   traverseIterative ( r );
@@ -285,7 +286,7 @@ void KdTree::construct() {
   prims.reserve ( triCount );
   for ( unsigned int i = 0; i < triCount; ++i )
     prims.push_back ( i );
-  subdivide ( nodes.getNextFree(), prims, bounds, 20 );
+  subdivide ( nodes.getNextFree(), prims, bounds, 30 );
 //   std::cout << "Nodes: " << nodes.size() << std::endl;
   assert( checkConsitency() );
 }
@@ -306,6 +307,7 @@ float KdTree::calculatecost ( KdTreenode &node, const std::vector<unsigned int> 
       ++right;
   }
   float leftarea,rightarea;
+  const float totalArea = boundLength[0] * boundLength[1] * boundLength[2];
   switch ( node.axis ) {
     case 0:
       leftarea  = 2 * ( splitPos - bounds[0] ) * boundLength[1] * boundLength[2];
@@ -322,10 +324,11 @@ float KdTree::calculatecost ( KdTreenode &node, const std::vector<unsigned int> 
     default:
       leftarea = rightarea = 0;
   }
-  return 0.1 + 1.2 * ( leftarea * left + rightarea * right );
+  return 0.1 + 1.2 * ( (leftarea/totalArea) * left + (rightarea/totalArea) * right );
 }
 
 void KdTree::subdivide ( KdTreenode &node, const std::vector<unsigned int> &prims, float *bounds, unsigned int depth ) {
+  statsset("Treedepth", fmax(depth, Stats::getInstance().get("Treedepth")));
   if ( prims.size() <= MAX_PRIMCOUNT_PER_LEAF || !depth ) {
     node.axis = 3;
     assert(prims.size() <= 256);

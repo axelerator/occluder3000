@@ -33,6 +33,7 @@ class Ray
     float getMin() const { return tMin; }  
     void setIgnore(const Triangle* tri) { ignore = tri; }
     const Triangle* getIgnored() const { return ignore; }
+    static Vector3D refractRay(const Vector3D& e, const Vector3D& n, double nFrom, double nTo);
   protected:
 
   Vector3D start;

@@ -21,8 +21,20 @@ diffuse[2] = b;
 }
 
 
-PhongMaterial::~PhongMaterial()
-{
+PhongMaterial::~PhongMaterial() {}
+
+PhotonBehavior PhongMaterial::spinRoulette() const {
+    const float spin =  (rand() / (RAND_MAX + 1.0)) * (1.0) ;
+    if ( spin < alpha ) {
+      if ( spin < (reflection * alpha)) {
+        return SPEC_REFLECT;
+      } else {
+        const float avg = (diffuse[0]+diffuse[1]+diffuse[2]) * .33333f * alpha * (1.0f - reflection);
+        if ( spin < avg ) 
+          return ABSORB;
+        else
+          return DIF_REFLECT;
+      }
+    } else
+      return TRANSMIT;
 }
-
-

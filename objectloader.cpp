@@ -172,20 +172,25 @@ bool ObjectLoader::loadRA2(const std::string& filename, Scene& scene ) {
     }
 
     fread ( currentchunk, trianglecount, sizeof(ra2_chunk), fp );
-    std::cout << "Read " << trianglecount << " triangles";
+    std::cout << "Read " << trianglecount << " triangles" << std::endl;
     fclose ( fp );
-    
+    unsigned int vertexCount = 0;
+//     trianglecount = 1000;std::cout << "USING cons tTri cont";
     float boundings[6] = {UNENDLICH, -UNENDLICH, UNENDLICH, -UNENDLICH, UNENDLICH, -UNENDLICH};
     for ( unsigned int i = 0; i < trianglecount; ++i) {
-//       for (int t3 = 0; t3 < 3; ++t3)
-//         tl->addVertex(Vector3D(currentchunk[i][t3]));
+      for (int t3 = 0; t3 < 3; ++t3) {
+        const Vector3D currentVertex(currentchunk[i]+ t3*3);
+        tl->addVertex(currentVertex);
+        for (unsigned char c = 0; c < 3; ++c) {
+          if ( currentVertex.value[c] < boundings[2*c] )
+            boundings[2*c] = currentVertex.value[c];
+          if ( currentVertex.value[c] > boundings[2*c+1] )
+            boundings[2*c+1] = currentVertex.value[c];
+        }
+        ++vertexCount;
+      }
 //       for (unsigned char pi = 0; pi < 3; ++pi)
-//         for (unsigned char c = 0; c < 3; ++c) 
-//           if ( p[pi].value[c] < boundings[2*c] )
-//              boundings[2*c] = p[pi].value[c];
-//           else if ( p[pi].value[c] > boundings[2*c+1] )
-//              boundings[2*c+1] = p[pi].value[c];
-      //tl->addTriangle(Triangle(currentchunk[i][0], currentchunk[i][1], currentchunk[i][2], scene.getMaterial(currentMat), *tl));
+      tl->addTriangle(Triangle(vertexCount - 3, vertexCount - 2, vertexCount - 1 , scene.getMaterial(currentMat), *tl));
     }
     std::cout << "Scene boundaries x(min:" << boundings[0]  << ",max:" << boundings[1]  << ") y(min:" << boundings[2]  << ",max:" << boundings[3]  << ") z(min:" << boundings[4]  << ",max:" << boundings[5]  << ")" << std::endl;
     tl->setBounds(boundings);

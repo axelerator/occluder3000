@@ -45,6 +45,10 @@ class Triangle {
     SSEVec3D getNormalsAt() const { return SSEVec3D(normal);}
     const Vector3D& getPoint(unsigned int i) const;
     const Vector3D& getCenter() const { return center; }
+    const Vector3D& getU() const { return u; }
+    bool isSpecular() const { return mat.isSpecular();}
+    bool isDiffuse() const { return mat.isDiffuse();}
+
     ~Triangle();
   private:
 

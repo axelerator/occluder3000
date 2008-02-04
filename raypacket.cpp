@@ -113,7 +113,10 @@ void RayPacket::shade ( GLubyte *fbuffer, unsigned int stride, unsigned int dept
         SSE4 tmax;
         tmax.v.sse = l4.normalizeRL();
         SSE4 dif =  _mm_max_ps ( _mm_setzero_ps (), normals * l4 );
+        SSEVec3D ldir4 ( light.getDirection() );
 
+        SSE4 cspot = _mm_max_ps(((l4 * -1.0f) * ldir4),_mm_setzero_ps ());
+        dif = dif * cspot;
 
         for ( unsigned int c = 0; c < 4 ; ++c ) {
           if ( dif.v.f[c] > 0.0f ) {

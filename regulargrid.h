@@ -26,10 +26,10 @@ public:
     RegularGrid(const Scene& scene, float cellsize);
     virtual ~RegularGrid();
     
-    virtual const RGBvalue trace(RadianceRay& r, unsigned int depth = 0);
-    virtual bool isBlocked(Ray& r);
+    virtual const RGBvalue trace(RadianceRay& r, unsigned int depth = 0) const;
+    virtual bool isBlocked(Ray& r) const;
     virtual void construct();
-    virtual const Intersection& getClosestIntersection(RadianceRay& r);    
+    virtual const Intersection& getClosestIntersection(RadianceRay& r) const;
 private:
     const Intersection& findIntersection(RadianceRay& r);
     bool hasIntersection(Ray& r,  int ingoreTriangle);

@@ -58,9 +58,9 @@ class Ray4 {
       direction.c[1].v.sse = _mm_add_ps(direction.c[1].v.sse , _mm_set_ps(u.value[1] + v.value[1], v.value[1], u.value[1], 0.0));
       direction.c[2].v.sse = _mm_add_ps(direction.c[2].v.sse , _mm_set_ps(u.value[2] + v.value[2], v.value[2], u.value[2], 0.0));  
       
-      inv_direction.c[0].v.sse = _mm_div_ps(ONE, direction.c[0].v.sse);
-      inv_direction.c[1].v.sse = _mm_div_ps(ONE, direction.c[1].v.sse);
-      inv_direction.c[2].v.sse = _mm_div_ps(ONE, direction.c[2].v.sse);
+      inv_direction.c[0].v.sse = _mm_div_ps(SSE4::ONE, direction.c[0].v.sse);
+      inv_direction.c[1].v.sse = _mm_div_ps(SSE4::ONE, direction.c[1].v.sse);
+      inv_direction.c[2].v.sse = _mm_div_ps(SSE4::ONE, direction.c[2].v.sse);
       
       tmin.v.sse = _mm_setzero_ps();
       tmax.v.sse = _mm_set1_ps(100000.0);

@@ -36,7 +36,7 @@ RegularGrid::~RegularGrid() {
   }
 }
 
-const Intersection& RegularGrid::getClosestIntersection ( RadianceRay& r ) {
+const Intersection& RegularGrid::getClosestIntersection ( RadianceRay& r ) const {
   const Triangle *hitTriangle = 0;
 
 // Fast Voxel Traversal by Amanatides and Woo
@@ -123,7 +123,7 @@ const Intersection& RegularGrid::getClosestIntersection ( RadianceRay& r ) {
   return r.getClosestIntersection();
 }
 
-bool RegularGrid::isBlocked ( Ray& r ) {
+bool RegularGrid::isBlocked ( Ray& r ) const {
   IntersectionResult ir;
 // Fast Voxel Traversal by Amanatides and Woo
 
@@ -201,7 +201,7 @@ bool RegularGrid::isBlocked ( Ray& r ) {
   return false;
 }
 
-const RGBvalue RegularGrid::trace ( RadianceRay& r, unsigned int depth ) {
+const RGBvalue RegularGrid::trace ( RadianceRay& r, unsigned int depth ) const {
   getClosestIntersection ( r );
   RGBvalue result ( 0.0, 0.0, 0.0 );
   r.shade ( result, depth );

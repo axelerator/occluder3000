@@ -15,6 +15,7 @@
 #include <simplevector.h>
 #include <accelerationstruct.h>
 #include <set>
+
 /**
 	@author Axel Tetzlaff <axel.tetzlaff@gmx.de>
 */
@@ -24,10 +25,10 @@ class KdTree : public AccelerationStruct {
 
     ~KdTree();
 
-    virtual const RGBvalue trace ( RadianceRay& r, unsigned int depth );
-    virtual bool trace ( RayPacket& rp, unsigned int depth = 5 );   
-    virtual const Intersection& getClosestIntersection(RadianceRay& r);    
-    virtual bool isBlocked(Ray& r);   
+    virtual const RGBvalue trace ( RadianceRay& r, unsigned int depth ) const;
+    virtual bool trace ( RayPacket& rp, unsigned int depth = 5 ) const;
+    virtual const Intersection& getClosestIntersection(RadianceRay& r) const;
+    virtual bool isBlocked(Ray& r) const;
     virtual void construct();
   private:
     struct KdTreenode  {
@@ -52,15 +53,16 @@ class KdTree : public AccelerationStruct {
       __m128 tMax;
     } KdTreePacektStacknode;
 
-    bool traverse(const KdTreenode& node, RadianceRay& r, float tMax );
-    bool traverseIterative( RadianceRay& r );
-    void traversePacket( RayPacket& rp );
-    bool traverseShadowIterative( Ray& r );
+    bool traverse(const KdTreenode& node, RadianceRay& r, float tMax ) const;
+    bool traverseIterative( RadianceRay& r ) const;
+    void traversePacket( RayPacket& rp ) const;
+    bool traverseShadowIterative( Ray& r ) const;
     void subdivide ( KdTreenode &node, const std::vector<unsigned int> &prims, float *bounds, unsigned int depth );
     void deleteNode( KdTreenode &node );
     float calculatecost( KdTreenode &node, const std::vector<unsigned int> &prims, float *bounds,float splitpos );
     bool checkConsitency() const;
     bool checkConsRec(KdTreenode *node, std::set<unsigned int>& missing) const ;
+
     SimpleVector<KdTreenode> nodes;
 };
 

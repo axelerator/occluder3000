@@ -12,17 +12,17 @@
 #include "light.h"
 
 Light::Light():
-position(0.0), color(RGBvalue(1.0, 1.0, 1.0)), col4(color.getRGB()){
+position(0.0), color(RGBvalue(1.0, 1.0, 1.0)), col4(color.getRGB()), direction(0.0, -1.0, 0.0){
 
 }
 
 Light::Light(const Vector3D& pos, const RGBvalue& color):
-position(pos), pos4(pos), color(color), col4(color.getRGB()) {
+position(pos), pos4(pos), color(color), col4(color.getRGB()), direction(0.0, -1.0, 0.0) {
 
 }
 
 Light::Light(const Light& l):
-position(l.getPosition()), color(l.getColor()), col4(color.getRGB()){}
+position(l.getPosition()), color(l.getColor()), col4(color.getRGB()), direction(l.direction){}
 
 Light::~Light()
 {

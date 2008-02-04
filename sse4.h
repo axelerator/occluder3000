@@ -31,6 +31,10 @@ class SSE4 {
     SSE4 operator+(const SSE4& rhs) const;
     SSE4 operator*(const SSE4& rhs) const;
     ~SSE4(){}
+    static const __m128 EPSILON4;
+    static const __m128 EPSILON4_NEG;
+    static const __m128 ONE;
+    static const __m128 BINONE;
   
   union {
     float f[4];
@@ -73,9 +77,7 @@ class SSEVec3D {
   SSE4 c[3];
 };
 
-static const __m128 EPSILON4 = _mm_set_ps1(EPSILON);
-static const __m128 EPSILON4INV = _mm_set_ps1(-EPSILON);
-static const __m128 ONE = _mm_set_ps1(1.0f);
+
 
 
 
@@ -175,12 +177,8 @@ inline  SSEVec3D& SSEVec3D::operator=(const __m128& op) {
 }
 
 inline __m128 SSEVec3D::normalizeRL() {
-//   __m128 length = _mm_sqrt_ps((*this) * (*this));
-//   __m128 sqrLen = (*this) * (*this)
-  SSE4 sqrLen ;
-  sqrLen.v.sse = (*this) * (*this);
-  __m128 length = _mm_set_ps(sqrt(sqrLen.v.f[3]), sqrt(sqrLen.v.f[2]), sqrt(sqrLen.v.f[1]), sqrt(sqrLen.v.f[0]));
-  __m128 invLength = _mm_div_ps(ONE, length);
+  __m128 length = _mm_sqrt_ps((*this) * (*this));
+  __m128 invLength = _mm_div_ps(SSE4::ONE, length);
   c[0].v.sse = _mm_mul_ps(c[0].v.sse, invLength);
   c[1].v.sse = _mm_mul_ps(c[1].v.sse, invLength);
   c[2].v.sse = _mm_mul_ps(c[2].v.sse, invLength);

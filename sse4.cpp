@@ -14,4 +14,9 @@
 // SSE4::SSE4(float x0, float x1, float x2, float x3) {}
 
 
+const __m128 SSE4::EPSILON4 = _mm_set_ps1(EPSILON);
+const __m128 SSE4::EPSILON4_NEG = _mm_set_ps1(-EPSILON);
+const __m128 SSE4::ONE = _mm_set_ps1(1.0f);
 
+__m128 one;
+const __m128 SSE4::BINONE = *((__m128*)memset(&one, 0xff, sizeof(__m128)));

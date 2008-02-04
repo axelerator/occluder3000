@@ -21,3 +21,16 @@ Ray::~Ray()
 {}
 
 
+Vector3D Ray::refractRay(const Vector3D& e, const Vector3D& n, double nFrom, double nTo) {
+  float ne = e * n;
+  float reflection = 1.0 - pow((nFrom/nTo), 2.0) * (1.0 - pow(ne, 2.0));
+
+  if (reflection < 0.0) {
+          Vector3D vpar( ne * n );
+          Vector3D reflDir(e - ( 2 * vpar ));
+          reflDir.normalize();  
+          return reflDir;
+  }
+
+  return Vector3D(((e - (n * ne)) * (nFrom/nTo) - (n * sqrt(reflection))).normal());
+}

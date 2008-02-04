@@ -15,11 +15,12 @@
 #include <iostream>
 #include <sstream>
 #include <math.h>
-
+#include <assert.h>
 
 
 #define EPSILON 0.0001f
-#define UNENDLICH INFINITY
+//#define UNENDLICH INFINITY
+#define UNENDLICH 1000.0
 
 #define INLINE
 
@@ -27,7 +28,13 @@
 
 class Vector3D {
 public:
-    inline ~Vector3D() {}
+   inline ~Vector3D() {}
+
+   /**
+    Creates a vector from a string with three space seperated values.
+    i.e.: " 0.12312 -1.32 .05 "
+    **/
+   Vector3D (const std::string& valuestr) ;
 
    inline  Vector3D() {
         value[0] = 0.0;
@@ -40,11 +47,11 @@ public:
      *
      * @param v The other vector.
      */
-    inline Vector3D(const Vector3D& v) {
-        value[0] = v.value[0];
-        value[1] = v.value[1];
-        value[2] = v.value[2];
-    }
+//     inline Vector3D(const Vector3D& v) {
+//         value[0] = v.value[0];
+//         value[1] = v.value[1];
+//         value[2] = v.value[2];
+//     }
 
     /**
      * Create vector from an arry.
@@ -52,9 +59,10 @@ public:
      * @param v A vector as array.
      */
     inline Vector3D(const float *v) {
-        value[0] = v[0];
-        value[1] = v[1];
-        value[2] = v[2];
+//         value[0] = v[0];
+//         value[1] = v[1];
+//         value[2] = v[2];
+      memcpy(value, v, 3 * sizeof(float));
     }
 
     /**
@@ -245,6 +253,23 @@ public:
         return acos(operator *(rhs)/(length()*rhs.length()));
     }
 
+    static Vector3D getRandomSphereVec() {
+      assert(false);
+      float angle1 = (rand() / (RAND_MAX + 1.0f))* 2.0f * M_PI;
+      float angle2 = /*(rand() / (RAND_MAX + 1.0))**/ 2.0f * M_PI;
+/*      return Vector3D(  cos(angle1)*sin(angle2),
+                        cos(angle2),
+                        sin(angle1)*sin(angle2));*/
+        return Vector3D( cos(angle1) * sin(angle2),  cos(angle2), sin(angle1)) * sin(angle2);
+    }
+
+    /**
+      @return the reflection of this at the geiven normal
+    **/
+    inline Vector3D reflect(const Vector3D& normal) const {
+       const float vnn = ( *this * normal ) * 2.0f;
+       return ( *this - ( normal * vnn ));
+    }
     float value[3];
 };
 #else

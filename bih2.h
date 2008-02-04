@@ -24,12 +24,12 @@ class BIH : public AccelerationStruct {
 
     ~BIH();
 
-    virtual const RGBvalue trace ( RadianceRay& r, unsigned int depth );
-    virtual bool trace ( RayPacket& rp, unsigned int depth = 5 );
-    virtual bool isBlocked(Ray& r);
+    virtual const RGBvalue trace ( RadianceRay& r, unsigned int depth ) const;
+    virtual bool trace ( RayPacket& rp, unsigned int depth = 5 )const;
+    virtual bool isBlocked(Ray& r) const;
     virtual void construct();
-    virtual const Intersection& getClosestIntersection(RadianceRay& r);
-
+    virtual const Intersection& getClosestIntersection(RadianceRay& r) const;
+    virtual void analyze() const;
     bool isConsistent();
   private:
     struct BihNode {
@@ -59,12 +59,15 @@ class BIH : public AccelerationStruct {
     typedef MultiStack MultiStack;
 
     void subdivide ( BihNode &thisNode, unsigned int start, unsigned int end, const float *currBounds, unsigned int depth );
-    void traverseIterative ( RadianceRay& r );
-    bool traverseShadow ( Ray& r );
-    void recurse(RayPacket& rp);
+    void subdivide2 ( BihNode &thisNode, unsigned int start, unsigned int end, const float *currBounds, unsigned int depth );
+    void traverseIterative ( RadianceRay& r ) const;
+    void traverseRecursive ( RadianceRay& r, const BihNode & node, float tmin, float tmax) const;
+    bool traverseShadow ( Ray& r ) const;
+    void recurse(RayPacket& rp) const;
     
     bool checkConsistency ( BihNode *node );
-
+    static unsigned int depth(BihNode &node);
+    static unsigned int leafcount(BihNode &node);
     unsigned int *triangleIndices;
     unsigned int minimalPrimitiveCount;
     unsigned int maxDepth; // maximal Depth of recursion of subdivision

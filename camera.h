@@ -22,12 +22,20 @@ A basic camera. Providing information about point of view, projection aera etc..
 class Camera
 {
   public:
-    Camera(Vector3D& position, Vector3D& target, Vector3D& up, float d, unsigned int x, unsigned int y);
+    Camera(const Vector3D& position = Vector3D(0.0, 0.0, -1.0), const Vector3D& target = Vector3D(0.0), const Vector3D& up = Vector3D(0.0, 1.0, 0.0), float d = 1.0, unsigned int x = 320, unsigned int y = 240);
     void setPosition(const Vector3D& position);
     void update();
     ~Camera();
 
-    
+    void setPropertyFromString(const std::string& key, const std::string& value );
+    void setMovementSpeed(float speed) { moveForwardSpeed = speed; }
+    /**
+      Sets the angle speed with which the camera is turning around
+      the local y/x-axis.
+      @param pitchOrYaw 0 = yaw, 1 = pitch
+     **/
+    void setTurnSpeed(float speed, unsigned int pitchOrYaw) { angleSpeed[pitchOrYaw] = speed; }
+    void ani(float dt = 1.0);
     Vector3D position;
     Vector3D target;
     Vector3D up;
@@ -41,6 +49,10 @@ class Camera
     Vector3D u;                  ///< Current vector in x direction
     Vector3D v;                  ///< Current vector in y direction
     unsigned int resolution[2];  ///< Resolution of the projection
+
+    // animation parameters
+    float moveForwardSpeed;
+    float angleSpeed[2];
 
 };
 

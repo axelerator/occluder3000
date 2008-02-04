@@ -37,7 +37,7 @@ void AccelerationStruct::addTriangle ( const Triangle& t ) {
 *
 *      * slightly altered to find point of intersection *
 */
-bool AccelerationStruct::trimRaytoBounds(Ray &r) {
+bool AccelerationStruct::trimRaytoBounds(Ray &r) const {
 
   float t0 = 0.0;
   float t1 = UNENDLICH;
@@ -82,7 +82,7 @@ bool AccelerationStruct::trimRaytoBounds(Ray &r) {
   same sign in all components
   @return false if whole packet misses scene
 **/
-bool AccelerationStruct::trimRaytoBounds(RayPacket &raypacket) {
+bool AccelerationStruct::trimRaytoBounds(RayPacket &raypacket) const {
 
   if ( !trimRaytoBounds(raypacket.shaft))
     return false;
@@ -97,7 +97,7 @@ bool AccelerationStruct::trimRaytoBounds(RayPacket &raypacket) {
 /**
   @return false if all 4 rays miss the bounds
 **/
-bool AccelerationStruct::trimRaytoBounds(Ray4 &r4) {
+bool AccelerationStruct::trimRaytoBounds(Ray4 &r4) const {
 
   __m128 t0 = _mm_setzero_ps();
   __m128 t1 = _mm_set1_ps(UNENDLICH);

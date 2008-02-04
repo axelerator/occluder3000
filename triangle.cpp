@@ -14,11 +14,12 @@
 #include "raypacket.h"
 #include "radianceray.h"
 #include "accelerationstruct.h"
+#include "stats.h"
 
 Triangle::Triangle(const unsigned int v1,const unsigned int v2,const unsigned int v3, const PhongMaterial& mat, const AccelerationStruct &ast):
 p0(v1), p1(v2), p2(v3), 
- u(as.getVertex(v2)-v1), v(as.getVertex(v3)-as.getVertex(v1)), normal((u%v).normal()), nu(0.0, 0.0, 0.0), nv(0.0, 0.0, 0.0), 
-center(as.getVertex(v1) + 0.33*u + 0.33*v), mat(mat), as(ast) {
+ u(ast.getVertex(v2)-ast.getVertex(v1)), v(ast.getVertex(v3)-ast.getVertex(v1)), normal((u%v).normal()), nu(0.0, 0.0, 0.0), nv(0.0, 0.0, 0.0), 
+center(ast.getVertex(v1) + 0.33*u + 0.33*v), mat(mat), as(ast) {
 }
 
 
@@ -57,7 +58,8 @@ float t,u,v;
 }
 
 bool Triangle::intersect(RadianceRay& r) const {
-float t,u,v;
+   statsinc("Intersections per Frame");
+   float t,u,v;
 
    float inv_det;
 
@@ -90,6 +92,7 @@ float t,u,v;
     current.e2 = this->v;
     current.u = u;
     current.v = v;
+    current.t = t;
     r.setClosestIntersection(current);
   }
   return true;
@@ -101,10 +104,16 @@ void Triangle::intersect(RayPacket& rp, unsigned int idx) const {
 //    Vector3D qvec(tvec % this->u);
 // 
 //    float inv_det;
-    intersect( rp.shaft, idx);
-
+  intersect( rp.shaft, idx);
+/*   if ( intersect( rp.shaft, idx) )
+    return;*/
+   statsinc("Intersections per Frame");
     for( unsigned int i = 0; i < rp.getR4Count() ; ++i ){
        intersect( rp.r4[i], idx);
+   statsinc("Intersections per Frame");
+   statsinc("Intersections per Frame");
+   statsinc("Intersections per Frame");
+   statsinc("Intersections per Frame");
        }
        
 
@@ -139,7 +148,8 @@ void Triangle::intersect(RayPacket& rp, unsigned int idx) const {
       }*/
 //     }
 }
-
+// #define SAMESIDE
+#ifdef SAMESIDE
 bool Triangle::intersect(Ray4& rp, unsigned int idx) const {
 
    const SSEVec3D p04(as.getVertex(p0));
@@ -150,20 +160,72 @@ bool Triangle::intersect(Ray4& rp, unsigned int idx) const {
    const SSEVec3D pvec(rp.direction % v4);
    const SSE4 det(u4 * pvec);
    
-  __m128 hitMask = _mm_or_ps(_mm_cmplt_ps(det.v.sse, EPSILON4INV ), _mm_cmplt_ps(EPSILON4, det.v.sse ));
+  __m128 hitMask = _mm_or_ps(_mm_cmplt_ps(det.v.sse, SSE4::EPSILON4_NEG ), _mm_cmplt_ps(SSE4::EPSILON4, det.v.sse ));
+  if ( ! ( _mm_movemask_ps(hitMask) ))
+    return true;
+    
+  const SSE4 inv_det( _mm_div_ps(SSE4::ONE , det.v.sse) );
+  const SSE4 u( _mm_mul_ps( tvec * pvec , inv_det.v.sse ) );
+
+  __m128 lastTestMask = _mm_and_ps(_mm_cmpgt_ps(u.v.sse, _mm_setzero_ps() ), _mm_cmplt_ps(u.v.sse,SSE4:: ONE ));
+  hitMask = _mm_and_ps(hitMask, lastTestMask);
+  if ( ! ( _mm_movemask_ps(hitMask) ))
+    return (_mm_movemask_ps(lastTestMask) == 0); 
+
+   __m128 v = _mm_mul_ps( rp.direction * qvec, inv_det.v.sse );
+  
+  lastTestMask = _mm_and_ps(_mm_cmpgt_ps(v, _mm_setzero_ps() ),  _mm_cmplt_ps(_mm_add_ps(u.v.sse, v), SSE4::ONE ));
+  hitMask = _mm_and_ps(hitMask,lastTestMask );
+  if ( ! ( _mm_movemask_ps(hitMask) ))
+    return false;(_mm_movemask_ps(lastTestMask) == 0);
+  
+  const __m128 t = _mm_mul_ps( (v4 * qvec), inv_det.v.sse);
+  hitMask = _mm_and_ps(hitMask, _mm_and_ps(_mm_cmpgt_ps(t, rp.tmin.v.sse ), _mm_cmpgt_ps(rp.tmax.v.sse, t )));
+  if ( ! ( _mm_movemask_ps(hitMask) ))
+    return false;  
+     
+  hitMask = _mm_and_ps(_mm_cmplt_ps(t, rp.t.v.sse), hitMask);
+  
+  rp.mask |= _mm_movemask_ps(hitMask);
+  
+  // update u,v,t for closer hits
+  
+  const __m128 inv_closerhits = _mm_andnot_ps(hitMask, SSE4::BINONE);
+  rp.u = _mm_or_ps(_mm_and_ps(u.v.sse, hitMask), _mm_and_ps(rp.u.v.sse, inv_closerhits));
+  rp.v = _mm_or_ps(_mm_and_ps(v, hitMask), _mm_and_ps(rp.v.v.sse, inv_closerhits));
+  rp.t = _mm_or_ps(_mm_and_ps(t, hitMask), _mm_and_ps(rp.t.v.sse, inv_closerhits));
+  
+  Intfloat triidx;
+  triidx.i = idx;
+  __m128 idxf = _mm_set1_ps(triidx.f);
+  rp.hitTriangle = _mm_or_ps(_mm_and_ps(idxf, hitMask) , _mm_and_ps(rp.hitTriangle.v.sse, inv_closerhits)); 
+  return false;
+}
+#else
+bool Triangle::intersect(Ray4& rp, unsigned int idx) const {
+
+   const SSEVec3D p04(as.getVertex(p0));
+   const SSEVec3D tvec(rp.origin - p04);
+   const SSEVec3D qvec(tvec % this->u);
+   const SSEVec3D v4(this->v);
+   const SSEVec3D u4(this->u);
+   const SSEVec3D pvec(rp.direction % v4);
+   const SSE4 det(u4 * pvec);
+   
+  __m128 hitMask = _mm_or_ps(_mm_cmplt_ps(det.v.sse, SSE4::EPSILON4_NEG ), _mm_cmplt_ps(SSE4::EPSILON4, det.v.sse ));
   if ( ! ( _mm_movemask_ps(hitMask) ))
     return false;
     
-  const SSE4 inv_det( _mm_div_ps(ONE , det.v.sse) );
+  const SSE4 inv_det( _mm_div_ps(SSE4::ONE , det.v.sse) );
   const SSE4 u( _mm_mul_ps( tvec * pvec , inv_det.v.sse ) );
 
-  hitMask = _mm_and_ps(hitMask, _mm_and_ps(_mm_cmpgt_ps(u.v.sse, _mm_setzero_ps() ), _mm_cmplt_ps(u.v.sse, ONE )));
+  hitMask = _mm_and_ps(hitMask, _mm_and_ps(_mm_cmpgt_ps(u.v.sse, _mm_setzero_ps() ), _mm_cmplt_ps(u.v.sse,SSE4:: ONE )));
   if ( ! ( _mm_movemask_ps(hitMask) ))
     return false;  
 
    __m128 v = _mm_mul_ps( rp.direction * qvec, inv_det.v.sse );
   hitMask = _mm_and_ps(hitMask, _mm_and_ps(_mm_cmpgt_ps(v, _mm_setzero_ps() ), 
-  _mm_cmplt_ps(_mm_add_ps(u.v.sse, v), ONE )));
+  _mm_cmplt_ps(_mm_add_ps(u.v.sse, v), SSE4::ONE )));
   if ( ! ( _mm_movemask_ps(hitMask) ))
     return false;  
   
@@ -177,9 +239,8 @@ bool Triangle::intersect(Ray4& rp, unsigned int idx) const {
   rp.mask |= _mm_movemask_ps(hitMask);
   
   // update u,v,t for closer hits
-  static __m128 one;
-  memset(&one, 0xff, sizeof(__m128));  
-  const __m128 inv_closerhits = _mm_andnot_ps(hitMask, one);
+  
+  const __m128 inv_closerhits = _mm_andnot_ps(hitMask, SSE4::BINONE);
   rp.u = _mm_or_ps(_mm_and_ps(u.v.sse, hitMask), _mm_and_ps(rp.u.v.sse, inv_closerhits));
   rp.v = _mm_or_ps(_mm_and_ps(v, hitMask), _mm_and_ps(rp.v.v.sse, inv_closerhits));
   rp.t = _mm_or_ps(_mm_and_ps(t, hitMask), _mm_and_ps(rp.t.v.sse, inv_closerhits));
@@ -190,6 +251,7 @@ bool Triangle::intersect(Ray4& rp, unsigned int idx) const {
   rp.hitTriangle = _mm_or_ps(_mm_and_ps(idxf, hitMask) , _mm_and_ps(rp.hitTriangle.v.sse, inv_closerhits)); 
   return true;
 }
+#endif
 
 Vector3D Triangle::getNormalAt(const IntersectionResult& ir) const {
   return Vector3D(normal + (nu * ir.u) + (nv * ir.v));
