@@ -12,7 +12,7 @@
 #include "light.h"
 
 Light::Light():
-position(0.0), color(RGBvalue(1.0, 1.0, 1.0)), col4(color.getRGB()), direction(0.0, -1.0, 0.0){
+position(0.0), pos4(position), color(RGBvalue(1.0, 1.0, 1.0)), col4(color.getRGB()), direction(0.0, -1.0, 0.0){
 
 }
 
@@ -28,6 +28,18 @@ Light::~Light()
 {
 }
 
+void Light::setPropertyFromString(const std::string& key, const std::string& value) {
+  if ( key == "position") {
+    position = Vector3D(value);
+    pos4 = SSEVec3D(position);
+  } else if ( key == "diffuse") {
+    color = RGBvalue(value);
+    col4 = SSEVec3D(color.getRGB());
+  } else if ( key == "direction") 
+    direction = Vector3D(value);
+   else 
+    std::cerr << "unknown property for light: " << key << std::endl;
+}
 
 
 

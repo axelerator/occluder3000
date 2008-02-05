@@ -25,7 +25,7 @@ class AccelerationStruct;
 class PhotonMap;
 class RadianceRay;
 
-enum ObjectType {NONE, LIGHT, CAMERA};
+enum ObjectType {NONE, LIGHT, MATERIAL, CAMERA};
 
 /**
 Container for geomtrydatastruct and other objects (lights, cams, etc)
@@ -39,10 +39,12 @@ public:
     void addMaterial(const std::string& name, const PhongMaterial& mat) {
       material.insert(std::pair<std::string, PhongMaterial>(name, mat));
     }
-    const PhongMaterial& getMaterial(const std::string& name) ;
+    PhongMaterial& getMaterial(const std::string& name);
     void addLight(const Light& l);
+    Light &addLight() { lights.push_back(Light()); return lights.back();}
     const std::vector<Light> &getLights() const { return lights; }
     Light &getLight(int i) { return lights[i]; }
+    unsigned int getLightCount() { return lights.size(); }
     void setGeometry(AccelerationStruct *geometry) {assert(geometry != 0 ); this->geometry = geometry;}
     AccelerationStruct &getGeometry() const { return *geometry; }
     void updatePhotonMap();

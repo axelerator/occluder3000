@@ -216,7 +216,7 @@ int main ( int argc, char *argv[] ) {
 //   scene.addLight ( red );
 //   scene.addLight ( blue );
 //   scene.addLight ( green );
-   scene.addLight ( white );
+//    scene.addLight ( white );
 
 
 //   AccelerationStruct *structure = 0;
@@ -228,11 +228,11 @@ int main ( int argc, char *argv[] ) {
 //   }
 //   scene.setGeometry ( structure );
 
-  scene.addMaterial ( "red", PhongMaterial ( 1.0, 0.0, 0.0, 1.0, 0.0, 0.0 ) );
-  scene.addMaterial ( "blue", PhongMaterial ( 0.0, 0.0, 1.0, 1.0, 0.0, 0.0 ) );
-  scene.addMaterial ( "green", PhongMaterial ( 0.0, 1.0, 0.0, 1.0, 0.0, 0.0 ) );
-  scene.addMaterial ( "mirror", PhongMaterial ( 1.0, 1.0, 1.0, 1.0, 0.0, 1.0 ) );
-  scene.addMaterial ( "glass", PhongMaterial ( 0.2, 0.5, 1.0, 0.01, 1.03, 0.0 ) );
+//   scene.addMaterial ( "red", PhongMaterial ( 1.0, 0.0, 0.0, 1.0, 0.0, 0.0 ) );
+//   scene.addMaterial ( "blue", PhongMaterial ( 0.0, 0.0, 1.0, 1.0, 0.0, 0.0 ) );
+//   scene.addMaterial ( "green", PhongMaterial ( 0.0, 1.0, 0.0, 1.0, 0.0, 0.0 ) );
+//   scene.addMaterial ( "mirror", PhongMaterial ( 1.0, 1.0, 1.0, 1.0, 0.0, 1.0 ) );
+//   scene.addMaterial ( "glass", PhongMaterial ( 0.2, 0.5, 1.0, 0.01, 1.03, 0.0 ) );
 
 //   if ( filename.find ( ".obj" ) != std::string::npos )
 //     ObjectLoader::loadOBJ ( filename, scene );

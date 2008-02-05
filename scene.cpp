@@ -43,7 +43,7 @@ const bool Scene::loadFromFile ( const std::string& filename ) {
   boost::regex reCfgLine;
   boost::regex reSctLine;
   std::string reStrConfigLine = "(\\w+)\\s*=\\s*(.*)(#.*)?";
-  std::string reStrSectionLine = "\\[(\\w+)\\](#.*)?";
+  std::string reStrSectionLine = "\\[(\\w+)(:\\w+)?\\](#.*)?";
 
   try  {
     reCfgLine.assign ( reStrConfigLine );
@@ -115,15 +115,25 @@ const bool Scene::loadFromFile ( const std::string& filename ) {
 
   // parse scene objects (camera, lights)
   ObjectType currentObject = NONE;
+  std::string lastMat("default");
   do {
     const std::string& line = ( *it ) ;
     if ( boost::regex_match ( line.c_str(), matches, reSctLine ) ) {
       const std::string value ( matches[1].first, matches[1].second );
       if ( value == "camera" )
         currentObject = CAMERA;
-      else if ( value == "light" )
+      else if ( value == "light" ) {
         currentObject = LIGHT;
-      else
+        addLight();
+      } else if ( value == "material" ) {
+        currentObject = MATERIAL;
+        if ( matches.size() < 2 )
+          std::cerr << "Material in line" << linenr << "is missing identifier" << std::endl;
+        else {
+          lastMat = std::string( matches[2].first, matches[2].second ).substr(1);
+//           material.insert(std::pair<std::string, PhongMaterial>(lastMat, PhongMaterial()));
+        }
+      } else
         std::cerr << "Unknown object type " << value << " in line " << linenr  << std::endl;
     } else {
       std::cerr << "Error parsing line " << linenr << ": " << line << std::endl;
@@ -139,7 +149,8 @@ const bool Scene::loadFromFile ( const std::string& filename ) {
         const std::string key ( matches[1].first, matches[1].second );
         switch ( currentObject ) {
           case CAMERA: cam.setPropertyFromString ( key, value ); break;
-          case LIGHT:  /*(light.setPropertyFromString(key, value))*/; break;
+          case LIGHT: (lights.back()).setPropertyFromString(key, value); break;
+          case MATERIAL: material[lastMat].setPropertyFromString(key, value); break;
           default: std::cerr << "No object that " << line << " coud be assigned to, in line " << linenr << std::endl;
         }
       } else if ( ( line == "" ) || ( line[0] == '#' ) ) {
@@ -151,25 +162,6 @@ const bool Scene::loadFromFile ( const std::string& filename ) {
     ++linenr;
     }
   } while ( ( it != file.end() ) );
-
-//       else if ( ( arg == "-r" ) || ( arg == "resolution" ) ) {
-//         if ( currArg+1 >= argc ) {
-//           printUsage();
-//           exit ( 0 );
-//         } else {
-//           boost::regex resreg;
-//           resreg.assign ( "([0-9]+)x([0-9]+)" );
-//           boost::cmatch matches;
-//           if ( boost::regex_match ( argv[++currArg], matches, resreg ) ) {
-//             std::string widthstr ( matches[1].first, matches[1].second );
-//             std::string heightstr ( matches[2].first, matches[2].second );
-//             width = atoi ( widthstr.c_str() );
-//             height = atoi ( heightstr.c_str() );
-//           } else {
-//             std::cout << "Give resolution in form <height>x<widht> , i.e. 800x600\n --help for more information" << std::endl;
-//           }
-//         }
-//       }
   return true;
 }
 
@@ -177,10 +169,10 @@ void Scene::addLight ( const Light& l ) {
   lights.push_back ( l );
 }
 
-const PhongMaterial& Scene::getMaterial ( const std::string& name )  {
-  if ( material.find ( name ) == material.end() )
-    return defaultMaterial;
-  else
+PhongMaterial& Scene::getMaterial ( const std::string& name ) {
+//   if ( material.find ( name ) == material.end() )
+//     return defaultMaterial;
+//   else
     return material[name];
 }
 

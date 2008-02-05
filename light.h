@@ -29,6 +29,7 @@ public:
     ~Light();
     void setPosition(float x, float y, float z);
     const Vector3D& getDirection() const {return direction;}
+    void setPropertyFromString(const std::string& key, const std::string& value);
 private:
     Vector3D position;
     SSEVec3D pos4;

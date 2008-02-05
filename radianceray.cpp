@@ -47,9 +47,8 @@
             float cspot = fmaxf(((l * -1.0f) * light.getDirection()), 0.0f);
             dif *= cspot;
             if ( dif > 0.0 ) {
-  //            Ray intersectToLigth ( closestIntersection.intersectionPoint, l, ( light.getPosition() -  closestIntersection.intersectionPoint ).length(), 0.0f, &hitTriangle );
               Ray intersectToLigth ( closestIntersection.intersectionPoint, l, tmax , 0.0f, &hitTriangle );
-             /* if ( !scene.getGeometry().isBlocked(intersectToLigth) )*/ { //shadowtest
+              if ( !scene.getGeometry().isBlocked(intersectToLigth) ) { //shadowtest
                 direct.add ( dif * mat.diffuse[0] * light.getColor().getRGB() [0],
                             dif * mat.diffuse[1] * light.getColor().getRGB() [1],
                             dif * mat.diffuse[2] * light.getColor().getRGB() [2] );

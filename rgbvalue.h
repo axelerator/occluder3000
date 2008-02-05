@@ -11,7 +11,7 @@
 //
 #ifndef RGBVALUE_H
 #define RGBVALUE_H
-#include <string.h>
+#include <string>
 
 /**
   @author Axel Tetzlaff <axel.tetzlaff@gmx.de>
@@ -22,6 +22,8 @@ class RGBvalue
     RGBvalue(float r = 0.0f, float g = 0.0f, float b = 0.0f);
     RGBvalue(const float rgb[3]);
     RGBvalue(const RGBvalue& copy);
+    RGBvalue(const std::string& s);
+    
     RGBvalue& operator=(const RGBvalue& copy) {
       memcpy(this, &copy, sizeof(RGBvalue));
       return *this;
