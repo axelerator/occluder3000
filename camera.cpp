@@ -32,8 +32,8 @@ void Camera::setPosition(const Vector3D& position) {
 void Camera::update() {
   const Vector3D eyeToTarget = (target - position).normal();
   target = position + eyeToTarget;
-  u = (up % eyeToTarget).normal();
-  v = (u % eyeToTarget ).normal();
+  u = (eyeToTarget % up).normal();
+  v = (eyeToTarget % u).normal() ;
 
   // Calculate the center of the projectionplane
   Vector3D  pplaneCenter = position + (eyeToTarget * d);

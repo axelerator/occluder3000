@@ -28,8 +28,11 @@
 
     void RadianceRay::shade(RGBvalue& result, unsigned int depth) {
         if (closestIntersection.triangle != 0 ) {
-//           result = RGBvalue(1.0, 1.0, 1.0);
-//           return;
+          #ifndef NDEBUG
+              const float v = fminf((float)hittestcount/hmax, 1.0) * M_PI_2;
+              result = RGBvalue(sin(v), 0.0, 0.0);
+              return;
+          #endif
           const Triangle &hitTriangle = * ( closestIntersection.triangle );
           Vector3D n ( hitTriangle.getNormalAt ( closestIntersection ) );
           const PhongMaterial& mat = hitTriangle.getMaterial();

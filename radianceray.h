@@ -33,12 +33,20 @@ class RadianceRay : public Ray{
     Intersection& getClosestIntersection()  { return closestIntersection; }
     void setClosestIntersection(const Intersection& newInters) { closestIntersection = newInters; }
     void shade(RGBvalue& result, unsigned int depth);
+
+#ifndef NDEBUG
+    unsigned int hittestcount;
+    static unsigned int hmax;
+#endif
+
   private:
 
 
     // hit info
     Intersection closestIntersection;
     const Scene &scene;
+
+
 
 };
 

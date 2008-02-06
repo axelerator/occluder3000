@@ -161,7 +161,8 @@ int main ( int argc, char *argv[] ) {
     std::cerr << "Failed to load " << filename << std::endl;
     exit(1);
   }
-
+  width = scene.getCamera().resolution[0];
+  height = scene.getCamera().resolution[1];
   // Initialize SDL's subsystems - in this case, only video.
   if ( SDL_Init ( SDL_INIT_VIDEO ) < 0 ) {
     fprintf ( stderr, "Unable to init SDL: %s\n", SDL_GetError() );
@@ -261,7 +262,7 @@ int main ( int argc, char *argv[] ) {
 
   std::cout << "start rendering..." << std::endl;
   float angle = 0.0;
-
+  const Camera cam = scene.getCamera();
   unsigned int frame = 0;
   glBindBuffer ( GL_PIXEL_UNPACK_BUFFER_ARB, id );
   GLubyte *mem = 0;
@@ -304,9 +305,9 @@ int main ( int argc, char *argv[] ) {
     Stats::getInstance().nextFrame();
   } while ( !profile && !done );
   std::cout << Stats::getInstance();
-//   std::cout << "\tIntersections per Ray:\t\t\t" << (Stats::getInstance().get("Intersections per Frame") / (cam.resolution[0]*cam.resolution[1])) << "\n";
+  std::cout << "\tIntersections per Ray:\t\t\t" << (Stats::getInstance().get("Intersections per Frame") / (cam.resolution[0]*cam.resolution[1])) << "\n";
   std::cout << "\tTrianglecount:\t\t\t" << scene.getGeometry().getTriangleCount() << "\n";
-//   std::cout << "\tResolution:\t\t\t" << cam.resolution[0] << "x" <<cam.resolution[1]<< "\n";
-//   std::cout << "\tRays per second:\t\t\t" << ((cam.resolution[0]*cam.resolution[1])/(Stats::getInstance().get("Render Time"))) << "\n";
+  std::cout << "\tResolution:\t\t\t" << cam.resolution[0] << "x" <<cam.resolution[1]<< "\n";
+  std::cout << "\tRays per second:\t\t\t" << ((cam.resolution[0]*cam.resolution[1])/(Stats::getInstance().get("Render Time"))) << "\n";
   return 0;
 }

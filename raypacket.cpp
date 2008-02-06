@@ -26,11 +26,11 @@ bool RayPacket::set ( const Vector3D& origin, const Vector3D& u, const Vector3D&
 //   int m2 = _mm_movemask_ps( rp->dy4 );
 //   int m3 = _mm_movemask_ps( rp->dz4 );
 //   if (((m1 == 0) || (m1 == 15)) && ((m2 == 0) || (m2 == 15)) && ((m3 == 0) || (m3 == 15))) valid = true;
-// 
+//
 
 // TODO: this is still wrong:
   bool incoherent = (
-                      (    ( shaft.direction.c[0].v.f[0] < 0 ) == ( shaft.direction.c[0].v.f[3] < 0 ) )
+                      ( ( shaft.direction.c[0].v.f[0] < 0 ) == ( shaft.direction.c[0].v.f[3] < 0 ) )
                       && ( ( shaft.direction.c[1].v.f[0] < 0 ) == ( shaft.direction.c[1].v.f[3] < 0 ) )
                       && ( ( shaft.direction.c[2].v.f[0] < 0 ) == ( shaft.direction.c[2].v.f[3] < 0 ) )
                     );
@@ -68,8 +68,8 @@ void RayPacket::shade ( GLubyte *fbuffer, unsigned int stride, unsigned int dept
   unsigned int mempos = 0;
   const unsigned int tilesPerRow = getPacketWidth() / 2,
                                    str0 = stride - 6,
-                                   str1 = ( 2*stride ) - 6,
-                                   str2 = ( 2*stride ) - getPacketWidth() * 3;
+                                          str1 = ( 2*stride ) - 6,
+                                                 str2 = ( 2*stride ) - getPacketWidth() * 3;
   unsigned tileIdx  = 0;
   const std::vector<Light> lights = scene.getLights();
   std::vector<Light>::const_iterator it = lights.begin();
@@ -115,7 +115,7 @@ void RayPacket::shade ( GLubyte *fbuffer, unsigned int stride, unsigned int dept
         SSE4 dif =  _mm_max_ps ( _mm_setzero_ps (), normals * l4 );
         SSEVec3D ldir4 ( light.getDirection() );
 
-        SSE4 cspot = _mm_max_ps(((l4 * -1.0f) * ldir4),_mm_setzero_ps ());
+        SSE4 cspot = _mm_max_ps ( ( ( l4 * -1.0f ) * ldir4 ),_mm_setzero_ps () );
         dif = dif * cspot;
 
         for ( unsigned int c = 0; c < 4 ; ++c ) {
@@ -123,7 +123,7 @@ void RayPacket::shade ( GLubyte *fbuffer, unsigned int stride, unsigned int dept
             triidx.f = currTile.hitTriangle.v.f[c];
             const Triangle& tri = scene.getGeometry().getTriangle ( triidx.i );
 //             Ray intersectToLigth ( poi.get ( c ), l4.get ( c ), tmax.v.f[c], 0.00f, &tri );
-            const Vector3D rtg =  (light.getPosition() - poi.get ( c ));
+            const Vector3D rtg = ( light.getPosition() - poi.get ( c ) );
             Ray intersectToLigth ( poi.get ( c ),rtg.normal(), rtg.length(), 0.00f, &tri );
             dif.v.f[c] = ( scene.getGeometry().isBlocked ( intersectToLigth ) ) ? 0.0 : dif.v.f[c];
           }
@@ -132,57 +132,57 @@ void RayPacket::shade ( GLubyte *fbuffer, unsigned int stride, unsigned int dept
       }
 
       for ( unsigned int c = 0; c < 4 ; ++c ) {
-        if ( r4[tileIdx].mask & ( 1 << c )) {
-        triidx.f = currTile.hitTriangle.v.f[c];
-        const Triangle& tri = scene.getGeometry().getTriangle ( triidx.i );      
-        const PhongMaterial& mat = tri.getMaterial();
-        if ( depth > 0 && mat.reflection > 0.0f ) {
-          const Vector3D normal(normals.get(c));
-          const Vector3D direction(currTile.direction.get(c));
-          Vector3D vpar ( (normal * direction) * normal );
-          Vector3D reflDir ( direction - ( 2 * vpar ) );
-          reflDir.normalize();
-          RadianceRay reflectedRay ( poi.get(c), reflDir, scene );
-          reflectedRay.setIgnore ( &tri );
-          RGBvalue reflected;
-          reflected = scene.getGeometry().trace ( reflectedRay, depth - 1 );
-          float rest = 1.0 -  mat.reflection;
-          for (unsigned int z = 0; z < 3; ++z) {
-            direct.c[z].v.f[c] *= rest;
-            direct.c[z].v.f[c] +=  reflected.getRGB()[z] * mat.reflection;           
+        if ( r4[tileIdx].mask & ( 1 << c ) ) {
+          triidx.f = currTile.hitTriangle.v.f[c];
+          const Triangle& tri = scene.getGeometry().getTriangle ( triidx.i );
+          const PhongMaterial& mat = tri.getMaterial();
+          if ( depth > 0 && mat.reflection > 0.0f ) {
+            const Vector3D normal ( normals.get ( c ) );
+            const Vector3D direction ( currTile.direction.get ( c ) );
+            Vector3D vpar ( ( normal * direction ) * normal );
+            Vector3D reflDir ( direction - ( 2 * vpar ) );
+            reflDir.normalize();
+            RadianceRay reflectedRay ( poi.get ( c ), reflDir, scene );
+            reflectedRay.setIgnore ( &tri );
+            RGBvalue reflected;
+            reflected = scene.getGeometry().trace ( reflectedRay, depth - 1 );
+            float rest = 1.0 -  mat.reflection;
+            for ( unsigned int z = 0; z < 3; ++z ) {
+              direct.c[z].v.f[c] *= rest;
+              direct.c[z].v.f[c] +=  reflected.getRGB() [z] * mat.reflection;
+            }
           }
-        } 
         }
       }
-      
+
       for ( unsigned int c = 0; c < 4 ; ++c ) {
         if ( r4[tileIdx].mask & ( 1 << c ) ) {
           triidx.f = currTile.hitTriangle.v.f[c];
-          const Triangle& tri = scene.getGeometry().getTriangle ( triidx.i );      
-          const PhongMaterial& mat = tri.getMaterial();        
+          const Triangle& tri = scene.getGeometry().getTriangle ( triidx.i );
+          const PhongMaterial& mat = tri.getMaterial();
           if ( depth > 0 && mat.alpha < 1.0f ) {
-            const Vector3D n(normals.get(c));
-            const Vector3D direction(currTile.direction.get(c));            
-            Vector3D refrDirIn ( refractRay ( direction, n, 1.0f, 1.3f ) );
-            RadianceRay reflectedRay ( poi.get(c), refrDirIn, scene );
+            const Vector3D n ( normals.get ( c ) );
+            const Vector3D direction ( currTile.direction.get ( c ) );
+            Vector3D refrDirIn ( refractRay ( direction, n, 1.0f, mat.refract ) );
+            RadianceRay reflectedRay ( poi.get ( c ), refrDirIn, scene );
             reflectedRay.setIgnore ( &tri );
-      
+
             const Intersection &inters = scene.getGeometry().getClosestIntersection ( reflectedRay );
-      
+
             if ( inters.triangle != 0 ) {
-              Vector3D refrDirOut = refractRay ( refrDirIn, inters.triangle->getNormalAt ( inters ) * -1.0, 1.3, 1.0 );
-      
+              Vector3D refrDirOut = refractRay ( refrDirIn, inters.triangle->getNormalAt ( inters ) * -1.0, mat.refract, 1.0 );
+
               RadianceRay r2 = RadianceRay (
                                  inters.intersectionPoint,
                                  refrDirOut, scene
                                );
               r2.setIgnore ( inters.triangle );
-      
+
               RGBvalue refracted = scene.getGeometry().trace ( r2, depth - 1 );
               float rest = 1.0 - mat.alpha;
-              for (unsigned int z = 0; z < 3; ++z) {
-                direct.c[z].v.f[c] *= rest;
-                direct.c[z].v.f[c] +=  refracted.getRGB()[z] * mat.alpha;           
+              for ( unsigned int z = 0; z < 3; ++z ) {
+                direct.c[z].v.f[c] *= mat.alpha;
+                direct.c[z].v.f[c] +=  refracted.getRGB() [z] * rest;
               }
             }
           }

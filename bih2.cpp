@@ -18,7 +18,7 @@
 #define STACKDEPTH 512
 
 BIH::BIH ( const Scene& scene )
-    : AccelerationStruct ( scene ), triangleIndices ( 0 ), minimalPrimitiveCount ( 3 ), maxDepth ( 33 ),
+    : AccelerationStruct ( scene ), triangleIndices ( 0 ), minimalPrimitiveCount ( 1 ), maxDepth ( 33 ),
     markednode ( 0 ) {}
 
 
@@ -29,6 +29,9 @@ void BIH::traverseRecursive ( RadianceRay& r, const BihNode & node, float tmin, 
     for (unsigned int i = node.leafContent[0]; i <= node.leafContent[1]; ++i ) {
       const Triangle& hitTriangle = triangles[triangleIndices[i]];
       hitTriangle.intersect ( r );
+      #ifndef NDEBUG
+        ++r.hittestcount;
+      #endif
     }  
     return;
   }
@@ -164,13 +167,30 @@ bool BIH::traverseShadow ( Ray& r ) const {
   return false;
 }
 
+#ifndef NDEBUG
+  unsigned int RadianceRay::hmax = 0;
+#endif
+
 const RGBvalue BIH::trace ( RadianceRay& r, unsigned int depth ) const {
+  #ifndef NDEBUG
+    r.hittestcount = 0;
+  #endif
+
   if ( !trimRaytoBounds ( r ) )
     return RGBvalue ( 0.0, 0.0, 0.0 );
 
   RGBvalue result ( 0.0, 0.0, 0.0 );
+
+  #ifndef NDEBUG
+
+    traverseRecursive( r, nodes.get(0), r.getMin(), r.getMax() );
+    if (r.hittestcount > RadianceRay::hmax ) {
+      RadianceRay::hmax = r.hittestcount;
+      std::cout << "max:" << RadianceRay::hmax << std::endl;
+    }
+  #else
    traverseIterative ( r );
-//   traverseRecursive( r, nodes.get(0), r.getMin(), r.getMax() );
+  #endif
   r.shade ( result, depth );
   return result;
 }

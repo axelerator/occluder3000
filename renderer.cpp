@@ -45,6 +45,9 @@ void Renderer::renderr (const Scene &scene, GLubyte *mem ) {
   currentRay.setStart ( cam.position );
   const float *rgb;
   unsigned int offset = 0;
+  #ifndef NDEBUG
+   unsigned long triri = 0;
+  #endif
   for ( unsigned int y = 0 ; y < cam.resolution[1] ; ++y ) {
     for ( unsigned int x = 0; x < cam.resolution[0]; ++x ) {
       currentRay.setDirection ( ( projectPoint - position ).normal() );
@@ -56,10 +59,16 @@ void Renderer::renderr (const Scene &scene, GLubyte *mem ) {
       mem[offset++] = ( GLubyte ) ( rgb[0]*255 );
       mem[offset++] = ( GLubyte ) ( rgb[1]*255 );
       mem[offset++] = ( GLubyte ) ( rgb[2]*255 );
-    }
+      #ifndef NDEBUG
+        triri += currentRay.hittestcount;
+      #endif
+      }
     projectPoint += projPlaneV;
     projectPoint -= u;
   }
+  #ifndef NDEBUG
+    std::cout << "rrr " << ((double)triri/(cam.resolution[1]*cam.resolution[0])) << std::endl;
+  #endif
 }
 
 void Renderer::renderrPackets (const Scene &scene, GLubyte *mem ) {
