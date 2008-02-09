@@ -1,6 +1,6 @@
-TARGET    = pmrrt
+TARGET    = occluder3000
 
-SOURCES = $(wildcard *.cpp)
+SOURCES = $(wildcard *.cpp) $(wildcard acceleration/*.cpp)  $(wildcard core/*.cpp) $(wildcard renderer/*.cpp) $(wildcard shader/*.cpp)  $(wildcard util/*.cpp)
 
 OBJECTS = $(SOURCES:.cpp=.o)
 
@@ -19,7 +19,7 @@ endif
 
 OPTIMIZATION = -O3 -march=$(ARCH) -falign-functions=4 -ffast-math -fforce-addr -fprefetch-loop-arrays -funroll-loops -fomit-frame-pointer
 
-CPPFLAGS = -I./
+CPPFLAGS = -I./ -I./acceleration -I./core -I./renderer -I./shader -I./util 
 ifeq ($(ENVIR),DEBUG)
 	CFLAGS = -ggdb -Wall -Wextra -Wno-unused-parameter -ansi -pedantic
 else
