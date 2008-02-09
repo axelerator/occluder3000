@@ -304,10 +304,11 @@ int main ( int argc, char *argv[] ) {
 //     std::cout << "total : " << total << std::endl;
     Stats::getInstance().nextFrame();
   } while ( !profile && !done );
-  std::cout << Stats::getInstance();
-  std::cout << "\tIntersections per Ray:\t\t\t" << (Stats::getInstance().get("Intersections per Frame") / (cam.resolution[0]*cam.resolution[1])) << "\n";
-  std::cout << "\tTrianglecount:\t\t\t" << scene.getGeometry().getTriangleCount() << "\n";
-  std::cout << "\tResolution:\t\t\t" << cam.resolution[0] << "x" <<cam.resolution[1]<< "\n";
-  std::cout << "\tRays per second:\t\t\t" << ((cam.resolution[0]*cam.resolution[1])/(Stats::getInstance().get("Render Time"))) << "\n";
+//   std::cout << Stats::getInstance();
+//   std::cout << "\tIntersections per Ray:\t\t\t" << (Stats::getInstance().get("Intersections per Frame") / (cam.resolution[0]*cam.resolution[1])) << "\n";
+//   std::cout << "\tTrianglecount:\t\t\t" << scene.getGeometry().getTriangleCount() << "\n";
+//   std::cout << "\tResolution:\t\t\t" << cam.resolution[0] << "x" <<cam.resolution[1]<< "\n";
+//   std::cout << "\tRays per second:\t\t\t" << ((cam.resolution[0]*cam.resolution[1])/(Stats::getInstance().get("Render Time"))) << "\n";
+
   return 0;
 }

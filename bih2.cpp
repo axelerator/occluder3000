@@ -18,7 +18,7 @@
 #define STACKDEPTH 512
 
 BIH::BIH ( const Scene& scene )
-    : AccelerationStruct ( scene ), triangleIndices ( 0 ), minimalPrimitiveCount ( 1 ), maxDepth ( 33 ),
+    : AccelerationStruct ( scene ), triangleIndices ( 0 ), minimalPrimitiveCount ( 2 ), maxDepth ( 33 ),
     markednode ( 0 ) {}
 
 
@@ -279,7 +279,6 @@ void BIH::construct() {
   for ( unsigned int i = 0 ; i < objectCount ; ++i )
     triangleIndices[i] = i;
   subdivide ( nodes.getNextFree(), 0, objectCount-1, bounds, 0 );
-   std::cout << "construction done. Nodecount:" << nodes.size() << std::endl;
 //   std::cout << "consistency check: " << ( isConsistent() ?"true":"false" ) << std::endl;
 }
 
@@ -558,12 +557,21 @@ unsigned int BIH::leafcount(BihNode &node) {
   return leafcount(node.leftchild[0]) + leafcount(node.leftchild[1]);
 }
 
+double BIH::avgTrisPerLeaf(BihNode &node) {
+  if ( node.type == 3)
+    return node.leafContent[1] - node.leafContent[0] + 1;
+  return (avgTrisPerLeaf(node.leftchild[0]) + avgTrisPerLeaf(node.leftchild[1])) * 0.5;
+}
+
+
 void BIH::analyze() const {
+  std::cout << "Nodecount:" << nodes.size() << "\n";
   std::cout << "Tree depth:" << depth( nodes.get( 0 ) ) << "\n";
   const unsigned int lc = leafcount( nodes.get( 0 ) );
   std::cout << "Leafcount:" << lc << "\n";
+  std::cout << "avgTrisPerLeaf:" << avgTrisPerLeaf( nodes.get( 0 ) ) << "\n";
 
-  std::cout << "Triangles per leaf:" << ( (float)nodes.size()/lc);
+  std::cout << "Triangles per leaf:" << ( (float)triangles.size()/lc);
 
   std::cout << std::endl;
 }

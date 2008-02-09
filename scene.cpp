@@ -30,7 +30,7 @@
 #define PHOTON_COUNT (SPHERE_SAMPLE*SPHERE_SAMPLE)
 
 
-Scene::Scene() :geometry(0), defaultMaterial ( 1.0, 1.0, 1.0, 1.0, 0.0, 0.0 ), causticsMap ( PHOTON_COUNT * 3 ) {
+Scene::Scene() :geometry(new Trianglelist(*this)), defaultMaterial ( 1.0, 1.0, 1.0, 1.0, 0.0, 0.0 ), causticsMap ( PHOTON_COUNT * 3 ) {
   photonMap = new PhotonMap ( PHOTON_COUNT * 3 );
 }
 

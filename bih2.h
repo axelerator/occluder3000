@@ -68,6 +68,7 @@ class BIH : public AccelerationStruct {
     bool checkConsistency ( BihNode *node );
     static unsigned int depth(BihNode &node);
     static unsigned int leafcount(BihNode &node);
+    static double avgTrisPerLeaf(BihNode &node);
     unsigned int *triangleIndices;
     unsigned int minimalPrimitiveCount;
     unsigned int maxDepth; // maximal Depth of recursion of subdivision
