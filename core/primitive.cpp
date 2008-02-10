@@ -11,9 +11,8 @@
 //
 #include "primitive.h"
 #include "scene.h"
-#include "raysegment.h"
 #include "intersection.h"
-
+#include "raysegmentignore.h"
 using namespace Occluder;
 
 Primitive::Primitive(unsigned int p0, unsigned int p1, unsigned int p2, const Scene& scene, const std::string& shaderName):
@@ -45,6 +44,29 @@ bool Primitive::intersects(const RaySegment& r) const {
 
    const float t = (this->v * qvec) * inv_det;
    return ( (t > r.getTMin()) && (t <= r.getTMax()) );
+}
+
+bool Primitive::intersects(const RaySegmentIgnore& r) const {
+   const Vec3 pvec(r.getDirection() % this->v);
+   const float det = this->u * pvec;
+
+   if (det > -EPSILON && det < EPSILON)
+     return false;
+   const float inv_det = 1.0 / det;
+
+   const Vec3 tvec = r.getOrigin() - scene.getVertex(p0);
+
+   const float u = (tvec * pvec) * inv_det;
+   if (u < 0.0 || u > 1.0)
+     return false;
+
+   const Vec3 qvec = tvec % this->u;
+   const float v = (r.getDirection() * qvec) * inv_det;
+   if (v < 0.0 || u + v > 1.0)
+     return false;
+
+   const float t = (this->v * qvec) * inv_det;
+   return ( (t > r.getTMin()) && (t <= r.getTMax()) && ( this != &(r.getIgnoredPrimitve())));
 }
 
 const Intersection Primitive::getIntersection( const RaySegment& r) const {

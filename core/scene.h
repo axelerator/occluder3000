@@ -16,13 +16,13 @@
 
 #include "list.h"
 #include "vec3.h"
+#include "accelerationstructure.h"
 #include "primitive.h"
 #include "aabb.h"
 #include "camera.h"
 #include "directshader.h"
 
 namespace Occluder {
-class AccelerationStructure;
 class Intersection;
 class RaySegment;
 class Light;
@@ -84,12 +84,26 @@ public:
     const Camera& getCamera() const;
 
     /**
-      Determins the point where a ray intersect the first time
+      Determines the point where a ray intersect the first time
       an object of the scene.
       @param the ray in question
       @return The point and other parameters of the intersection @see Intersection
     **/
     const Intersection trace(const RaySegment& ray) const;
+
+    /**
+      Determines if the raysegment is intersected by any primitiv.
+      Primararily used for shadow rays. Calls AccelerationStructure#hasIntersection
+      @return true if the ray hit a primitive between tmin and tmax.
+    **/
+    bool hasIntersection(const RaySegment& ray ) const;
+
+    /**
+      Determines if the raysegment is intersected by any primitiv.
+      Primararily used for shadow rays. Calls AccelerationStructure#hasIntersection
+      @return true if the ray hit a primitive between tmin and tmax.
+    **/
+    bool hasIntersection(const RaySegmentIgnore& ray ) const;
 
     const Shader& getShader(const std::string& name) const ;
 
@@ -152,4 +166,11 @@ inline const Light& Scene::getLight(size_t idx) const {
   return *(lights[idx]);
 }
 
+inline bool Scene::hasIntersection(const RaySegment& ray ) const {
+  return geometry->hasIntersection(ray);
+}
+
+inline bool Scene::hasIntersection(const RaySegmentIgnore& ray ) const {
+  return geometry->hasIntersection(ray);
+}
 #endif

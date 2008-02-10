@@ -12,7 +12,6 @@
 #include "accelerationstructure.h"
 using namespace Occluder;
 
-
 AccelerationStructure::AccelerationStructure( const Scene& scene ):
 scene(scene) {}
 

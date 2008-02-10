@@ -18,6 +18,7 @@
 
 namespace Occluder {
     class Scene;
+    class RaySegmentIgnore;
 
     /**
       A geometric object of the rendered scene. Is now just a triangle,
@@ -38,6 +39,15 @@ public:
          **/
         bool intersects(const RaySegment& r) const;
 
+        /**
+          Tests this primitive and a ray for intersection.
+          @param r the ray the primitive ist to be tested with. It contains a reference
+                   to a primitive which it is defined not to intersect with, for which
+                   an actual arithmetic intersection will be ignored.
+          @return true if the ray interescts this primitive and is not the one that is to
+                  be ignored.
+         **/
+        bool intersects(const RaySegmentIgnore& r) const;
         /**
           Determins the intersection of this primitive and a ray.
           @param r the ray the primitive ist to be tested with
