@@ -26,7 +26,7 @@ public:
 
     virtual ~SingleRayRenderer();
 
-    virtual void render(const Scene& arg1, unsigned char *mem ) const;
+    virtual void render(const Scene& scene, unsigned char *mem ) const;
 
 };
 }

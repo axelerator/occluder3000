@@ -11,7 +11,8 @@
 //
 #include "primitivelist.h"
 #include "scene.h"
-
+#include "raysegmentsse.h"
+#include "intersectionsse.h"
 using namespace Occluder;
 
 PrimitiveList::PrimitiveList( const Scene& scene )
@@ -61,3 +62,10 @@ const Intersection PrimitiveList::getFirstIntersection(const RaySegment& ray) co
 void PrimitiveList::getAllIntersections(const RaySegment& ray, List< const Intersection >& results) const {
 }
 
+void PrimitiveList::determineFirstIntersection(const RaySegmentSSE& ray, IntersectionSSE& result) const  {
+  const size_t primCount = scene.getPrimitiveCount();
+  for (size_t i = 0; i < primCount; ++i) {
+    const Primitive& prim = scene.getPrimitive( i );
+    prim.intersect( ray, result );
+  }
+}

@@ -13,6 +13,9 @@
 #include "scene.h"
 #include "intersection.h"
 #include "raysegmentignore.h"
+#include "raysegmentsse.h"
+#include "intersectionsse.h"
+
 using namespace Occluder;
 
 Primitive::Primitive(unsigned int p0, unsigned int p1, unsigned int p2, const Scene& scene, const std::string& shaderName):
@@ -93,4 +96,43 @@ const Intersection Primitive::getIntersection( const RaySegment& r) const {
     return Intersection::getEmpty();
 
    return Intersection(r.getOrigin() + t * r.getDirection(), u, v, t, *this);
+}
+
+void Primitive::intersect(const RaySegmentSSE& rays, IntersectionSSE& result) const {
+   const Vec3SSE p04(scene.getVertex(p0));
+   const Vec3SSE tvec(rays.getOrigin() - p04);
+   const Vec3SSE qvec(tvec % this->u);
+   const Vec3SSE v4(this->v);
+   const Vec3SSE u4(this->u);
+   const Vec3SSE pvec(rays.getDirection() % v4);
+   const Float4  det(u4 * pvec);
+   
+  Float4 hitMask((det < Float4::EPSILON4_NEG) | (Float4::EPSILON4 < det)) ;
+  if ( hitMask == 0 )
+    return /*false*/;
+    
+  const Float4 inv_det( Float4::ONE / det );
+  const Float4 u( (tvec * pvec) * inv_det );
+
+  hitMask &= ( ( u > Float4::zero() ) & ( u < Float4::ONE ) );
+  if ( hitMask == 0 )
+    return /*false*/;  
+
+  const Float4 v( ( rays.getDirection() * qvec ) * inv_det );
+  hitMask &= (  (v > Float4::zero()) & ( (u + v) < Float4::ONE ) );
+  if ( hitMask == 0 )
+    return;
+
+  const Float4 t((v4 * qvec) * inv_det);
+  hitMask &= ( ( t > rays.getTMin() ) &  ( rays.getTMax() > t ) );
+  if ( hitMask == 0 )
+    return;
+
+  result.updateHits( hitMask, t, u, v);
+//   
+//   Intfloat triidx;
+//   triidx.i = idx;
+//   __m128 idxf = _mm_set1_ps(triidx.f);
+//   rp.hitTriangle = _mm_or_ps(_mm_and_ps(idxf, hitMask) , _mm_and_ps(rp.hitTriangle.v.sse, inv_closerhits)); 
+//   return /*true*/;
 }

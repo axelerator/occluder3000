@@ -30,7 +30,7 @@ public:
     virtual bool hasIntersection(const RaySegmentIgnore& ray) const;
     virtual const Intersection getFirstIntersection(const RaySegment& ray) const;
     virtual void getAllIntersections(const RaySegment& ray, List< const Intersection >& results) const;
-
+    virtual void determineFirstIntersection(const RaySegmentSSE& ray, IntersectionSSE& result) const ;
 };
 }
 #endif

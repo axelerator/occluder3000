@@ -21,6 +21,7 @@
 #include "specularshader.h"
 #include "directshader.h"
 #include "light.h"
+#include "intersectionsse.h"
 
 using namespace Occluder;
 
@@ -214,6 +215,13 @@ size_t Scene::addPrimitive(const Primitive& prim) {
 const Intersection Scene::trace(const RaySegment& ray) const {
     return geometry->getFirstIntersection(ray);
 }
+
+const IntersectionSSE Scene::trace(const RaySegmentSSE& rays) const {
+  IntersectionSSE result;
+  geometry->determineFirstIntersection(rays, result);
+  return result;
+}
+
 
 const Shader& Scene::getShader(const std::string& name) const {
   std::map<std::string, const Shader*>::const_iterator mat = shaderMap.find(name);

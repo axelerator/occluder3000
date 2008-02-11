@@ -34,8 +34,9 @@ public:
 
     /**
       Calculates the radiance at this intersection into a given direction
-      @param the direction for which radiance is to be calculated, pointing towards surface
-      @param the calculated radiance
+      @param direction the direction for which radiance is to be calculated, pointing towards surface
+      @param depth steps left until recursion will abort
+      @return the calculated radiance
      **/
     Vec3 getRadiance(const Vec3& direction, unsigned int depth) const;
     /**

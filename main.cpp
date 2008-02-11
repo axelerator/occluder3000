@@ -4,7 +4,7 @@
 #include "scene.h"
 #include "gldisplay.h"
 #include "singlerayrenderer.h"
-
+#include "sserenderer.h"
 using namespace Occluder;
 
 char done = 0;
@@ -69,11 +69,13 @@ int main ( int argc, char *argv[] ) {
   }
 
 
+//   SSERenderer renderer;
   SingleRayRenderer renderer;
   GLDisplay display(renderer, cam.getResolution()[0], cam.getResolution()[1]);
 
   display.display(scene);
 
+  std::cout << "paff!" << std::endl;
   while ( !done )
     userEvents( scene );
 

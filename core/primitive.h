@@ -19,7 +19,8 @@
 namespace Occluder {
     class Scene;
     class RaySegmentIgnore;
-
+    class RaySegmentSSE;
+    class IntersectionSSE;
     /**
       A geometric object of the rendered scene. Is now just a triangle,
       and implemented in place to avoid unnecessary virtual binding.
@@ -55,6 +56,16 @@ public:
                   intersection occurs. @see Intersection#getEmpty
          **/
         const Intersection getIntersection( const RaySegment& r) const;
+
+        /**
+          Tests four rays in parallel for intersection with the primitive,
+          utilizing SSE instrunctions. 
+          @param ray the four rays in an SSE suitable format
+          @param result if a ray intersects with the primitive and the intersection
+                        is closer to the origin as the one already stored in result
+                        it gets updated with the newly found one.
+         **/
+        void intersect(const RaySegmentSSE& rays, IntersectionSSE& result) const;
 
         /**
           @return the shader aka material of this primitive

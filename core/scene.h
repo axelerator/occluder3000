@@ -86,10 +86,19 @@ public:
     /**
       Determines the point where a ray intersect the first time
       an object of the scene.
-      @param the ray in question
+      @param ray the ray in question
       @return The point and other parameters of the intersection @see Intersection
     **/
     const Intersection trace(const RaySegment& ray) const;
+
+    /**
+      Determines the intersection points for four rays  and the  scene that 
+      are closest to the ray origins
+      @param rays the four ray in question
+      @return The points and other parameters of the intersection @see IntersectionSSE
+    **/
+    const IntersectionSSE trace(const RaySegmentSSE& rays) const;
+
 
     /**
       Determines if the raysegment is intersected by any primitiv.
@@ -173,4 +182,6 @@ inline bool Scene::hasIntersection(const RaySegment& ray ) const {
 inline bool Scene::hasIntersection(const RaySegmentIgnore& ray ) const {
   return geometry->hasIntersection(ray);
 }
+
+
 #endif

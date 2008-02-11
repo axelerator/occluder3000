@@ -60,6 +60,12 @@ public:
     **/
     virtual void getAllIntersections(const RaySegment& ray, List<const Intersection>& results) const  = 0;
 
+    /**
+      same as @see AccelerationStructure#hasIntersection(const RaySegmentIgnore& ray) but the operation
+      is performed on four rays in parallel with SSE instructions.
+     **/
+    virtual void determineFirstIntersection(const RaySegmentSSE& ray, IntersectionSSE& result) const = 0;
+
 protected:
   const Scene& scene;
 };

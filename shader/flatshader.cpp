@@ -10,6 +10,7 @@
 //
 //
 #include "flatshader.h"
+#include "intersectionsse.h"
 
 using namespace Occluder;
 
@@ -24,6 +25,12 @@ FlatShader::~FlatShader() {
 
 Vec3 FlatShader::getRadiance(const Vec3& direction, const Intersection& intersection, unsigned int depth) const {
   return color;
+}
+
+Vec3SSE FlatShader::getRadiance( const Vec3SSE& directions,  const IntersectionSSE& intersections, unsigned int depth) const {
+Float4 hitMask = intersections.getHitMask();
+Vec3SSE result(Vec3(1.0f));
+return result;
 }
 
 
