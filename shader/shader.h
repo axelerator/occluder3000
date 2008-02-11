@@ -30,7 +30,7 @@ public:
         @param scene contains the scene this shader belongs to, to enable
                      the shader to look up global parameters like i.e. lights
      **/
-    Shader(const Scene& scene);
+    Shader( const std::string& name, const Scene& scene );
 
     virtual ~Shader();
     /**
@@ -42,11 +42,13 @@ public:
                           be calculated at
       @return the calulated radiance
      **/
-    virtual Vec3 getRadiance(const Vec3& direction, const Intersection& intersection) const = 0;
+    virtual Vec3 getRadiance(const Vec3& direction, const Intersection& intersection, unsigned int depth) const = 0;
+
+    virtual void setPropertyFromString(const std::string& key, const std::string& value );
 
 protected:
+  const std::string name;
   const Scene& scene;
-
 
 };
 }

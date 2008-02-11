@@ -25,8 +25,8 @@ position(position), u(u), v(v), t(t), primitive(primitive){}
 Intersection::~Intersection() {
 }
 
-Vec3 Intersection::getRadiance(const Vec3& direction) const {
-  return primitive.getShader().getRadiance(direction, *this);
+Vec3 Intersection::getRadiance(const Vec3& direction, unsigned int depth) const {
+  return primitive.getShader().getRadiance(direction, *this, depth);
 }
 
 /**

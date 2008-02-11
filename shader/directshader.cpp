@@ -18,8 +18,8 @@
 
 using namespace Occluder;
 
-DirectShader::DirectShader(const Vec3& color, const Scene& scene)
-: Shader(scene), color(color) {
+DirectShader::DirectShader(const std::string& name, const Scene& scene, const Vec3& color)
+: Shader(name, scene), color(color) {
 }
 
 
@@ -27,7 +27,7 @@ DirectShader::~DirectShader() {
 }
 
 
-Vec3 DirectShader::getRadiance(const Vec3& direction, const Intersection& intersection) const {
+Vec3 DirectShader::getRadiance(const Vec3& direction, const Intersection& intersection, unsigned int depth) const {
   const size_t lightCount = scene.getLightCount();
   Vec3 radiance(0.0f);
   for ( size_t i = 0; i < lightCount; ++i) {
@@ -48,4 +48,9 @@ Vec3 DirectShader::getRadiance(const Vec3& direction, const Intersection& inters
   return radiance;
 }
 
-
+void DirectShader::setPropertyFromString(const std::string& key, const std::string& value ) {
+  if ( key == "diffuse" )
+    color = Vec3( value.c_str());
+  else
+    Shader::setPropertyFromString(key, value);
+}

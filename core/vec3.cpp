@@ -43,6 +43,18 @@ Vec3 Vec3::getRandomSphereVec() {
         return Vec3( cos(angle1) * sin(angle2),  cos(angle2), sin(angle1)) * sin(angle2);
 }
 
+Vec3 Vec3::refract(const Vec3& n, float nFrom, float nTo) const {
+  float ne = (*this) * n;
+  float reflection = 1.0 - pow((nFrom/nTo), 2.0) * (1.0 - pow(ne, 2.0));
+
+  if (reflection < 0.0) {
+          Vec3 vpar( ne * n );
+          Vec3 reflDir((*this) - ( 2 * vpar ));
+          reflDir.normalize();  
+          return reflDir;
+  }
+  return Vec3((((*this) - (n * ne)) * (nFrom/nTo) - (n * sqrt(reflection))).normal());
+}
 
 
 std::ostream& Occluder::operator << (std::ostream& os, const Vec3& v) {

@@ -13,8 +13,8 @@
 
 using namespace Occluder;
 
-FlatShader::FlatShader(const Vec3& color, const Scene& scene)
-: Shader(scene), color(color) {
+FlatShader::FlatShader(const std::string& name, const Scene& scene, const Vec3& color)
+: Shader(name, scene), color(color) {
 }
 
 
@@ -22,8 +22,14 @@ FlatShader::~FlatShader() {
 }
 
 
-Vec3 FlatShader::getRadiance(const Vec3& direction, const Intersection& intersection) const {
+Vec3 FlatShader::getRadiance(const Vec3& direction, const Intersection& intersection, unsigned int depth) const {
   return color;
 }
 
 
+void FlatShader::setPropertyFromString(const std::string& key, const std::string& value ) {
+  if ( key == "color" )
+    color = Vec3( value.c_str());
+  else
+    Shader::setPropertyFromString(key, value);
+}

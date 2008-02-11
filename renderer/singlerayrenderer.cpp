@@ -38,7 +38,7 @@ void SingleRayRenderer::render(const Scene& scene,unsigned char *mem ) const {
       const RaySegment currentRay(cam.getPosition(), ( projectPoint - cam.getPosition() ).normal());
       const Intersection intersection = scene.trace(currentRay);
       if ( !intersection.isEmpty()) {
-        const Vec3 radiance = intersection.getRadiance(currentRay.getDirection());
+        const Vec3 radiance = intersection.getRadiance(currentRay.getDirection(), 5);
         mem[offset++] = (unsigned char)(radiance[0] * 255.0f );
         mem[offset++] = (unsigned char)(radiance[1] * 255.0f );
         mem[offset++] = (unsigned char)(radiance[2] * 255.0f );

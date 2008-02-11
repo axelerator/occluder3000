@@ -10,13 +10,17 @@
 //
 //
 #include "shader.h"
+#include <iostream>
+
 using namespace Occluder;
 
-Shader::Shader(const Scene& scene) : scene(scene){
+Shader::Shader(const std::string& name, const Scene& scene) : name(name), scene(scene){
 }
 
 
 Shader::~Shader() {
 }
 
-
+void Shader::setPropertyFromString(const std::string& key, const std::string& value ) {
+  std::cerr << "Shader property " << key << " is not valid\n";
+}

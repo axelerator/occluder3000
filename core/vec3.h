@@ -94,9 +94,31 @@ public:
     float length() const;
     float lengthSquare() const;
 
+    /**
+      @return the vector resized to length of 1.
+     **/
     Vec3 normal() const;
+    
+    /**
+      @param rhs the operand
+      @return the angle between this vector and the operand
+     **/
     float angleTo(Vec3& rhs);
+  
+    /** 
+       calculates the reflection of a vector at a surface 
+       @param normal the normal of the surface this vectore gets reflected at
+       @return the ideally, on the surface of plane with normal, reflected vector
+     **/
     Vec3 reflect(const Vec3& normal) const;
+
+    /**
+      Calculates the refracted direction of an transmitted ray.
+      @param n normal of the surface
+      @param nFrom refractive index of the material the ray is comming from
+      @param nTo refractive index of the material the ray enters
+     **/
+    Vec3 refract(const Vec3& n, float nFrom, float nTo ) const;
 
     static Vec3 getRandomSphereVec();
 

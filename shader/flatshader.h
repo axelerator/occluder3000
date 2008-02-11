@@ -24,12 +24,12 @@ Shades the object with a constant color. Does not take any lightsources into acc
 class FlatShader : public Shader
 {
 public:
-    FlatShader(const Vec3& color, const Scene& scene);
+    FlatShader(const std::string& name, const Scene& scene, const Vec3& color = Vec3(1.0f));
 
     virtual ~FlatShader();
 
-    virtual Vec3 getRadiance(const Vec3& direction, const Intersection& intersection) const;
-
+    virtual Vec3 getRadiance(const Vec3& direction, const Intersection& intersection, unsigned int depth) const;
+    virtual void setPropertyFromString(const std::string& key, const std::string& value );
 private:
   Vec3 color;
 
