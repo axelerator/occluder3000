@@ -27,6 +27,12 @@ class Float4 {
     Float4(const Float4& o)   { memcpy(this->v.f, o.v.f, sizeof(o));}
     Float4(const __m128 d)  { v.sse = d;}
     Float4(const float f)   { v.sse = _mm_set_ps1(f);}
+    Float4(unsigned int i){
+                              v.i[0] = i;
+                              v.i[1] = i;
+                              v.i[2] = i;
+                              v.i[3] = i;
+    }
     Float4 operator+(const Float4& rhs) const;
     Float4 operator*(const Float4& rhs) const;
     Float4 operator/(const Float4& rhs) const;
@@ -41,6 +47,7 @@ class Float4 {
     Float4 andnot(const Float4& op) const;
     Float4 operator&(const Float4& op) const;
     Float4& operator&=(const Float4& op);
+    Float4& operator|=(const Float4& op);
     Float4 sqrt() const;
     int getMask() const;
 
@@ -54,7 +61,8 @@ class Float4 {
     static const Float4 BINONE;
   
   union {
-    float f[4];
+      unsigned int i[4];
+      float f[4];
     __m128 sse;
   } v;
 
@@ -81,7 +89,11 @@ class Vec3SSE {
   Vec3SSE operator%(const Vec3SSE& b) const;
   Float4 operator*(const Vec3SSE& b) const;
   Vec3SSE operator*(const Float4& b) const;
+/**
+  Componentwise multiplication
+**/
   Vec3SSE operator^(const Vec3SSE& b) const;
+  Vec3SSE operator+(const Vec3SSE& b) const;
   Vec3SSE operator-(const Vec3SSE& r) const;
   Vec3 get(unsigned int i) const;
   Vec3SSE& operator+=(const Vec3SSE& op);
@@ -149,6 +161,11 @@ inline Float4& Float4::operator&=(const Float4& op){
   return *this;
 }
 
+inline Float4& Float4::operator|=(const Float4& op){
+  v.sse = _mm_or_ps(this->v.sse, op.v.sse);
+  return *this;
+}
+
 inline int Float4::operator==(int op) const {
   return _mm_movemask_ps(this->v.sse) == op;
 }
@@ -204,9 +221,7 @@ inline Vec3SSE Vec3SSE::operator*(const Float4& b) const {
   return result;
 }
 
-/**
-  Componentwise multiplication
-**/
+
 inline Vec3SSE Vec3SSE::operator^(const Vec3SSE& b) const {
   Vec3SSE result;
   result.c[0].v.sse = _mm_mul_ps(this->c[0].v.sse, b.c[0].v.sse);
@@ -234,6 +249,15 @@ inline Vec3SSE& Vec3SSE::operator+=(const Vec3SSE& op) {
   c[2].v.sse = _mm_add_ps (c[2].v.sse, op.c[2].v.sse);
   return *this;
 }
+
+inline Vec3SSE Vec3SSE::operator+(const Vec3SSE& op) const {
+  Vec3SSE res;
+  res.c[0].v.sse = _mm_add_ps (c[0].v.sse, op.c[0].v.sse);
+  res.c[1].v.sse = _mm_add_ps (c[1].v.sse, op.c[1].v.sse);
+  res.c[2].v.sse = _mm_add_ps (c[2].v.sse, op.c[2].v.sse);
+  return res;
+}
+
 
 inline Vec3SSE& Vec3SSE::operator*=(const Float4& op) {
   c[0].v.sse = _mm_mul_ps (c[0].v.sse, op.v.sse);
@@ -289,7 +313,9 @@ inline void Vec3SSE::setVec(unsigned int i, const float* v) {
 }
 
 
-
+inline Float4 max4(const Float4& a, const Float4& b) {
+  return Float4(_mm_max_ps( a.v.sse, b.v.sse ));
+}
 
 
 }

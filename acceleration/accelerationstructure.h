@@ -66,6 +66,14 @@ public:
      **/
     virtual void determineFirstIntersection(const RaySegmentSSE& ray, IntersectionSSE& result) const = 0;
 
+    /**
+      Determines if the raysegments are intersected by any primitiv.
+      Primararily used for shadow rays. 
+      @return a 128Bit mask with four 32bit blocks that are completely 0s or
+              1s. I.e. the first two have inters. result is: FFFF FFFF 0000 0000
+    **/
+    virtual Float4 haveIntersections(const RaySegmentSSE& ray) const = 0;
+
 protected:
   const Scene& scene;
 };

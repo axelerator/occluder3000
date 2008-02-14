@@ -29,7 +29,10 @@ Vec3 FlatShader::getRadiance(const Vec3& direction, const Intersection& intersec
 
 Vec3SSE FlatShader::getRadiance( const Vec3SSE& directions,  const IntersectionSSE& intersections, unsigned int depth) const {
 Float4 hitMask = intersections.getHitMask();
-Vec3SSE result(Vec3(1.0f));
+Vec3SSE result(color);
+  result.c[0] = result.c[0] & hitMask; 
+  result.c[1] = result.c[1] & hitMask; 
+  result.c[2] = result.c[2] & hitMask; 
 return result;
 }
 

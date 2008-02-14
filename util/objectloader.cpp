@@ -114,7 +114,7 @@ bool ObjectLoader::loadOBJ(const std::string& filename, Scene& scene ) {
                     if (boundsOk) {
 //                         tl->addTriangle(Triangle(vidx[0], vidx[1], vidx[2],
 //                                                  normals[nidx[0]], normals[nidx[1]], normals[nidx[2]] , scene.getMaterial(currentMat), *tl));
-                        scene.addPrimitive(Primitive(vidx[0], vidx[1], vidx[2], scene, currentMat));
+                        scene.addPrimitive(Primitive(vidx[0], vidx[1], vidx[2], scene, currentMat, scene.getPrimitiveCount()));
                         ++facecount;
                     }
                 }
@@ -153,7 +153,7 @@ bool ObjectLoader::loadRA2(const std::string& filename, Scene& scene ) {
             ++vertexCount;
         }
 //         tl->addTriangle(Triangle(vertexCount - 3, vertexCount - 2, vertexCount - 1 , scene.getMaterial(currentMat), *tl));
-        scene.addPrimitive(Primitive(vertexCount - 3, vertexCount - 2, vertexCount - 1 , scene, currentMat));
+        scene.addPrimitive(Primitive(vertexCount - 3, vertexCount - 2, vertexCount - 1 , scene, currentMat, scene.getPrimitiveCount() ));
     }
     delete[] currentchunk;
     return 0;

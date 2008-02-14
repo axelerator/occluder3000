@@ -69,9 +69,9 @@ int main ( int argc, char *argv[] ) {
   }
 
 
-//   SSERenderer renderer;
-  SingleRayRenderer renderer;
-  GLDisplay display(renderer, cam.getResolution()[0], cam.getResolution()[1]);
+  SSERenderer renderer1;
+  SingleRayRenderer renderer2;
+  GLDisplay display(renderer1, cam.getResolution()[0], cam.getResolution()[1]);
 
   display.display(scene);
 

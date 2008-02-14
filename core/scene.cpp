@@ -219,6 +219,8 @@ const Intersection Scene::trace(const RaySegment& ray) const {
 const IntersectionSSE Scene::trace(const RaySegmentSSE& rays) const {
   IntersectionSSE result;
   geometry->determineFirstIntersection(rays, result);
+  if ( !result.isEmpty() )
+    result.resolvePrimitiveIds(*this, rays);
   return result;
 }
 

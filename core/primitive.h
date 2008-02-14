@@ -15,7 +15,6 @@
 #include "vec3.h"
 #include "shader.h"
 
-
 namespace Occluder {
     class Scene;
     class RaySegmentIgnore;
@@ -29,7 +28,7 @@ namespace Occluder {
     */
     class Primitive {
 public:
-        Primitive(unsigned int p0, unsigned int p1, unsigned int p2, const Scene& scene, const std::string& shaderName);
+        Primitive(unsigned int p0, unsigned int p1, unsigned int p2, const Scene& scene, const std::string& shaderName, unsigned int index);
         Primitive& operator=(const Primitive& op);
         ~Primitive();
 
@@ -68,6 +67,13 @@ public:
         void intersect(const RaySegmentSSE& rays, IntersectionSSE& result) const;
 
         /**
+          Tests four rays in parallel for intersection with the primitive,
+          utilizing SSE instrunctions, but in contrast to Primitive#intersect(const RaySegmentSSE& rays, IntersectionSSE& result) no information about the intersections are gathered.
+          @param ray the four rays in an SSE suitable format
+         **/
+        Float4 intersect(const RaySegmentSSE& rays) const;
+
+        /**
           @return the shader aka material of this primitive
          **/
         const Shader& getShader() const;
@@ -79,7 +85,11 @@ public:
                   have to be changed to a value in dependency of u and v.
          **/
         const Vec3& getNormal() const;
-    
+
+        /**
+          @return point in space for the given surface coordinates
+          **/
+        Vec3 getSurfacePoint(float u, float t) const;
 private:
         const unsigned int p0, p1, p2;
         const Vec3 u,v;
@@ -87,6 +97,10 @@ private:
 
         const Scene& scene;
         const Shader &shader;
+        /**
+          Listindex in the list of primitives
+         **/
+        const unsigned int index;
     };
 }
 
@@ -106,5 +120,6 @@ inline const Shader &Primitive::getShader() const {
 inline const Vec3& Primitive::getNormal() const {
   return normal;
 }
+
 
 #endif

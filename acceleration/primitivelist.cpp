@@ -69,3 +69,15 @@ void PrimitiveList::determineFirstIntersection(const RaySegmentSSE& ray, Interse
     prim.intersect( ray, result );
   }
 }
+
+Float4 PrimitiveList:: haveIntersections(const RaySegmentSSE& ray) const {
+  const size_t primCount = scene.getPrimitiveCount();
+  Float4 result(Float4::zero());
+  for (size_t i = 0; i < primCount; ++i) {
+    const Primitive& prim = scene.getPrimitive( i );
+    result |= prim.intersect( ray );
+    if ( result == 15 )
+      return result;
+  }
+ return result;
+}

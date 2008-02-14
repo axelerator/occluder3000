@@ -28,7 +28,7 @@ public:
       @param u offset of the second rays direction to the first ones
       @param v offset of the second rays direction to the third ones
      **/ 
-    RaySegmentSSE(const Vec3& origin, const Vec3SSE& directions);
+    RaySegmentSSE(const Vec3& origin, const Vec3SSE& directions, const Float4 tmax = Float4(UNENDLICH));
     const Vec3SSE& getOrigin() const;
     const Vec3SSE& getDirection() const;
     const Float4& getTMin() const;
@@ -61,11 +61,11 @@ private:
 
 
 // ----------------------------- implementation of inlined methods -------------------------
-inline RaySegmentSSE::RaySegmentSSE(const Vec3& origin, const Vec3SSE& directions):
+inline RaySegmentSSE::RaySegmentSSE(const Vec3& origin, const Vec3SSE& directions, const Float4 tmax):
   origin(origin), 
   direction(directions),
   tmin(0.0f),
-  tmax(UNENDLICH) {
+  tmax(tmax) {
 }
 
 

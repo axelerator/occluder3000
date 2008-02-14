@@ -31,6 +31,7 @@ public:
     virtual const Intersection getFirstIntersection(const RaySegment& ray) const;
     virtual void getAllIntersections(const RaySegment& ray, List< const Intersection >& results) const;
     virtual void determineFirstIntersection(const RaySegmentSSE& ray, IntersectionSSE& result) const ;
+    virtual Float4 haveIntersections(const RaySegmentSSE& ray) const;
 };
 }
 #endif

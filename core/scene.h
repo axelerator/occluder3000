@@ -114,6 +114,15 @@ public:
     **/
     bool hasIntersection(const RaySegmentIgnore& ray ) const;
 
+
+    /**
+      Determines if the raysegments are intersected by any primitiv.
+      Primararily used for shadow rays. Calls AccelerationStructure#haveIntersections
+      @return a 128Bit mask with four 32bit blocks that are completely 0s or
+              1s. I.e. the first two have inters. result is: FFFF FFFF 0000 0000
+    **/
+    Float4 haveIntersections(const RaySegmentSSE& ray ) const;
+
     const Shader& getShader(const std::string& name) const ;
 
     /**
@@ -183,5 +192,8 @@ inline bool Scene::hasIntersection(const RaySegmentIgnore& ray ) const {
   return geometry->hasIntersection(ray);
 }
 
+inline Float4 Scene::haveIntersections(const RaySegmentSSE& ray ) const {
+  return geometry->haveIntersections(ray);
+}
 
 #endif
