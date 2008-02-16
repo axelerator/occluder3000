@@ -168,3 +168,24 @@ Vec3 Primitive::getSurfacePoint(float u, float t) const {
   return scene.getVertex(p0) + this->u *u + this->v * v;
 }
 
+const AABB Primitive::getAABB() const {
+  const Vec3& p0 = scene.getVertex(this->p0);
+  const Vec3& p1 = scene.getVertex(this->p1);
+  const Vec3& p2 = scene.getVertex(this->p2);
+  const Vec3 min(fminf(fminf(p0[0], p1[0]), p2[0]),
+                fminf(fminf(p0[1], p1[1]), p2[1]),
+                fminf(fminf(p0[2], p1[2]), p2[2]));
+  const Vec3 max(fmaxf(fmaxf(p0[0], p1[0]), p2[0]),
+                fmaxf(fmaxf(p0[1], p1[1]), p2[1]),
+                fmaxf(fmaxf(p0[2], p1[2]), p2[2]));
+  return AABB(min, max);
+}
+
+const Vec3& Primitive::getVertex(unsigned int v) const {
+  switch ( v ) {
+    case 0: return scene.getVertex(p0);
+    case 1: return scene.getVertex(p1);
+    case 2: return scene.getVertex(p2);
+    default: assert( "Invalid vertex number" == 0);
+  }
+}

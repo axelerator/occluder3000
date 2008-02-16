@@ -71,8 +71,8 @@ int main ( int argc, char *argv[] ) {
 
   SSERenderer renderer1;
   SingleRayRenderer renderer2;
-  GLDisplay display(renderer1, cam.getResolution()[0], cam.getResolution()[1]);
-
+  GLDisplay display(renderer2, cam.getResolution()[0], cam.getResolution()[1]);
+  scene.construct();
   display.display(scene);
 
   std::cout << "paff!" << std::endl;

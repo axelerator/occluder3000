@@ -136,6 +136,12 @@ public:
      **/
     const Light& getLight(size_t idx) const;
 
+    /**
+      Initiates construction of accelerationstructure
+      **/
+    void construct();
+
+    const AABB& getAABB() const;
 private:
     enum ObjectType {NONE, LIGHT, MATERIAL, CAMERA};
 
@@ -194,6 +200,14 @@ inline bool Scene::hasIntersection(const RaySegmentIgnore& ray ) const {
 
 inline Float4 Scene::haveIntersections(const RaySegmentSSE& ray ) const {
   return geometry->haveIntersections(ray);
+}
+
+inline void Scene::construct() {
+  geometry->construct();
+}
+
+inline const AABB& Scene::getAABB() const {
+  return aabb;
 }
 
 #endif

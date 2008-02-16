@@ -34,6 +34,8 @@ public:
     Vec3();
     ~Vec3();
 
+    const float* getFloatArray() const ;
+
     Vec3(const float *v);
     Vec3(float fx, float fy, float fz);
     Vec3(float fn);
@@ -138,9 +140,7 @@ std::ostream& operator << (std::ostream& os, const Vec3& v);
 
 // ------------------ implementation for inlined methods -----------------------
 
-inline Vec3::Vec3() {
-  memset(c, 0, sizeof(Vec3));
-}
+inline Vec3::Vec3() {}
 
     /**
      * Create vector from an arry.
@@ -171,6 +171,10 @@ inline Vec3::Vec3() {
      */
     inline Vec3::Vec3(float fn) {
         c[0] = c[1] = c[2] = fn;
+    }
+
+    inline const float* Vec3::getFloatArray() const {
+      return c;
     }
 
 

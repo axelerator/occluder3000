@@ -90,6 +90,17 @@ public:
           @return point in space for the given surface coordinates
           **/
         Vec3 getSurfacePoint(float u, float t) const;
+
+        /**
+          @return the axis aligned bounding box of this primitive
+         **/
+        const AABB getAABB() const;
+
+        /**
+          @return one of the three vertices of the triangle
+         **/
+        const Vec3& getVertex(unsigned int v) const;
+
 private:
         const unsigned int p0, p1, p2;
         const Vec3 u,v;
@@ -120,6 +131,7 @@ inline const Shader &Primitive::getShader() const {
 inline const Vec3& Primitive::getNormal() const {
   return normal;
 }
+
 
 
 #endif

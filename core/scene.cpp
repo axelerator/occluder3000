@@ -22,6 +22,7 @@
 #include "directshader.h"
 #include "light.h"
 #include "intersectionsse.h"
+#include "regulargrid.h"
 
 using namespace Occluder;
 
@@ -78,16 +79,16 @@ const bool Scene::loadFromFile ( const std::string& filename ) {
             if ( key == "acceleration" ) {
                 if ( geometry )
                     delete geometry;
-//         if ( value == "grid" )
-//           geometry = new RegularGrid ( *this, 0.2 );
+        if ( value == "grid" )
+          geometry = new RegularGrid (3, *this );
 //         else if ( value == "bih" )
 //           geometry = new BIH ( *this );
 //         else if ( value == "kd" )
 //           geometry = new KdTree ( *this );
-//         else {
+        else {
                 std::cout << "Accelerationstruct " << value << " not available. Falling back to default(list). Choose { grid, bih, kd }" << std::endl;
                 geometry = new PrimitiveList ( *this );
-//         }
+        }
             } else if ( key == "geometry" ) {
                 if ( filename.find ( "/" ) != std::string::npos )
                     geometryfile = filename.substr ( 0, filename.find_last_of ( "/" ) +1 )  + value;

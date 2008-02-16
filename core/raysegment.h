@@ -33,14 +33,19 @@ public:
     bool trim(const AABB& aabb);
 
     const Vec3& getDirection() const ;
+    const Vec3& getInvDirection() const;
     const Vec3& getOrigin() const ;
     float getTMin() const;
     float getTMax() const;
 
+    void setTMin(float newmin);
+    void setTMax(float newmax);
+    void setOrigin(const Vec3& newOrigin);
 
   private:
     Vec3 origin;
     Vec3 direction;
+    Vec3 invDirection;
     float tmin,tmax;
 
 };
@@ -61,6 +66,22 @@ inline float RaySegment::getTMin() const {
 
 inline float RaySegment::getTMax() const {
   return tmax;
+}
+
+inline void RaySegment::setOrigin(const Vec3& newOrigin) {
+  origin = newOrigin;
+}
+
+inline void RaySegment::setTMin(float newmin) {
+  tmin = newmin;
+}
+
+inline void RaySegment::setTMax(float newmax) {
+  tmax = newmax;
+}
+
+inline const Vec3& RaySegment::getInvDirection() const {
+  return invDirection;
 }
 
 }

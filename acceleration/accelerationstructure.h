@@ -45,7 +45,7 @@ public:
       @return true if the ray hit a primitive between tmin and tmax,
               and is not the referenced primitive
     **/
-    virtual bool hasIntersection(const RaySegmentIgnore& ray) const = 0;
+    virtual bool hasIntersection(const RaySegmentIgnore& ray) const { return false; }
 
     /**
       Searches the first intersection of the ray with the scene.
@@ -73,6 +73,12 @@ public:
               1s. I.e. the first two have inters. result is: FFFF FFFF 0000 0000
     **/
     virtual Float4 haveIntersections(const RaySegmentSSE& ray) const = 0;
+
+    /**
+      Deriving classes can override this method to build up structures before the
+      actual ray queries will be made.
+     **/
+    virtual void construct() {};
 
 protected:
   const Scene& scene;

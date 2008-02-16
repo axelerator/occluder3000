@@ -46,7 +46,7 @@ public:
 
     static const Intersection& getEmpty();
 
-    bool operator<(const Intersection& op);
+    bool operator<(const Intersection& op) const;
 
     /**
       @return the primtive the intersection occured with
@@ -93,7 +93,7 @@ inline const Intersection& Intersection::getEmpty() {
   return empty;
 }
 
-inline bool Intersection::operator<(const Intersection& op) {
+inline bool Intersection::operator<(const Intersection& op) const {
   return (op.isEmpty() || ( t >= 0.0f ) && ( t < op.t ) );
 }
 
