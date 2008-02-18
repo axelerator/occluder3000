@@ -23,6 +23,7 @@
 #include "light.h"
 #include "intersectionsse.h"
 #include "regulargrid.h"
+#include "bih.h"
 
 using namespace Occluder;
 
@@ -80,9 +81,9 @@ const bool Scene::loadFromFile ( const std::string& filename ) {
                 if ( geometry )
                     delete geometry;
         if ( value == "grid" )
-          geometry = new RegularGrid (3, *this );
-//         else if ( value == "bih" )
-//           geometry = new BIH ( *this );
+          geometry = new RegularGrid (2, *this );
+        else if ( value == "bih" )
+          geometry = new Bih ( *this, 1 );
 //         else if ( value == "kd" )
 //           geometry = new KdTree ( *this );
         else {

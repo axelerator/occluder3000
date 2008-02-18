@@ -64,6 +64,20 @@ public:
       @param f the box will be scaled with this factor
      **/
     void scale(float f);
+
+    /**
+      @return a vector that contains the width of the aabb in
+              each dimension.
+     **/
+    const Vec3 getWidths() const;
+
+    /**
+       @param axis of the dimension in which the box is to be split
+       @param splitPos position where the box is to be split
+       @param left true if the half lesser then splitval is requested
+       @return one half of this aabb
+     **/
+    AABB getHalfBox(unsigned char axis, float splitPos, bool left) const;
 private:
   Vec3 minima;
   Vec3 maxima;
@@ -103,5 +117,9 @@ inline  const Vec3& AABB::getMax() const {
 inline void AABB::scale(float f) {
   maxima *= f;
   minima *= f;
+}
+
+inline const Vec3 AABB::getWidths() const {
+  return Vec3(maxima[0] - minima[0], maxima[1] - minima[1], maxima[2] - minima[2]);
 }
 #endif

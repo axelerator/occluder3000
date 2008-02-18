@@ -101,10 +101,16 @@ public:
          **/
         const Vec3& getVertex(unsigned int v) const;
 
+        /**
+          @return the balance point of the primitive
+        **/
+        const Vec3& getCenter() const;
+
 private:
         const unsigned int p0, p1, p2;
         const Vec3 u,v;
         const Vec3 normal;
+        const Vec3 center;
 
         const Scene& scene;
         const Shader &shader;
@@ -132,6 +138,8 @@ inline const Vec3& Primitive::getNormal() const {
   return normal;
 }
 
-
+inline const Vec3& Primitive::getCenter() const {
+  return center;
+}
 
 #endif

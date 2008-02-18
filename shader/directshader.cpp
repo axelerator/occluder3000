@@ -41,8 +41,8 @@ Vec3 DirectShader::getRadiance(const Vec3& direction, const Intersection& inters
     const float d1 = fmaxf(normal * l, 0.0f);
     const float d2 = fmaxf( d1 * ((l * -1.0f) * light.getDirection()), 0.0f);
     if ( d2 > 0.0f ) {
-//       const RaySegment shadowRay( intersection.getLocation() + l * 0.00001, l, 0.0, distance );
-      const RaySegmentIgnore shadowRay( intersection.getLocation(), l, intersection.getPrimitive(), 0.0, distance );
+      const RaySegment shadowRay( intersection.getLocation() + l * 0.00001, l, 0.0, distance );
+//       const RaySegmentIgnore shadowRay( intersection.getLocation(), l, intersection.getPrimitive(), 0.0, distance );
       if ( ! scene.hasIntersection( shadowRay ) )
         radiance += (light.getColor() ^ color) * d2;
     }

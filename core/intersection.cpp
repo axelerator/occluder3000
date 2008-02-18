@@ -35,3 +35,9 @@ Vec3 Intersection::getRadiance(const Vec3& direction, unsigned int depth) const 
 const Vec3& Intersection::getNormal() const {
   return primitive.getNormal();
 }
+
+Intersection &Intersection::operator +=(const Intersection& op) {
+  if ( op < *this)
+    memcpy(this, &op, sizeof(Intersection));
+  return *this;
+}

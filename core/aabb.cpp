@@ -223,3 +223,12 @@ int triBoxOverlap(const float boxcenter[3],const float boxhalfsize[3], const Pri
 
     return triBoxOverlap( boxOrigin, boxhalfsize, prim ) != 0;
   }
+
+AABB AABB::getHalfBox(unsigned char axis, float splitPos, bool left) const {
+  AABB result(*this);
+  if ( left ) 
+    result.maxima[axis] = splitPos;
+  else
+    result.minima[axis] = splitPos;
+  return result;
+}

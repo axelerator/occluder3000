@@ -64,6 +64,21 @@ public:
      **/
     const Vec3& getNormal() const;
 
+    /**
+      @return the parametric distance from the ray origin the point of
+              intersection, where one t is the length of the directional
+              vector of the ray
+     **/
+    float getT() const;
+  
+    /**
+      Overrides the values of this intersection if the given intersection
+      is closer to the ray origin as this.
+      @param op the possible closer intersection
+      @return the closer intersection
+     **/
+    Intersection &operator +=(const Intersection& op);
+
 private:
   const Vec3 position;
   const float u,
@@ -105,6 +120,9 @@ inline const Vec3& Intersection::getLocation() const {
   return position;
 }
 
+inline float Intersection::getT() const {
+  return t;
+}
 
 }
 #endif

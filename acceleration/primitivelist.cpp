@@ -49,12 +49,8 @@ return false;
 const Intersection PrimitiveList::getFirstIntersection(const RaySegment& ray) const {
   Intersection closest(Intersection::getEmpty());
   const size_t primCount = scene.getPrimitiveCount();
-  for (size_t i = 0; i < primCount; ++i) {
-    const Primitive& prim = scene.getPrimitive( i );
-    Intersection current = prim.getIntersection( ray );
-    if ( current < closest )
-      closest = current;
-  }
+  for (size_t i = 0; i < primCount; ++i) 
+    closest += scene.getPrimitive( i ).getIntersection( ray );
 
   return closest;
 }

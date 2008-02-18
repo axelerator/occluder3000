@@ -19,8 +19,14 @@
 using namespace Occluder;
 
 Primitive::Primitive(unsigned int p0, unsigned int p1, unsigned int p2, const Scene& scene, const std::string& shaderName, unsigned int index):
-p0(p0), p1(p1), p2(p2), u(scene.getVertex(p1) - scene.getVertex(p0) ),
-v(scene.getVertex(p2) - scene.getVertex(p0) ), normal( (u % v).normal() ), scene(scene), shader(scene.getShader(shaderName)), index(index) {}
+p0(p0), p1(p1), p2(p2),
+u(scene.getVertex(p1) - scene.getVertex(p0) ),
+v(scene.getVertex(p2) - scene.getVertex(p0) ),
+normal( (u % v).normal() ),
+center(scene.getVertex(p0) + 0.33 * u + 0.33 * v),
+scene(scene),
+shader(scene.getShader(shaderName)),
+index(index) {}
 
 
 Primitive::~Primitive() {

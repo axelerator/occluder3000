@@ -32,38 +32,54 @@ RegularGrid::~RegularGrid() {
 
 
 bool RegularGrid::hasIntersection(const RaySegment& ray) const {
+//     return !getFirstIntersection(ray).isEmpty();
     return false;
 }
 
 const Intersection RegularGrid::getFirstIntersection(const RaySegment& ray) const {
   Intersection closest(Intersection::getEmpty());
+
+
+
 // Fast Voxel Traversal by Amanatides and Woo
 // :: Initialization phase ::
 //    - Identify voxel in which ray origins
   int currentVox[3];
   RaySegment clippedRay(ray);
+  clippedRay.setDirection(clippedRay.getDirection().normal() );
   const AABB& aabb = scene.getAABB();
   if ( !clippedRay.trim(aabb) )
     return Intersection::getEmpty();
+
+
+//   unsigned int gridIdxz = 1;
+//   for (unsigned int gridIdxz = 0; gridIdxz < 8; ++gridIdxz)
+// 
+//     for (std::vector<int>::const_iterator iter =  grid[gridIdxz]->begin() ; iter != grid[gridIdxz]->end() ; ++iter ) {
+//         unsigned int furz = *iter;
+//         closest += scene.getPrimitive(*iter).getIntersection( ray );
+//     }
+//   return closest;
+
   if ( clippedRay.getTMin() > 0.0f)  {
     // ray origin lies outside grid => calc first intersecting voxel
-    const Vec3 entrancePoint(ray.getOrigin() + (clippedRay.getTMin()) * ray.getDirection());
+    const Vec3 entrancePoint(clippedRay.getOrigin() + (clippedRay.getTMin()) * clippedRay.getDirection());
     clippedRay.setOrigin(entrancePoint);
     clippedRay.setTMax(clippedRay.getTMax() - clippedRay.getTMin());
     clippedRay.setTMin(0.0f);
   }
-  const Vec3& rayOrigin = clippedRay.getOrigin();
-  for (unsigned int i = 0; i < 3; ++i)
-    currentVox[i] = ( int ) ( ( rayOrigin[i] - aabb.getMin(i) ) * cellsizeInvert[i] ) ;
+  for (unsigned int i = 0; i < 3; ++i) {
+    currentVox[i] = ( int ) floorf( ( clippedRay.getOrigin()[i] - aabb.getMin(i) ) * cellsizeInvert[i] ) ;
+    currentVox[i] = ( currentVox[i] >= resolution ) ? ( resolution - 1 ) : currentVox[i];
+    currentVox[i] = ( currentVox[i] < 0 ) ? 0 : currentVox[i];
+  }
 
   int step[3]; // step to next voxel in direction of ray ( -1 or 1 )
   for (unsigned int i = 0; i < 3; ++i)
-  step[i] = ( clippedRay.getDirection()[i] > 0 ) ? 1 : -1;
+    step[i] = ( clippedRay.getDirection()[i] > 0 ) ? 1 : -1;
 
 // :: Incremental phase ::
-  unsigned int gridIdx = currentVox[2] * slabSize // slabs in z-direction
-                         + currentVox[1] * resolution // + y-count rows
-                         + currentVox[0];
+  unsigned int gridIdx;
 
   float tMax[3]; // these values indicate how much we can travel through the current Voxel
   //  into direction of one component until we hit the next voxel in that direction.
@@ -74,13 +90,18 @@ const Intersection RegularGrid::getFirstIntersection(const RaySegment& ray) cons
   Vec3 position( clippedRay.getOrigin() );
 
   // save maximal t before 'falling out of the grid'
-  while ( closest.isEmpty() && (clippedRay.getTMin() < clippedRay.getTMax()) ) {
-    gridIdx =     currentVox[2] * slabSize // slabs in z-direction
+//   while ( closest.isEmpty() && (clippedRay.getTMin() < clippedRay.getTMax()) ) {
+  while ( closest.isEmpty() && 
+      (currentVox[0] >= 0 ) && ( currentVox[0] < resolution )
+   && (currentVox[1] >= 0 ) && ( currentVox[1] < resolution )
+   && (currentVox[2] >= 0 ) && ( currentVox[2] < resolution ) ) {
+
+    gridIdx =       currentVox[2] * slabSize // slabs in z-direction
                   + currentVox[1] * resolution // + y-count rows
                   + currentVox[0];
     assert( gridIdx < (resolution * resolution * resolution));
     for ( i = 0; i < 3; ++i )
-      tMax[i] = (( aabb.getMin(i) + ( currentVox[i] + step[i] ) * cellsize[i] ) - position[i] ) * ray.getInvDirection()[i];
+      tMax[i] = (( aabb.getMin(i) + ( currentVox[i] + step[i] ) * cellsize[i] ) - position[i] ) * clippedRay.getInvDirection()[i];
 
     // determine the closest voxel and axis on which it will follow
     smallestT = tMax[0];
@@ -91,20 +112,22 @@ const Intersection RegularGrid::getFirstIntersection(const RaySegment& ray) cons
         component = i;
       }
 
-    //  clippedRay.setTMax(  clippedRay.getTMin() + smallestT  );
-    if ( grid[gridIdx] ) {
-      for ( iter =  grid[gridIdx]->begin() ; iter != grid[gridIdx]->end() ; ++iter ) {
-        const Primitive& currPrim = scene.getPrimitive(*iter);
-        const Intersection current = currPrim.getIntersection( clippedRay );
-        if ( current < closest)
-          closest = current;
-      }
+//     clippedRay.setTMax(  clippedRay.getTMin() + smallestT  );
+    for ( iter =  grid[gridIdx]->begin() ; iter != grid[gridIdx]->end() ; ++iter ) {
+        unsigned int furz = *iter;
+        closest += scene.getPrimitive(*iter).getIntersection( ray );
     }
+//       if ( !closest.isEmpty() )
+//         return closest;
 
-      // proceed to next voxel
-      currentVox[component] += step[component];
-      position += clippedRay.getDirection() * smallestT;
-      clippedRay.setTMin( clippedRay.getTMin() + smallestT);
+
+    // proceed to next voxel
+    currentVox[component] += step[component];
+    position += clippedRay.getDirection() * smallestT;
+    position = Vec3( aabb.getMin(0) + ( currentVox[0] ) * cellsize[0],
+ aabb.getMin(1) + ( currentVox[1] ) * cellsize[1],
+ aabb.getMin(2) + ( currentVox[2] ) * cellsize[2]);
+//     clippedRay.setTMin( clippedRay.getTMin() + smallestT);
   } // end of incremental phase of voxel traversal
   return closest;
 }
@@ -114,10 +137,10 @@ Float4 RegularGrid::haveIntersections(const RaySegmentSSE& ray) const {
 
 void RegularGrid::construct() {
     // calculate size of a cell, in each dimension
-    AABB aabb(scene.getAABB());
-    aabb.scale(1.00001f);
+    const AABB& aabb(scene.getAABB());
+//     aabb.scale(1.00001f);
     for ( unsigned int i = 0; i < 3; ++i) {
-        cellsize[i] = (aabb.getMax(i) - aabb.getMin(i)) / resolution;
+        cellsize[i] = (aabb.getMax(i) - aabb.getMin(i)) / resolution ;
         cellsizeInvert[i] = 1.0 / cellsize[i];
     }
 

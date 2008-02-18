@@ -31,6 +31,7 @@ public:
         @return false if the ray misses the box completely
     **/
     bool trim(const AABB& aabb);
+    RaySegment trim(const AABB& aabb) const;
 
     const Vec3& getDirection() const ;
     const Vec3& getInvDirection() const;
@@ -41,7 +42,7 @@ public:
     void setTMin(float newmin);
     void setTMax(float newmax);
     void setOrigin(const Vec3& newOrigin);
-
+    void setDirection(const Vec3& dir);
   private:
     Vec3 origin;
     Vec3 direction;
@@ -82,6 +83,17 @@ inline void RaySegment::setTMax(float newmax) {
 
 inline const Vec3& RaySegment::getInvDirection() const {
   return invDirection;
+}
+
+inline RaySegment RaySegment::trim(const AABB& aabb) const {
+  RaySegment result(*this);
+  result.trim(aabb);
+  return result;
+}
+
+inline void RaySegment::setDirection(const Vec3& dir) {
+  direction = dir;
+  invDirection = Vec3(1.0f/dir[0], 1.0f/dir[1], 1.0f/dir[2]);
 }
 
 }

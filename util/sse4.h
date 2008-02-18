@@ -64,7 +64,7 @@ class Float4 {
       unsigned int i[4];
       float f[4];
     __m128 sse;
-  } v;
+  } v __attribute__ ((aligned (16)));
 
 };
 
