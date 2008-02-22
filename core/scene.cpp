@@ -24,6 +24,7 @@
 #include "intersectionsse.h"
 #include "regulargrid.h"
 #include "bih.h"
+#include "bihcompact.h"
 
 using namespace Occluder;
 
@@ -84,6 +85,8 @@ const bool Scene::loadFromFile ( const std::string& filename ) {
           geometry = new RegularGrid (2, *this );
         else if ( value == "bih" )
           geometry = new Bih ( *this, 1 );
+        else if ( value == "bihcompact" )
+          geometry = new BihCompact ( *this, 1 );
 //         else if ( value == "kd" )
 //           geometry = new KdTree ( *this );
         else {

@@ -30,7 +30,7 @@ public:
 
     ~GLDisplay();
     void init();
-    void display(const Scene& scene);
+    double display(const Scene& scene);
 
 private:
     const Renderer& renderer;

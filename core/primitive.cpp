@@ -194,4 +194,5 @@ const Vec3& Primitive::getVertex(unsigned int v) const {
     case 2: return scene.getVertex(p2);
     default: assert( "Invalid vertex number" == 0);
   }
+return scene.getVertex(p0);
 }

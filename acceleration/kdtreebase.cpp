@@ -32,9 +32,11 @@ KdTreeBase::~KdTreeBase() {
 
 
 bool KdTreeBase::hasIntersection(const RaySegment& ray) const {
+  return false;
 }
 
 const Intersection KdTreeBase::getFirstIntersection(const RaySegment& ray) const {
+  return Intersection::getEmpty();
 }
 
 void KdTreeBase::construct() {
@@ -82,5 +84,6 @@ KdNodeBloated *KdTreeBase::subdivide(List<unsigned int> primitives, const AABB& 
     free(candidates);
     free(CL);
     free(CR);
+    return 0;
 }
 

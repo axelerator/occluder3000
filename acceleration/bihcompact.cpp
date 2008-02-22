@@ -187,7 +187,7 @@ void BihCompact::subdivide(BihNodeCompact *node, unsigned int start, unsigned in
     subdivide(leftNode, start, left-1, leftBox, depth - 1);
 
     BihNodeCompact *rightNode = nextFree++;// allocate mem for left node
-    subdivide(rightNode, left , end, leftBox, depth - 1);    // right node
+    subdivide(rightNode, left , end, rightBox, depth - 1);    // right node
 
     node->makeInner(rightNode, leftMax, rightMin, axis);
   }

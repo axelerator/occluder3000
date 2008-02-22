@@ -4,12 +4,12 @@
 using namespace Occluder;
 
 unsigned int BihNode::leafCount() const {
-  countNodes(false);
+  return countNodes(false);
 }
 
 
 unsigned int BihNode::nodeCount() const{
-  countNodes(true);
+  return countNodes(true);
 }
 
 double BihNode::avgTrisPerLeaf() const{

@@ -61,9 +61,9 @@ void Occluder::SSERenderer::render( const Scene& scene, unsigned char *mem ) con
 //       packetStart[packetOffsets[r] + 2] = testc[2] * 255.0f;
 
 
-          packetStart[packetOffsets[r]]     = color.c[0].v.f[r];
-          packetStart[packetOffsets[r] + 1] = color.c[1].v.f[r];
-          packetStart[packetOffsets[r] + 2] = color.c[2].v.f[r];
+          packetStart[packetOffsets[r]]     = (unsigned char) color.c[0].v.f[r];
+          packetStart[packetOffsets[r] + 1] = (unsigned char) color.c[1].v.f[r];
+          packetStart[packetOffsets[r] + 2] = (unsigned char) color.c[2].v.f[r];
       }
       projectPoint += packetU;
     }

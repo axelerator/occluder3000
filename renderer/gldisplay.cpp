@@ -51,7 +51,8 @@ void Occluder::GLDisplay::init() {
 }
 
 
-void Occluder::GLDisplay::display(const Scene& scene) {
+double Occluder::GLDisplay::display(const Scene& scene) {
+    const Timer timer;
     mem = ( GLubyte * ) glMapBuffer ( GL_PIXEL_UNPACK_BUFFER_ARB, GL_WRITE_ONLY );
     memset ( mem,0, width*height*3 );
     renderer.render(scene, (unsigned char *)mem);
@@ -69,4 +70,5 @@ void Occluder::GLDisplay::display(const Scene& scene) {
     glTexCoord2f ( 1.0, 0.0 ); glVertex3f ( 1.0, 1.0, 0.0 );
     glEnd();
     SDL_GL_SwapBuffers();
+    return timer.elapsed();
 }

@@ -70,7 +70,7 @@ const Intersection RegularGrid::getFirstIntersection(const RaySegment& ray) cons
   }
   for (unsigned int i = 0; i < 3; ++i) {
     currentVox[i] = ( int ) floorf( ( clippedRay.getOrigin()[i] - aabb.getMin(i) ) * cellsizeInvert[i] ) ;
-    currentVox[i] = ( currentVox[i] >= resolution ) ? ( resolution - 1 ) : currentVox[i];
+    currentVox[i] = ( currentVox[i] >= (int)resolution ) ? ( resolution - 1 ) : currentVox[i];
     currentVox[i] = ( currentVox[i] < 0 ) ? 0 : currentVox[i];
   }
 
@@ -92,9 +92,9 @@ const Intersection RegularGrid::getFirstIntersection(const RaySegment& ray) cons
   // save maximal t before 'falling out of the grid'
 //   while ( closest.isEmpty() && (clippedRay.getTMin() < clippedRay.getTMax()) ) {
   while ( closest.isEmpty() && 
-      (currentVox[0] >= 0 ) && ( currentVox[0] < resolution )
-   && (currentVox[1] >= 0 ) && ( currentVox[1] < resolution )
-   && (currentVox[2] >= 0 ) && ( currentVox[2] < resolution ) ) {
+      (currentVox[0] >= 0 ) && ( currentVox[0] < (int)resolution )
+   && (currentVox[1] >= 0 ) && ( currentVox[1] < (int)resolution )
+   && (currentVox[2] >= 0 ) && ( currentVox[2] < (int)resolution ) ) {
 
     gridIdx =       currentVox[2] * slabSize // slabs in z-direction
                   + currentVox[1] * resolution // + y-count rows
@@ -114,7 +114,6 @@ const Intersection RegularGrid::getFirstIntersection(const RaySegment& ray) cons
 
 //     clippedRay.setTMax(  clippedRay.getTMin() + smallestT  );
     for ( iter =  grid[gridIdx]->begin() ; iter != grid[gridIdx]->end() ; ++iter ) {
-        unsigned int furz = *iter;
         closest += scene.getPrimitive(*iter).getIntersection( ray );
     }
 //       if ( !closest.isEmpty() )
@@ -133,6 +132,7 @@ const Intersection RegularGrid::getFirstIntersection(const RaySegment& ray) cons
 }
 
 Float4 RegularGrid::haveIntersections(const RaySegmentSSE& ray) const {
+  return 0.0f;
 }
 
 void RegularGrid::construct() {
@@ -159,10 +159,10 @@ void RegularGrid::construct() {
         const AABB primAABB( primitive.getAABB());
         for ( unsigned int c = 0; c < 3; ++c) {
             // determine first cell primitive overlaps ( in i-th dimension )
-            const unsigned int lower = floorf((primAABB.getMin(c) - aabb.getMin(c)) * cellsizeInvert[c]);
+            const unsigned int lower = (unsigned int)floorf((primAABB.getMin(c) - aabb.getMin(c)) * cellsizeInvert[c]);
             overlapInterval[2 * c] = lower;
             // determine last cell primitive overlaps ( in i-th dimension )
-            const unsigned int upper = ceilf( ( primAABB.getMax(c) - aabb.getMin(c) ) * cellsizeInvert[c]);
+            const unsigned int upper = (unsigned int)ceilf( ( primAABB.getMax(c) - aabb.getMin(c) ) * cellsizeInvert[c]);
             overlapInterval[2 * c + 1] = ( upper < ( lower + 1) ) ? lower + 1: upper ;
 
 

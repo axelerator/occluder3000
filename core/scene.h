@@ -21,6 +21,7 @@
 #include "aabb.h"
 #include "camera.h"
 #include "directshader.h"
+#include "stats.h"
 
 namespace Occluder {
 class Intersection;
@@ -138,8 +139,9 @@ public:
 
     /**
       Initiates construction of accelerationstructure
+      @return time spent in ms
       **/
-    void construct();
+    double construct();
 
     const AABB& getAABB() const;
 private:
@@ -202,8 +204,10 @@ inline Float4 Scene::haveIntersections(const RaySegmentSSE& ray ) const {
   return geometry->haveIntersections(ray);
 }
 
-inline void Scene::construct() {
+inline double Scene::construct() {
+  const Timer timer;
   geometry->construct();
+  return timer.elapsed();
 }
 
 inline const AABB& Scene::getAABB() const {
