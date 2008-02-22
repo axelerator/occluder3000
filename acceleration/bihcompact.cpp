@@ -13,6 +13,7 @@
 #include "bihcompact.h"
 #include "scene.h"
 
+
 using namespace Occluder;
 
 BihCompact::BihCompact(const Scene& scene, unsigned int primPerLeaf): 

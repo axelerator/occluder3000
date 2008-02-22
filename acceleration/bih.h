@@ -38,7 +38,7 @@ public:
 
 private:
 
-    BihNode* subdivide(unsigned int start, unsigned int end, const AABB& nodeAABB, unsigned int depth, unsigned int retry);
+    BihNode* subdivide(unsigned int start, unsigned int end, const AABB& nodeAABB, unsigned int depth);
     Intersection traverseRecursive(const BihNode&, const RaySegment& r, float tmin, float tmax) const;
     bool traverseRecursiveShadow(const BihNode&, const RaySegment& r, float tmin, float tmax) const;
 

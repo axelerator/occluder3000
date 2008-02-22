@@ -12,7 +12,7 @@
 #include "singlerayrenderer.h"
 #include "scene.h"
 #include "intersection.h"
-
+#include <iostream>
 using namespace Occluder;
 SingleRayRenderer::SingleRayRenderer()
 : Renderer() {
@@ -35,6 +35,8 @@ void SingleRayRenderer::render(const Scene& scene,unsigned char *mem ) const {
   const float resolution[] = { cam.getResolution()[0], cam.getResolution()[1]};
   for ( unsigned int y = 0 ; y < resolution[1] ; ++y ) {
     for ( unsigned int x = 0; x < resolution[0]; ++x ) {
+//       if ( x == 63 )
+//         std::cout << "64" << std::endl;
       const RaySegment currentRay(cam.getPosition(), ( projectPoint - cam.getPosition() ).normal());
       const Intersection intersection = scene.trace(currentRay);
       if ( !intersection.isEmpty()) {

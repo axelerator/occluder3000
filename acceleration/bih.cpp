@@ -109,7 +109,7 @@ void Bih::construct() {
   primIds = new unsigned int[primCount];
   for (unsigned int i = 0; i < primCount; ++i)
     primIds[i] = i;
-  root = subdivide(0, primCount - 1, scene.getAABB(), MAX_RECURSION,0);
+  root = subdivide(0, primCount - 1, scene.getAABB(), MAX_RECURSION);
   root->analyze();
 }
 
@@ -119,14 +119,11 @@ void Bih::determineFirstIntersection(const RaySegmentSSE& ray, IntersectionSSE& 
 void Bih::getAllIntersections(const RaySegment& ray, List< const Intersection >& results) const {
 }
 
-BihNode* Bih::subdivide(unsigned int start, unsigned int end, const AABB& nodeAABB, unsigned int depth, unsigned int retry) {
+BihNode* Bih::subdivide(unsigned int start, unsigned int end, const AABB& nodeAABB, unsigned int depth) {
   assert ( end < scene.getPrimitiveCount() );
   assert ( start <= end );
-  if ( ( (end - start) < minPrimPerLeaf ) || ( depth == 0 ) || (retry == 100) ) {
-    
-  if ( retry == 100 )
-    std::cout << "bail out\n";
-return new BihNode(start, end); // create leaf
+  if ( ( (end - start) < minPrimPerLeaf ) || ( depth == 0 ) ) {
+    return new BihNode(start, end); // create leaf
   }
 
   // determine longest axis of bounding box
@@ -141,11 +138,6 @@ return new BihNode(start, end); // create leaf
   // Good ole quicksortlike partitioning
   unsigned int left = start;
   unsigned int right = end;
-//   for ( unsigned int i = start; i <= end; ++i) {
-//    if ( scene.getPrimitive( primIds[i] ).getCenter()[axis] < nodeAABB.getMin(axis)
-//         || scene.getPrimitive( primIds[i] ).getCenter()[axis] > nodeAABB.getMax(axis) )
-//     std::cout << "error" << std::endl;
-//   }
 
   do {
     while ( left < right && scene.getPrimitive( primIds[left] ).getCenter()[axis] <= splitPos ) 
@@ -172,9 +164,9 @@ return new BihNode(start, end); // create leaf
   const AABB rightBox = nodeAABB.getHalfBox(axis, splitPos, false);
   // don't accept empty leaves
   if ( left == end + 1 )
-    return subdivide ( start, end, leftBox, depth , retry + 1);
+    return subdivide ( start, end, leftBox, depth );
   else if ( left == start )
-     return subdivide ( start, end, rightBox, depth , retry +1 );
+     return subdivide ( start, end, rightBox, depth );
   else {
     float leftMax = nodeAABB.getMin(axis);
     float rightMin = nodeAABB.getMax(axis);
@@ -189,8 +181,8 @@ return new BihNode(start, end); // create leaf
         if ( scene.getPrimitive(primIds[i]).getVertex( c )[axis] < rightMin )
           rightMin = scene.getPrimitive(primIds[i]).getVertex( c )[axis];
     }
-    return new BihNode( subdivide(start, left-1, leftBox, depth - 1,0 ), // left node
-                        subdivide(left , end, rightBox, depth - 1, 0),    // right node
+    return new BihNode( subdivide(start, left-1, leftBox,  depth - 1 ), // left node
+                        subdivide(left , end,    rightBox, depth - 1),    // right node
                         leftMax, rightMin, axis);
   }
 

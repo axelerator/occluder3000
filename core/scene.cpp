@@ -25,6 +25,7 @@
 #include "regulargrid.h"
 #include "bih.h"
 #include "bihcompact.h"
+#include "bihiterative.h"
 
 using namespace Occluder;
 
@@ -87,6 +88,8 @@ const bool Scene::loadFromFile ( const std::string& filename ) {
           geometry = new Bih ( *this, 1 );
         else if ( value == "bihcompact" )
           geometry = new BihCompact ( *this, 1 );
+        else if ( value == "bihiter" )
+          geometry = new BihIterative ( *this, 1 );
 //         else if ( value == "kd" )
 //           geometry = new KdTree ( *this );
         else {
@@ -199,7 +202,6 @@ const bool Scene::loadFromFile ( const std::string& filename ) {
 
     return true;
 }
-
 
 size_t Scene::addVertex(const Vec3& v) {
     vertices.push_back(v);
