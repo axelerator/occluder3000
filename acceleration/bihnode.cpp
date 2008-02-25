@@ -28,10 +28,17 @@ unsigned int BihNodeCompact::nodeCount() const {
 /*  return 1 + this->getChild(0).nodeCount() + this->getChild(1).nodeCount();*/
 }
 
-double BihNodeCompact::avgTrisPerLeaf() const {
-  if ( isLeaf() )
-    return primitives[1] - primitives[0] + 1;
-  return this->getChild(0).avgTrisPerLeaf() * 0.5  + this->getChild(1).avgTrisPerLeaf() * 0.5;
+AvgInfo BihNodeCompact::avgTrisPerLeaf() const {
+  if ( isLeaf() ) {
+    const AvgInfo result = { 1,primitives[1] - primitives[0] + 1 };
+    return result;
+  }
+
+  const AvgInfo left =  getChild(false).avgTrisPerLeaf();
+  const AvgInfo right =  getChild(true).avgTrisPerLeaf();
+  const unsigned int total = left.n + right.n;
+  const AvgInfo result =  { total, (left.avg * ((double)left.n / total) + (right.avg * ( (double)right.n / total ))) };
+  return result;
 }
 
 unsigned int BihNodeCompact::treeDepth() const {
@@ -47,7 +54,7 @@ void BihNodeCompact::analyze() const {
   std::cout << "Tree depth:" << treeDepth() << "\n";
   const unsigned int lc = leafCount();
   std::cout << "Leafcount:" << lc << "\n";
-  std::cout << "avgTrisPerLeaf:" << avgTrisPerLeaf() << "\n";
+  std::cout << "avgTrisPerLeaf:" << avgTrisPerLeaf().avg << "\n";
 
   std::cout << std::endl;
 }

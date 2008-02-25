@@ -73,7 +73,7 @@ int main ( int argc, char *argv[] ) {
   SingleRayRenderer renderer2;
   GLDisplay display(renderer2, cam.getResolution()[0], cam.getResolution()[1]);
   std::cout << "construction: " << scene.construct() << "ms\n";
-    std::cout << "rendering: " << display.display(scene) << "ms\n";
+  std::cout << "rendering: " << display.display(scene) << "ms\n";
   
   std::cout << "paff!" << std::endl;
   while ( !done ) {

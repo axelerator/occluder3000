@@ -12,10 +12,11 @@
 #ifndef OCCLUDERKDTREEBASE_H
 #define OCCLUDERKDTREEBASE_H
 
-#include <accelerationstructure.h>
+#include "accelerationstructure.h"
 
 namespace Occluder {
-class KdNodeBloated;
+class KdNode;
+
     /**
     Basic Kd-Tree implementation
 
@@ -23,27 +24,22 @@ class KdNodeBloated;
     */
 class KdTreeBase : public AccelerationStructure {
 public:
-        KdTreeBase(const Scene& scene, unsigned int sampleCount = 8);
+    KdTreeBase(const Scene& scene);
 
-        ~KdTreeBase();
+    virtual ~KdTreeBase();
 
-        virtual bool hasIntersection(const RaySegment& ray) const;
-        virtual const Intersection getFirstIntersection(const RaySegment& ray) const;
-        virtual void construct();
-
+    virtual bool hasIntersection(const RaySegment& ray) const;
+    virtual const Intersection getFirstIntersection(const RaySegment& ray) const;
+    virtual void construct();
+    virtual Float4 haveIntersections(const RaySegmentSSE& ray) const;
+    virtual void determineFirstIntersection(const RaySegmentSSE& ray, IntersectionSSE& result) const;
+    virtual void getAllIntersections(const RaySegment& ray, List< const Intersection >& results) const;
 private:
-  KdNodeBloated *subdivide(List<unsigned int> primitives, const AABB& aabb);
+    void subdivide( unsigned int *memBlock, unsigned int primitiveCount, const AABB nodeBox, unsigned int size);
+    Intersection traverseRecursive( const KdNode& node, const RaySegment& r, float tmin, float tmax) const;
 
-  AABB *primitiveBBs;
-  KdNodeBloated *root;
-
-  const unsigned int sampleCount;
+  unsigned int *memBlock;
 };
-
-typedef struct {
-  float pos;
-  unsigned char axis;
-} SplitCandidate;
 
 }
 

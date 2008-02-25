@@ -1,7 +1,7 @@
 //
-// C++ Implementation: kdnodebloated
+// C++ Implementation: kdnode
 //
-// Description: 
+// Description:
 //
 //
 // Author: Axel Tetzlaff <axel.tetzlaff@gmx.de>, (C) 2008
@@ -9,26 +9,34 @@
 // Copyright: See COPYING file that comes with this distribution
 //
 //
-#include "kdnodebloated.h"
+#include "kdnode.h"
 #include <iostream>
 
 using namespace Occluder;
 
-unsigned int KdNodeBloated::leafCount() const {
+KdNode::KdNode() {
+}
+
+
+KdNode::~KdNode() {
+}
+
+
+unsigned int KdNode::leafCount() const {
   if ( isLeaf() )
     return 1;
   return getChild(false).leafCount() + getChild(true).leafCount();
 }
 
-unsigned int KdNodeBloated::nodeCount() const {
+unsigned int KdNode::nodeCount() const {
   if ( isLeaf() )
     return 1;
   return 1 + getChild(false).nodeCount() + getChild(true).nodeCount();
 }
 
-AvgInfo KdNodeBloated::avgTrisPerLeaf() const {
+AvgInfo KdNode::avgTrisPerLeaf() const {
   if ( isLeaf() ) {
-    const AvgInfo result = {1,primitives->size()};
+    const AvgInfo result = { 1, leaf.primitiveCount };
     return result;
   }
 
@@ -39,7 +47,7 @@ AvgInfo KdNodeBloated::avgTrisPerLeaf() const {
   return result;
 }
 
-void KdNodeBloated::analyze() const {
+void KdNode::analyze() const {
   std::cout << "Nodecount:" << nodeCount() << "\n";
   std::cout << "Tree depth:" << treeDepth() << "\n";
   const unsigned int lc = leafCount();
@@ -49,7 +57,7 @@ void KdNodeBloated::analyze() const {
   std::cout << std::endl;
 }
 
-unsigned int KdNodeBloated::treeDepth() const {
+unsigned int KdNode::treeDepth() const {
   if ( isLeaf() )
     return 1;
   else {
@@ -58,3 +66,17 @@ unsigned int KdNodeBloated::treeDepth() const {
     return 1 + ( ( lmax < rmax ) ? rmax : lmax );
   }
 }
+
+/*inline*/ const KdNode& KdNode::getChild(bool right) const {
+//   return this[ (right) ? ((innernode.typeAxisRightNode & 0x7FFFFFFC) >> 1 ): 1];
+  if ( right ) {
+    unsigned int *m = (unsigned int *)this;
+    unsigned int offset = (innernode.typeAxisRightNode & 0x7FFFFFFC) >> 2;
+    return *((KdNode*)(m + offset)); 
+  }
+    
+  return this[1];
+}
+
+
+

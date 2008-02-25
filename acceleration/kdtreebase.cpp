@@ -10,24 +10,21 @@
 //
 //
 #include "kdtreebase.h"
-#include "scene.h"
 #include <assert.h>
+#include "scene.h"
+#include "kdnode.h"
+#define NODE_SIZE (sizeof(KdNode) / sizeof(unsigned int))
+
 
 using namespace Occluder;
 
-KdTreeBase::KdTreeBase(const Scene& scene, unsigned int sampleCount):
-AccelerationStructure(scene),
-primitiveBBs(0),
-sampleCount(sampleCount) {
-
-    assert( (sampleCount % 4) == 0 ); // must be multiple of four
-    // to be able to use SSE register
+KdTreeBase::KdTreeBase(const Scene& scene):
+  AccelerationStructure(scene)
+ {
 }
 
 
 KdTreeBase::~KdTreeBase() {
-    if ( primitiveBBs )
-        delete primitiveBBs;
 }
 
 
@@ -36,54 +33,152 @@ bool KdTreeBase::hasIntersection(const RaySegment& ray) const {
 }
 
 const Intersection KdTreeBase::getFirstIntersection(const RaySegment& ray) const {
-  return Intersection::getEmpty();
+  const RaySegment trimmed(ray.trim(scene.getAABB()));
+  return traverseRecursive( *((KdNode*)memBlock), trimmed, trimmed.getTMin(), trimmed.getTMax() );
 }
+
+
+Intersection KdTreeBase::traverseRecursive( const KdNode& node, const RaySegment& r, float tmin, float tmax) const {
+
+  Intersection closest(Intersection::getEmpty());
+  // 1. ------------------ Leaf case  ------------------------
+  if ( node.isLeaf() ) {
+    const KdNode::IndexList primitives = node.getPrimitiveList();
+    for (unsigned int i = 0; i < primitives.length ; ++i ) {
+      closest += scene.getPrimitive(primitives.start[i]).getIntersection( r );
+    }
+    return closest;
+  }
+  // 2. ------------------ inner node case  ------------------------
+  const unsigned int far = (r.getDirection()[node.getAxis()] > 0.0f) ? 1 : 0;
+  const unsigned int near = 1 - far;
+
+  const float distToSplit = (node.getSplitPos() - r.getOrigin()[node.getAxis()] ) * r.getInvDirection()[node.getAxis()];
+
+  if ( tmin > distToSplit) { // near voxel does not need to be traversed
+      closest = traverseRecursive(node.getChild(far), r, distToSplit, tmax);
+  } else if ( distToSplit > tmax) { // far voxel has not to be visited
+    closest = traverseRecursive( node.getChild(near), r, tmin,  distToSplit);
+  } else { // both nodes have to be visited
+    closest = traverseRecursive( node.getChild(near), r, tmin,  distToSplit);
+    if ( !closest.isEmpty() )
+      closest = traverseRecursive( node.getChild(far), r, distToSplit, tmax);
+  }
+  return closest;
+}
+
+
+Float4 KdTreeBase::haveIntersections(const RaySegmentSSE& ray) const {
+  return Float4::zero();
+}
+
+void KdTreeBase::determineFirstIntersection(const RaySegmentSSE& ray, IntersectionSSE& result) const {
+}
+
+void KdTreeBase::getAllIntersections(const RaySegment& ray, List< const Intersection >& results) const {
+}
+
 
 void KdTreeBase::construct() {
-    // malloc not new because we want no contructor calls here
-    primitiveBBs = (AABB*)malloc(scene.getPrimitiveCount() * sizeof(AABB));
-    const unsigned int primCount = scene.getPrimitiveCount();
-    for ( unsigned int i = 0; i < primCount; ++i)
-        primitiveBBs[i] = scene.getPrimitive(i).getAABB();
+
+//   unsigned int size = sizeof(KdNode); // space for treenodes
+  const unsigned int primCount = scene.getPrimitiveCount();
+// 
+//   memBlock = (unsigned int*)malloc(sizeof(KdNode));
+//   KdNode::makeLeaf(memBlock, 0);
+//   const KdNode *root = (const KdNode *)memBlock;
+//   root->analyze();
+//   return;
+
+  unsigned int size = (2 * primCount - 1) * sizeof(KdNode) // space for treenodes
+                    + primCount * sizeof(unsigned int)    ;// space for object references
+  memBlock = (unsigned int*)malloc(size);
+  for (unsigned int i = 0; i < primCount; ++i) {
+    memBlock[i] = i;
+  }
+  subdivide(memBlock, primCount, scene.getAABB(), size / sizeof(unsigned int));
+  const KdNode *root = (const KdNode *)memBlock;
+  root->analyze();
 }
 
-KdNodeBloated *KdTreeBase::subdivide(List<unsigned int> primitives, const AABB& aabb) {
+void KdTreeBase::subdivide( unsigned int *memBlock, unsigned int primitiveCount, const AABB nodeBox, unsigned int size) {
 
-    const Vec3 aabbWidth( aabb.getWidths() );
-    unsigned char axis = 0;
-    if ( aabbWidth[1] > aabbWidth[2] )
-      axis = 1;
-    if ( aabbWidth[2] > aabbWidth[axis] )
-      axis = 2;
+  assert( size >= ( primitiveCount + 2 ) );
+  unsigned int *fallBack = (unsigned int*) malloc(size * sizeof(unsigned int));
+  memcpy(fallBack, memBlock, sizeof(unsigned int) * primitiveCount);
+  
+  // determine longest axis of bounding box
+  const Vec3 aabbWidth( nodeBox.getWidths() );
+  unsigned char axis = 0;
+  axis = ( aabbWidth[1] > aabbWidth[0] )    ? 1 : 0;
+  axis = ( aabbWidth[2] > aabbWidth[axis] ) ? 2 : axis;
 
-    const float samplePosDelta = aabbWidth[axis] / ( sampleCount + 1 );
+  // determine splitposition on half of longest axis
+  const float splitPos = nodeBox.getMin(axis) + ( aabbWidth[axis] * 0.5f );
 
-    float *candidates;
-    candidates = (float*)malloc( sampleCount * sizeof(float));
-    unsigned int *CL, *CR;
-    CL = (unsigned int*)malloc( sampleCount * sizeof(int));
-    CR = (unsigned int*)malloc( sampleCount * sizeof(int));
-    memset(&CL, 0, sampleCount * sizeof(int));
-    memset(&CR, 0, sampleCount * sizeof(int));
-    candidates[0] = aabb.getMin(axis) + samplePosDelta;
-    for ( unsigned int i = 1; i < sampleCount; ++i) {
-      candidates[i] = candidates[i - 1] + samplePosDelta;
+
+  unsigned int leftAndRightStart = size;
+  unsigned int rightOnlyStart = size;
+  unsigned int lastUnclassified = primitiveCount - 1;
+
+  unsigned int l = 0;
+  for ( unsigned int i = 0; i < primitiveCount; ++i) {
+    const AABB primAABB = scene.getPrimitive(memBlock[i]).getAABB();
+    if ( primAABB.getMax(axis) < splitPos) { // completely in left node
+      ++l;
+    } else  if ( primAABB.getMin(axis) >= splitPos) { // completely in right node
+      --leftAndRightStart;
+      memBlock[leftAndRightStart] = memBlock[rightOnlyStart];
+      --rightOnlyStart;
+      memBlock[rightOnlyStart] = memBlock[l];
+      memBlock[l] = memBlock[lastUnclassified];
+      --lastUnclassified;
+    } else {// overlaps both nodes -> reference replication
+      if ( (leftAndRightStart - lastUnclassified) < ( 3 * NODE_SIZE ) ) {
+         // not enough memory for 1 inner node & 2 leaves -> create leaf
+        memcpy(fallBack, memBlock + NODE_SIZE, primitiveCount * sizeof(unsigned int));
+        KdNode::makeLeaf(memBlock, primitiveCount);
+        free(fallBack);
+        return;
+      }
+      --leftAndRightStart;
+      memBlock[leftAndRightStart] = memBlock[l];
+      memBlock[l] = memBlock[lastUnclassified];
+      --lastUnclassified;
     }
+  }
+  // |____left only__|___________________________|__left&right__|__right only__|
 
-    const unsigned int primCount = scene.getPrimitiveCount();
-//     const unsigned int sets = sampleCount / 4;
+  const unsigned int leftAndRightLength = (rightOnlyStart - leftAndRightStart);
+  // not enough memory for 1 inner node & 2 leaves & replicated references -> create leaf
+  // TODO: move this test completely into upper loop
+  if ( (leftAndRightStart - l) < ( 3 * NODE_SIZE + leftAndRightLength) ) {
+    memcpy(memBlock + NODE_SIZE, fallBack, primitiveCount * sizeof(unsigned int));
+    KdNode::makeLeaf(memBlock, primitiveCount);
+    free(fallBack);
+    return;
+  }
+  free(fallBack);
 
-    for ( unsigned int sample = 0; sample < sampleCount; ++sample) {
-        for (unsigned int primId = 0; primId < primCount; ++primId) {
-                const AABB& currAABB = primitiveBBs[primId];
-                CR += ( candidates[sample] < currAABB.getMin(axis) ) ? 1 : 0;
-                CL += ( candidates[sample] > currAABB.getMax(axis) ) ? 1 : 0;
-        }
-    }
+  float p = 0.5;
+  memcpy( memBlock + l, memBlock, sizeof(KdNode) );
+  l += NODE_SIZE;
+  // |NODE|__left only__|_______________________|__left&right__|__right only__|
 
-    free(candidates);
-    free(CL);
-    free(CR);
-    return 0;
+  // copy 'left and right' block to end of 'left only' block
+  memcpy( memBlock + l, memBlock + leftAndRightStart, leftAndRightLength * sizeof( unsigned int));
+  // |NODE|__left only__|__left&right__|________|__left&right__|__right only__|
+
+  // shift content of ride node left to grant free mem for its children
+  const unsigned int leftEnd    = l + leftAndRightLength;
+  const unsigned int free       = leftAndRightStart - ( leftEnd );
+  const unsigned int leftFree   = (unsigned int)(p * free);
+  const unsigned int rightStart = leftEnd + leftFree;
+  const unsigned int rightPrimitives = size - leftAndRightStart;
+  memcpy( memBlock + rightStart, memBlock + leftAndRightStart, rightPrimitives);
+  // p = i.e. 0.5
+  // |NODE|__left only__|__left&right__|____|__left&right__|__right only__|____|
+  KdNode::makeInnernode(memBlock, axis, splitPos, rightStart << 2);
+  subdivide(memBlock + NODE_SIZE, leftEnd - NODE_SIZE, nodeBox.getHalfBox(axis, splitPos, true),  rightStart - NODE_SIZE );
+  subdivide(memBlock + rightStart, rightPrimitives, nodeBox.getHalfBox(axis, splitPos, false),  size - rightStart );
 }
-

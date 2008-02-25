@@ -26,6 +26,8 @@
 #include "bih.h"
 #include "bihcompact.h"
 #include "bihiterative.h"
+#include "kdtreesimple.h"
+#include "kdtreebase.h"
 
 using namespace Occluder;
 
@@ -90,6 +92,10 @@ const bool Scene::loadFromFile ( const std::string& filename ) {
           geometry = new BihCompact ( *this, 1 );
         else if ( value == "bihiter" )
           geometry = new BihIterative ( *this, 1 );
+        else if ( value == "kd" )
+          geometry = new KdTreeSimple ( *this, 2, 8 );
+        else if ( value == "kd1" )
+          geometry = new KdTreeBase ( *this );
 //         else if ( value == "kd" )
 //           geometry = new KdTree ( *this );
         else {

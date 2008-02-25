@@ -11,6 +11,7 @@
 //
 #ifndef OCCLUDERBihNodeCompact_H
 #define OCCLUDERBihNodeCompact_H
+#include "bintree.h"
 
 namespace Occluder {
 
@@ -75,7 +76,7 @@ public:
 
       unsigned int leafCount() const;
       unsigned int nodeCount() const;
-      double avgTrisPerLeaf() const;
+      AvgInfo avgTrisPerLeaf() const;
       void analyze() const;
       unsigned int treeDepth() const;
 

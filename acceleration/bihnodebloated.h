@@ -1,6 +1,6 @@
 #ifndef OCCLUDERBIHNODE_H
 #define OCCLUDERBIHNODE_H
-
+#include "bintree.h"
 
 namespace Occluder {
 
@@ -60,7 +60,7 @@ class BihNode {
 
       unsigned int leafCount() const;
       unsigned int nodeCount() const;
-      double avgTrisPerLeaf() const;
+      AvgInfo avgTrisPerLeaf() const;
       void analyze() const;
       unsigned int treeDepth() const;
     private:

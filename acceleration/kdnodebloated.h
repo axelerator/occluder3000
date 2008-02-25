@@ -12,7 +12,7 @@
 #ifndef OCCLUDERKDNODEBLOATED_H
 #define OCCLUDERKDNODEBLOATED_H
 #include "list.h"
-
+#include "bintree.h"
 
 
 namespace Occluder {
@@ -27,17 +27,26 @@ public:
 
     KdNodeBloated(const KdNodeBloated* left, const KdNodeBloated* right, unsigned char axis, float splitPos );
 
-    KdNodeBloated( const List<unsigned int> *primitives );
+    KdNodeBloated( const List<unsigned int>& primitives );
     ~KdNodeBloated();
 
 
     bool isLeaf() const;
     unsigned int getAxis() const;
     const KdNodeBloated& getChild(unsigned int i) const;
+    float getSplitpos() const;
     const List<unsigned int>& getPrimitives() const;
 
-private:
+    void analyze() const;
 
+
+
+private:
+    // info methods
+    AvgInfo avgTrisPerLeaf() const;
+    unsigned int leafCount() const;
+    unsigned int nodeCount() const;
+    unsigned int treeDepth() const;
 
   const bool isleaf;
 
@@ -51,7 +60,7 @@ private:
 };
 
 
-KdNodeBloated::KdNodeBloated(const KdNodeBloated* left, const KdNodeBloated* right, unsigned char axis, float splitPos ):
+inline KdNodeBloated::KdNodeBloated(const KdNodeBloated* left, const KdNodeBloated* right, unsigned char axis, float splitPos ):
   isleaf(false),
   splitPos(splitPos),
   axis(axis) {
@@ -60,35 +69,43 @@ child[1] = right;
 }
 
 
-KdNodeBloated::KdNodeBloated( const List<unsigned int> *primitives ):
+inline KdNodeBloated::KdNodeBloated( const List<unsigned int>& primitives ):
   isleaf(true),
   splitPos(0.0f),
-  axis(3),
-  primitives(primitives) {
+  axis(3) {
 child[0] = 0;
 child[1] = 0;
+this->primitives = new List<unsigned int>(primitives);
 }
 
-KdNodeBloated::~KdNodeBloated() {}
+inline KdNodeBloated::~KdNodeBloated() {
+  if ( isLeaf() ) {
+    delete primitives;
+  } else {
+    delete child[0];
+    delete child[1];
+  }
+}
 
-
-
-bool KdNodeBloated::isLeaf() const {
+inline bool KdNodeBloated::isLeaf() const {
   return isleaf;
 }
 
-unsigned int KdNodeBloated::getAxis() const {
+inline unsigned int KdNodeBloated::getAxis() const {
   return axis;
 }
 
-const KdNodeBloated& KdNodeBloated::getChild(unsigned int i) const {
+inline const KdNodeBloated& KdNodeBloated::getChild(unsigned int i) const {
   return *child[i];
 }
 
-const List<unsigned int>& KdNodeBloated::getPrimitives() const {
+inline const List<unsigned int>& KdNodeBloated::getPrimitives() const {
   return *primitives;
 }
 
+inline float KdNodeBloated::getSplitpos() const {
+  return splitPos;
+}
 
 }
 

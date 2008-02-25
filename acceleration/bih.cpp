@@ -56,7 +56,8 @@ bool Bih::traverseRecursiveShadow(const BihNode& node, const RaySegment& r, floa
 }
 
 bool Bih::hasIntersection(const RaySegment& ray) const {
-  return traverseRecursiveShadow( *root, ray, ray.getTMin(), ray.getTMax() );
+  const RaySegment trimmed(ray.trim(scene.getAABB()));
+  return traverseRecursiveShadow( *root, trimmed, trimmed.getTMin(), trimmed.getTMax() );
 }
 
 
