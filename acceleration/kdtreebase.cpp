@@ -59,14 +59,14 @@ Intersection KdTreeBase::traverseRecursive( const KdNode& node, const RaySegment
 
   const float distToSplit = (node.getSplitPos() - r.getOrigin()[node.getAxis()] ) * r.getInvDirection()[node.getAxis()];
 
-/*  if ( distToSplit < r.getTMin()) { // near voxel does not need to be traversed
+  if ( distToSplit < r.getTMin()) { // near voxel does not need to be traversed
       closest = traverseRecursive(node.getChild(far), r.resize(distToSplit, r.getTMax()));
   } else if ( r.getTMax() < distToSplit ) { // far voxel has not to be visited
     closest = traverseRecursive( node.getChild(near), r.resize( r.getTMin(),  distToSplit));
-  } else*/ { // both nodes have to be visited
-    closest += traverseRecursive( node.getChild(near), r.resize( r.getTMin(),  distToSplit ));
-//     if ( closest.isEmpty() )
-      closest += traverseRecursive( node.getChild(far), r.resize( distToSplit, r.getTMax() ));
+  } else { // both nodes have to be visited
+    closest+= traverseRecursive( node.getChild(near), r.resize( r.getTMin(),  distToSplit ));
+    if ( closest.isEmpty() )
+      closest = traverseRecursive( node.getChild(far), r.resize( distToSplit, r.getTMax() ));
   }
   return closest;
 }
