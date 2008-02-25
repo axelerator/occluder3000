@@ -45,7 +45,7 @@ void KdNodeBloated::analyze() const {
   const unsigned int lc = leafCount();
   std::cout << "Leafcount:" << lc << "\n";
   std::cout << "avgTrisPerLeaf:" << avgTrisPerLeaf().avg << "\n";
-
+  print();
   std::cout << std::endl;
 }
 
@@ -56,5 +56,23 @@ unsigned int KdNodeBloated::treeDepth() const {
     const unsigned int lmax = getChild(false).treeDepth();
     const unsigned int rmax = getChild(true).treeDepth();
     return 1 + ( ( lmax < rmax ) ? rmax : lmax );
+  }
+}
+
+void KdNodeBloated::print() const {
+
+  if ( isLeaf() ) {
+    std::cout << "[";
+    for ( unsigned int i = 0; i < primitives->size(); ++i )
+      std::cout << (*primitives)[i] << ",";
+    std::cout << "]";
+  } else {
+    std::cout << "(";
+    getChild(false).print();
+    std::cout << ")" << splitPos << "{" << getAxis() << "}"  << "(";
+    getChild(true).print();
+    std::cout << ")";
+
+
   }
 }

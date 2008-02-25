@@ -38,7 +38,7 @@ public:
     const List<unsigned int>& getPrimitives() const;
 
     void analyze() const;
-
+    void print() const;
 
 
 private:

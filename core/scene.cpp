@@ -93,7 +93,7 @@ const bool Scene::loadFromFile ( const std::string& filename ) {
         else if ( value == "bihiter" )
           geometry = new BihIterative ( *this, 1 );
         else if ( value == "kd" )
-          geometry = new KdTreeSimple ( *this, 2, 8 );
+          geometry = new KdTreeSimple ( *this, 2, 2 );
         else if ( value == "kd1" )
           geometry = new KdTreeBase ( *this );
 //         else if ( value == "kd" )

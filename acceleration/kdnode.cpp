@@ -53,7 +53,7 @@ void KdNode::analyze() const {
   const unsigned int lc = leafCount();
   std::cout << "Leafcount:" << lc << "\n";
   std::cout << "avgTrisPerLeaf:" << avgTrisPerLeaf().avg << "\n";
-
+  print();
   std::cout << std::endl;
 }
 
@@ -78,5 +78,22 @@ unsigned int KdNode::treeDepth() const {
   return this[1];
 }
 
+void KdNode::print() const {
 
+  if ( isLeaf() ) {
+    const IndexList il = getPrimitiveList();
+    std::cout << "[";
+    for ( unsigned int i = 0; i < il.length; ++i )
+      std::cout << il.start[i] << ",";
+    std::cout << "]";
+  } else {
+    std::cout << "(";
+    getChild(false).print();
+    std::cout << ")" << innernode.splitPos << "{" << (int)getAxis() << "}"  << "(";
+    getChild(true).print();
+    std::cout << ")";
+
+
+  }
+}
 

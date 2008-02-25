@@ -38,6 +38,8 @@ public:
     const Vec3& getOrigin() const ;
     float getTMin() const;
     float getTMax() const;
+    RaySegment resize(float tmin, float tmax) const;
+
 
     void setTMin(float newmin);
     void setTMax(float newmax);
@@ -94,6 +96,13 @@ inline RaySegment RaySegment::trim(const AABB& aabb) const {
 inline void RaySegment::setDirection(const Vec3& dir) {
   direction = dir;
   invDirection = Vec3(1.0f/dir[0], 1.0f/dir[1], 1.0f/dir[2]);
+}
+
+inline RaySegment RaySegment::resize(float tmin, float tmax) const {
+  RaySegment result(*this);
+  result.tmin = tmin;
+  result.tmax = tmax;
+  return result;
 }
 
 }

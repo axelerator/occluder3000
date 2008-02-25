@@ -36,7 +36,7 @@ public:
     virtual ~KdTreeSimple();
 private:
   KdNodeBloated *subdivide(const List<unsigned int>& primitives, const AABB& aabb, unsigned int depth);
-  Intersection traverseRecursive( const KdNodeBloated& node, const RaySegment& ray, float tmin, float tmax) const ;
+  Intersection traverseRecursive( const KdNodeBloated& node, const RaySegment& ray) const ;
 
   AABB *primitiveBBs;
   KdNodeBloated *root;

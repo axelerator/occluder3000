@@ -52,6 +52,7 @@ public:
     void analyze() const;
     unsigned int treeDepth() const;
 
+    void print() const;
 private:
   typedef struct {
     float splitPos;

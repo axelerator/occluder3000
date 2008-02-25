@@ -40,15 +40,15 @@ bool KdTreeSimple::hasIntersection(const RaySegment& ray) const {
 
 const Intersection KdTreeSimple::getFirstIntersection(const RaySegment& ray) const {
   const RaySegment trimmed(ray.trim(scene.getAABB()));
-  return traverseRecursive( *root, trimmed, trimmed.getTMin(), trimmed.getTMax() );
+  return traverseRecursive( *root, trimmed );
 }
 
 
-Intersection KdTreeSimple::traverseRecursive( const KdNodeBloated& node, const RaySegment& r, float tmin, float tmax) const {
+Intersection KdTreeSimple::traverseRecursive( const KdNodeBloated& node, const RaySegment& r) const {
 
   Intersection closest(Intersection::getEmpty());
   // 1. ------------------ Leaf case  ------------------------
-  if ( node.isLeaf() ) {
+  if ( node.isLeaf() ) {    
     const List<unsigned int>& primitives = node.getPrimitives();
     List<unsigned int>::const_iterator iter;
     for (iter = primitives.begin(); iter != primitives.end(); ++iter ) {
@@ -62,14 +62,14 @@ Intersection KdTreeSimple::traverseRecursive( const KdNodeBloated& node, const R
 
   const float distToSplit = (node.getSplitpos() - r.getOrigin()[node.getAxis()] ) * r.getInvDirection()[node.getAxis()];
 
-  if ( distToSplit < tmin) { // near voxel does not need to be traversed
-      closest = traverseRecursive(node.getChild(far), r, distToSplit, tmax);
-  } else if ( tmax < distToSplit ) { // far voxel has not to be visited
-    closest = traverseRecursive( node.getChild(near), r, tmin,  distToSplit);
+  if ( distToSplit < r.getTMin()) { // near voxel does not need to be traversed
+      closest = traverseRecursive(node.getChild(far), r.resize(distToSplit, r.getTMax()));
+  } else if ( r.getTMax() < distToSplit ) { // far voxel has not to be visited
+    closest = traverseRecursive( node.getChild(near), r.resize(r.getTMin(),  distToSplit));
   } else { // both nodes have to be visited
-    closest = traverseRecursive( node.getChild(near), r, tmin,  distToSplit);
+    closest = traverseRecursive( node.getChild(near), r.resize(r.getTMin(),  distToSplit));
     if ( closest.isEmpty() )
-      closest = traverseRecursive( node.getChild(far), r, distToSplit, tmax);
+      closest = traverseRecursive( node.getChild(far), r.resize(distToSplit, r.getTMax()));
   }
   return closest;
 }

@@ -36,7 +36,7 @@ public:
     virtual void getAllIntersections(const RaySegment& ray, List< const Intersection >& results) const;
 private:
     void subdivide( unsigned int *memBlock, unsigned int primitiveCount, const AABB nodeBox, unsigned int size);
-    Intersection traverseRecursive( const KdNode& node, const RaySegment& r, float tmin, float tmax) const;
+    Intersection traverseRecursive( const KdNode& node, const RaySegment& r) const;
 
   unsigned int *memBlock;
 };
