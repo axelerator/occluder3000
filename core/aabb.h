@@ -78,6 +78,11 @@ public:
        @return one half of this aabb
      **/
     AABB getHalfBox(unsigned char axis, float splitPos, bool left) const;
+
+    /**
+      @return the surface area of this box
+     **/
+    float getSurfaceArea() const;
 private:
   Vec3 minima;
   Vec3 maxima;
@@ -122,4 +127,10 @@ inline void AABB::scale(float f) {
 inline const Vec3 AABB::getWidths() const {
   return Vec3(maxima[0] - minima[0], maxima[1] - minima[1], maxima[2] - minima[2]);
 }
+
+inline float AABB::getSurfaceArea() const {
+  const Vec3 width(getWidths());
+  return 2.0f * ( width[0] * width[1] + width[1] * width[2] + width[2] * width[0]);
+}
+
 #endif

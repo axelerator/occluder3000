@@ -28,7 +28,7 @@
 #include "bihiterative.h"
 #include "kdtreesimple.h"
 #include "kdtreebase.h"
-
+#include "kdtreesahnaive.h"
 using namespace Occluder;
 
 Scene::Scene():
@@ -96,8 +96,8 @@ const bool Scene::loadFromFile ( const std::string& filename ) {
           geometry = new KdTreeSimple ( *this, 2, 2 );
         else if ( value == "kd1" )
           geometry = new KdTreeBase ( *this );
-//         else if ( value == "kd" )
-//           geometry = new KdTree ( *this );
+        else if ( value == "kd2" )
+          geometry = new KdTreeSAHNaive ( *this );
         else {
                 std::cout << "Accelerationstruct " << value << " not available. Falling back to default(list). Choose { grid, bih, kd }" << std::endl;
                 geometry = new PrimitiveList ( *this );

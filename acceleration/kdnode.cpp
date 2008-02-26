@@ -53,7 +53,7 @@ void KdNode::analyze() const {
   const unsigned int lc = leafCount();
   std::cout << "Leafcount:" << lc << "\n";
   std::cout << "avgTrisPerLeaf:" << avgTrisPerLeaf().avg << "\n";
-  print();
+//   print();
   std::cout << std::endl;
 }
 

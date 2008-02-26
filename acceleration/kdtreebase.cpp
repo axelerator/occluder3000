@@ -11,7 +11,7 @@
 //
 #include "kdtreebase.h"
 #include <assert.h>
-#include <iostream>
+
 
 #include "scene.h"
 #include "kdnode.h"
@@ -21,14 +21,16 @@
 using namespace Occluder;
 
 KdTreeBase::KdTreeBase(const Scene& scene):
-  AccelerationStructure(scene), memBlock(0)
+  AccelerationStructure(scene), memBlock(0), primitiveBoxes(0)
  {
 }
 
 
 KdTreeBase::~KdTreeBase() {
-  if ( memBlock )
+  if ( memBlock ) {
     free (memBlock);
+    free(primitiveBoxes);
+  }
 }
 
 
@@ -85,11 +87,18 @@ void KdTreeBase::getAllIntersections(const RaySegment& ray, List< const Intersec
 
 void KdTreeBase::construct() {
   const unsigned int primCount = scene.getPrimitiveCount();
+  unsigned int i;
+  primitiveBoxes = (AABB *)malloc(primCount * sizeof(AABB));
+  for ( i = 0; i < primCount; ++i) {
+    primitiveBoxes[i] =  scene.getPrimitive(i).getAABB();
+  }
+    
+
   unsigned int size = (2 * primCount - 1) * sizeof(KdNode) // space for treenodes
-                    + primCount * sizeof(unsigned int)    ;// space for object references
+                    + (unsigned int)(1.3f * primCount) * sizeof(unsigned int)    ;// space for object references
 //     size = 5 * sizeof(KdNode)  + 1.5f * primCount * sizeof(unsigned int);
   memBlock = (unsigned int*)malloc(size);
-  for (unsigned int i = 0; i < primCount; ++i) {
+  for (i = 0; i < primCount; ++i) {
     memBlock[i] = i;
   }
   subdivide(memBlock, primCount, scene.getAABB(), size / sizeof(unsigned int));
@@ -98,19 +107,11 @@ void KdTreeBase::construct() {
 }
 
 void KdTreeBase::subdivide( unsigned int *memBlock, unsigned int primitiveCount, const AABB nodeBox, unsigned int size) {
-  std::cout << "fart";
   assert( size >= ( primitiveCount + 2 ) );
   unsigned int *fallBack = (unsigned int*) malloc(size * sizeof(unsigned int));
   memcpy(fallBack, memBlock, sizeof(unsigned int) * primitiveCount);
   
-  // determine longest axis of bounding box
-  const Vec3 aabbWidth( nodeBox.getWidths() );
-  unsigned char axis = 0;
-  axis = ( aabbWidth[1] > aabbWidth[0] )    ? 1 : 0;
-  axis = ( aabbWidth[2] > aabbWidth[axis] ) ? 2 : axis;
-
-  // determine splitposition on half of longest axis
-  const float splitPos = nodeBox.getMin(axis) + ( aabbWidth[axis] * 0.5f );
+  const KdTreeBase::SplitCandidate split = determineSplitpos(nodeBox, memBlock, primitiveCount);
 
   unsigned int leftAndRightStart = size;
   unsigned int rightOnlyStart = size;
@@ -119,9 +120,9 @@ void KdTreeBase::subdivide( unsigned int *memBlock, unsigned int primitiveCount,
   unsigned int l = 0;
   for ( unsigned int i = 0; i < primitiveCount; ++i) {
     const AABB primAABB = scene.getPrimitive(memBlock[l]).getAABB();
-    if ( primAABB.getMax(axis) < splitPos) { // completely in left node
+    if ( primAABB.getMax(split.axis) < split.pos) { // completely in left node
       ++l;
-    } else  if ( primAABB.getMin(axis) >= splitPos) { // completely in right node
+    } else  if ( primAABB.getMin(split.axis) >= split.pos) { // completely in right node
       --leftAndRightStart;
       --rightOnlyStart;
       memBlock[leftAndRightStart] = memBlock[rightOnlyStart];
@@ -183,14 +184,19 @@ void KdTreeBase::subdivide( unsigned int *memBlock, unsigned int primitiveCount,
   memmove( memBlock + rightStart, memBlock + leftAndRightStart, rightPrimitives * sizeof(unsigned int));
   // p = i.e. 0.5
   // |NODE|__left only__|__left&right__|____|__left&right__|__right only__|____|
-  KdNode::makeInnernode(memBlock, axis, splitPos, rightStart << 2);
-  std::cout << "\nleft:";
-  for ( unsigned int i = 0; i < leftPrimitives; ++i)
-    std::cout << memBlock[NODE_SIZE + i] << ",";
-  subdivide(memBlock + leftStart, leftPrimitives, nodeBox.getHalfBox(axis, splitPos, true),  rightStart - NODE_SIZE );
-  std::cout << "\nright:";
-  for ( unsigned int i = 0; i < rightPrimitives; ++i)
-    std::cout << memBlock[rightStart + i] << ",";
-  subdivide(memBlock + rightStart, rightPrimitives, nodeBox.getHalfBox(axis, splitPos, false),  size - rightStart );
-  std::cout << "\n";
+  KdNode::makeInnernode(memBlock, split.axis, split.pos, rightStart << 2);
+  subdivide(memBlock + leftStart, leftPrimitives, nodeBox.getHalfBox(split.axis, split.pos, true),  rightStart - NODE_SIZE );
+  subdivide(memBlock + rightStart, rightPrimitives, nodeBox.getHalfBox(split.axis, split.pos, false),  size - rightStart );
+}
+
+KdTreeBase::SplitCandidate KdTreeBase::determineSplitpos(const AABB& v, const unsigned int *primitves, const unsigned int primitveCount) {
+  // determine longest axis of bounding box
+  const Vec3 aabbWidth( v.getWidths() );
+  unsigned char axis = 0;
+  axis = ( aabbWidth[1] > aabbWidth[0] )    ? 1 : 0;
+  axis = ( aabbWidth[2] > aabbWidth[axis] ) ? 2 : axis;
+
+  // determine splitposition on half of longest axis
+  const SplitCandidate result = { v.getMin(axis) + ( aabbWidth[axis] * 0.5f ), axis };
+  return result;
 }
