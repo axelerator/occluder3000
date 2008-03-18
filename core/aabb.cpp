@@ -13,6 +13,7 @@
 #include <math.h>
 #include <stdio.h>
 #include "primitive.h"
+#include <assert.h>
 
 using namespace Occluder;
 
@@ -225,6 +226,8 @@ int triBoxOverlap(const float boxcenter[3],const float boxhalfsize[3], const Pri
   }
 
 AABB AABB::getHalfBox(unsigned char axis, float splitPos, bool left) const {
+  assert(splitPos <= maxima[axis]);
+  assert(splitPos >= minima[axis]);
   AABB result(*this);
   if ( left ) 
     result.maxima[axis] = splitPos;

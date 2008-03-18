@@ -29,10 +29,13 @@
 #include "kdtreesimple.h"
 #include "kdtreebase.h"
 #include "kdtreesahnaive.h"
+#include "kdtreesahnlog2n.h"
+#include "kdtreesahnlogn.h"
+
 using namespace Occluder;
 
 Scene::Scene():
-geometry(new PrimitiveList(*this)), defaultShader( "default", *this ) {}
+geometry(new PrimitiveList(*this)), defaultShader( std::string("default"), *this ) {}
 
 
 Scene::~Scene() {
@@ -45,6 +48,9 @@ Scene::~Scene() {
     for ( lightIter = lights.begin(); lightIter != lights.end(); ++ lightIter )
         delete *lightIter;
     lights.clear();
+
+    if ( geometry )
+      delete geometry;
 }
 
 const bool Scene::loadFromFile ( const std::string& filename ) {
@@ -98,6 +104,10 @@ const bool Scene::loadFromFile ( const std::string& filename ) {
           geometry = new KdTreeBase ( *this );
         else if ( value == "kd2" )
           geometry = new KdTreeSAHNaive ( *this );
+        else if ( value == "kd3" )
+          geometry = new KdTreeSahNlog2N( *this );
+        else if ( value == "kd4" )
+          geometry = new KdTreeSahNlogN( *this );
         else {
                 std::cout << "Accelerationstruct " << value << " not available. Falling back to default(list). Choose { grid, bih, kd }" << std::endl;
                 geometry = new PrimitiveList ( *this );

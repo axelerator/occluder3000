@@ -9,18 +9,57 @@ using namespace Occluder;
 
 char done = 0;
 
-void userEvents(Scene &scene) {
+void userEvents(Scene &scene, Camera& cam) {
   // Poll for events, and handle the ones we care about.
   SDL_Event event;
   while ( SDL_PollEvent ( &event ) ) {
     switch ( event.type ) {
+
+
       case SDL_KEYDOWN:
         switch ( event.key.keysym.sym ) {
+      case SDLK_PAGEUP:
+        cam.setTurnSpeed( -0.03, 1);
+        break;
+      case SDLK_PAGEDOWN:
+        cam.setTurnSpeed( 0.03, 1);
+        break;
+      case SDLK_LEFT:
+        cam.setTurnSpeed( -0.03, 0);
+        break;
+      case SDLK_RIGHT:
+        cam.setTurnSpeed( 0.03, 0);
+        break;
+      case SDLK_UP:
+        cam.setMovementSpeed(0.06);
+        break;
+      case SDLK_DOWN:
+        cam.setMovementSpeed(-0.06);
+        break;
           default:;
         }
         break;
       case SDL_KEYUP:
         switch ( event.key.keysym.sym ) {
+         case SDLK_PAGEUP:
+            cam.setTurnSpeed( 0.0, 1);
+            break;
+          case SDLK_PAGEDOWN:
+            cam.setTurnSpeed( 0.0, 1);
+            break;
+          case SDLK_UP:
+            cam.setMovementSpeed(0.0);
+            break;
+          case SDLK_DOWN:
+            cam.setMovementSpeed(0.0);
+            break;
+          case SDLK_LEFT:
+            cam.setTurnSpeed( 0.0, 0);
+            break;
+          case SDLK_RIGHT:
+            cam.setTurnSpeed( 0.0, 0);
+            break;
+
             // If escape is pressed, return (and thus, quit)
           case SDLK_ESCAPE:
             done = 1;
@@ -46,7 +85,7 @@ int main ( int argc, char *argv[] ) {
     std::cerr << "Failed to load " << argv[1] << std::endl;
     exit(2);
   }
-  const Camera& cam = scene.getCamera();
+  Camera& cam = scene.getCamera();
 
   // Initialize SDL's subsystems - in this case, only video.
   if ( SDL_Init ( SDL_INIT_VIDEO ) < 0 ) {
@@ -77,7 +116,9 @@ int main ( int argc, char *argv[] ) {
   
   std::cout << "paff!" << std::endl;
   while ( !done ) {
-    userEvents( scene );
+    userEvents( scene, cam);
+    cam.ani();
+    display.display(scene);
   }
 
   return 0;

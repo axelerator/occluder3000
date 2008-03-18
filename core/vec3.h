@@ -40,6 +40,7 @@ public:
     Vec3(float fx, float fy, float fz);
     Vec3(float fn);
     Vec3 (const std::string& valuestr);
+    bool operator==(const Vec3& v) const;
 
     Vec3& operator+=(const Vec3& v);
     Vec3& operator-=(const Vec3& v);
@@ -175,6 +176,10 @@ inline Vec3::Vec3() {}
 
     inline const float* Vec3::getFloatArray() const {
       return c;
+    }
+
+    inline bool Vec3::operator==(const Vec3& v) const {
+      return ( (c[0] == v.c[0]) &&  (c[1] == v.c[1]) &&  (c[2] == v.c[2]) );
     }
 
 

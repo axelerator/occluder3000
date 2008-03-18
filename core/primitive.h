@@ -100,6 +100,7 @@ public:
           @return one of the three vertices of the triangle
          **/
         const Vec3& getVertex(unsigned int v) const;
+        const Vec3& operator[](unsigned int v) const;
 
         /**
           @return the balance point of the primitive
@@ -140,6 +141,10 @@ inline const Vec3& Primitive::getNormal() const {
 
 inline const Vec3& Primitive::getCenter() const {
   return center;
+}
+
+inline const Vec3& Primitive::operator[](unsigned int v) const {
+  return getVertex(v);
 }
 
 #endif

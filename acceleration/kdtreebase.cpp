@@ -11,7 +11,7 @@
 //
 #include "kdtreebase.h"
 #include <assert.h>
-
+#include <fstream>
 
 #include "scene.h"
 #include "kdnode.h"
@@ -20,6 +20,9 @@
 
 using namespace Occluder;
 
+const float KdTreeBase::C_trav = 0.1f;
+const float KdTreeBase::C_intersect = 1.0f;
+
 KdTreeBase::KdTreeBase(const Scene& scene):
   AccelerationStructure(scene), memBlock(0), primitiveBoxes(0)
  {
@@ -27,10 +30,11 @@ KdTreeBase::KdTreeBase(const Scene& scene):
 
 
 KdTreeBase::~KdTreeBase() {
-  if ( memBlock ) {
+  if ( memBlock ) 
     free (memBlock);
+  if ( primitiveBoxes ) 
     free(primitiveBoxes);
-  }
+  
 }
 
 
@@ -88,14 +92,10 @@ void KdTreeBase::getAllIntersections(const RaySegment& ray, List< const Intersec
 void KdTreeBase::construct() {
   const unsigned int primCount = scene.getPrimitiveCount();
   unsigned int i;
-  primitiveBoxes = (AABB *)malloc(primCount * sizeof(AABB));
-  for ( i = 0; i < primCount; ++i) {
-    primitiveBoxes[i] =  scene.getPrimitive(i).getAABB();
-  }
-    
-
+  cachePrimitiveAABBs();
   unsigned int size = (2 * primCount - 1) * sizeof(KdNode) // space for treenodes
                     + (unsigned int)(1.3f * primCount) * sizeof(unsigned int)    ;// space for object references
+  totalSpace = size;
 //     size = 5 * sizeof(KdNode)  + 1.5f * primCount * sizeof(unsigned int);
   memBlock = (unsigned int*)malloc(size);
   for (i = 0; i < primCount; ++i) {
@@ -104,25 +104,43 @@ void KdTreeBase::construct() {
   subdivide(memBlock, primCount, scene.getAABB(), size / sizeof(unsigned int));
   const KdNode *root = (const KdNode *)memBlock;
   root->analyze();
+  writeToDisk();
 }
 
 void KdTreeBase::subdivide( unsigned int *memBlock, unsigned int primitiveCount, const AABB nodeBox, unsigned int size) {
   assert( size >= ( primitiveCount + 2 ) );
+  
+  if ( primitiveCount == 0) {
+    KdNode::makeLeaf(memBlock, primitiveCount);
+    return;
+  }
+
+  const KdTreeBase::SplitCandidate split = determineSplitpos(nodeBox, memBlock, primitiveCount);
+  if ( split.axis == 3 ) {
+      // no good split candidate found
+    memBlock[primitiveCount] = memBlock[0];
+    memBlock[primitiveCount+1] = memBlock[1];
+    KdNode::makeLeaf(memBlock, primitiveCount);
+    return;
+  }
+
   unsigned int *fallBack = (unsigned int*) malloc(size * sizeof(unsigned int));
   memcpy(fallBack, memBlock, sizeof(unsigned int) * primitiveCount);
-  
-  const KdTreeBase::SplitCandidate split = determineSplitpos(nodeBox, memBlock, primitiveCount);
 
   unsigned int leftAndRightStart = size;
   unsigned int rightOnlyStart = size;
   unsigned int lastUnclassified = primitiveCount - 1;
 
   unsigned int l = 0;
+
   for ( unsigned int i = 0; i < primitiveCount; ++i) {
-    const AABB primAABB = scene.getPrimitive(memBlock[l]).getAABB();
-    if ( primAABB.getMax(split.axis) < split.pos) { // completely in left node
+//     Overlap overlap2 = classify(memBlock[l], split, nodeBox);
+    Overlap overlap = classifyVague(memBlock[l], split, nodeBox);
+//     if ( overlap != overlap2)
+//       overlap = classify(memBlock[l], split, nodeBox);
+    if ( overlap == LEFT_ONLY) { // completely in left node
       ++l;
-    } else  if ( primAABB.getMin(split.axis) >= split.pos) { // completely in right node
+    } else  if ( overlap == RIGHT_ONLY ) { // completely in right node
       --leftAndRightStart;
       --rightOnlyStart;
       memBlock[leftAndRightStart] = memBlock[rightOnlyStart];
@@ -189,6 +207,14 @@ void KdTreeBase::subdivide( unsigned int *memBlock, unsigned int primitiveCount,
   subdivide(memBlock + rightStart, rightPrimitives, nodeBox.getHalfBox(split.axis, split.pos, false),  size - rightStart );
 }
 
+void KdTreeBase::cachePrimitiveAABBs() {
+  const unsigned int primCount = scene.getPrimitiveCount();
+   primitiveBoxes = (AABB *)malloc(primCount * sizeof(AABB));
+  for ( unsigned int i = 0; i < primCount; ++i) {
+    primitiveBoxes[i] =  scene.getPrimitive(i).getAABB();
+  }
+}
+
 KdTreeBase::SplitCandidate KdTreeBase::determineSplitpos(const AABB& v, const unsigned int *primitves, const unsigned int primitveCount) {
   // determine longest axis of bounding box
   const Vec3 aabbWidth( v.getWidths() );
@@ -197,6 +223,132 @@ KdTreeBase::SplitCandidate KdTreeBase::determineSplitpos(const AABB& v, const un
   axis = ( aabbWidth[2] > aabbWidth[axis] ) ? 2 : axis;
 
   // determine splitposition on half of longest axis
-  const SplitCandidate result = { v.getMin(axis) + ( aabbWidth[axis] * 0.5f ), axis };
+  const SplitCandidate result = { v.getMin(axis) + ( aabbWidth[axis] * 0.5f ), axis, false };
   return result;
 }
+
+void KdTreeBase::writeToDisk() const {
+    std::ofstream myFile ("kdtree.bin", std::ios::out | std::ios::binary);
+    myFile.write ((const char*)memBlock, totalSpace);
+    myFile.close();
+}
+
+KdTreeBase::Overlap KdTreeBase::classify(unsigned int primitiveID, const KdTreeBase::SplitCandidate split, const AABB &aabb) {
+  const Primitive& primitive = scene.getPrimitive(primitiveID);
+  const AABB primAABB = getAABBForPrimitiv(primitiveID);
+  if ((primAABB.getMin(split.axis) == primAABB.getMax(split.axis)) && (primAABB.getMin(split.axis) == split.pos))
+    return (split.putInPlaneLeft) ? LEFT_ONLY : RIGHT_ONLY;
+
+  if ( primAABB.getMax(split.axis) < split.pos)  // completely in left node
+    return LEFT_ONLY;
+  else  if ( primAABB.getMin(split.axis) > split.pos)  // completely in right node
+    return RIGHT_ONLY;
+  
+
+  const unsigned otherAxis[2] = {(split.axis + 1) % 3, (split.axis + 2) % 3};
+  // find vertex that's alone on one side of split plane
+  unsigned char left = 0, right = 0;
+  unsigned char lefttri[2], righttri[2];
+  for (unsigned int p = 0; p < 3; ++p)
+    if ( primitive[p][split.axis] < split.pos ) {
+      lefttri[left] = p;
+      ++left;
+    } else {
+      righttri[right] = p;
+      ++right;
+    }
+
+  const bool aloneOnleft = (left<right);
+  const Vec3& alone =  primitive[ aloneOnleft?lefttri[0]:righttri[0]];
+  const Vec3& other0 = primitive[!aloneOnleft?lefttri[0]:righttri[0]];
+  const Vec3& other1 = primitive[!aloneOnleft?lefttri[1]:righttri[1]];
+
+  const Vec3 a0(other0 - alone);
+  const Vec3 a1(other1 - alone);
+
+  float d;
+  if ( aloneOnleft )
+    d = split.pos - alone[split.axis];
+  else
+    d = alone[split.axis] - split.pos;
+  
+  float ratio0 = fabsf(d / ( other0[split.axis] - alone[split.axis] ));
+  float ratio1 = fabsf(d / ( other1[split.axis] - alone[split.axis] ));
+
+  const Vec3 s1(alone + (ratio0 * a0));
+  const Vec3 s2(alone + (ratio1 * a1));
+
+  Vec3 s1s2min(s1);
+  Vec3 s1s2max(s2);
+
+  for ( unsigned int c = 0; c < 2; ++c)
+    if (s1[otherAxis[c]] > s2[otherAxis[c]]) {
+      s1s2min[otherAxis[c]] = s2[otherAxis[c]];
+      s1s2max[otherAxis[c]] = s1[otherAxis[c]];
+    }
+
+  bool fullOut = false;
+  bool above;
+  unsigned int c = 0;
+  for ( ; !fullOut && (c < 2); ++c) {
+    if ( s1s2max[otherAxis[c]] < aabb.getMin(otherAxis[c]) ) {
+      fullOut = true;
+      above = false;
+      break;
+    }
+    if ( s1s2min[otherAxis[c]] > aabb.getMax(otherAxis[c]) ) {
+      fullOut = true;
+      above = true;
+      break;
+    }
+  }
+
+  if ( fullOut ) {
+    return ((( (a0[otherAxis[c]] > 0.0f) ^ above ) ^ aloneOnleft ) ? LEFT_ONLY : RIGHT_ONLY);
+  } else {
+    Vec3 s12(s2 - s1);
+    Vec3 q;
+    q[split.axis] = 1.0f;
+    q[otherAxis[0]] = q[otherAxis[1]] = 0.0;
+    Vec3 normal(s12 % q);
+  
+    bool b0 = (normal[otherAxis[0]] > 0.0);
+    bool b1 = (normal[otherAxis[1]] > 0.0);
+    Vec3 B0(split.pos),B1(split.pos);
+  
+    if ( b0 ) {
+      B0[otherAxis[0]] = aabb.getMax(otherAxis[0]);
+      B1[otherAxis[0]] = aabb.getMin(otherAxis[0]);
+    } else {
+      B0[otherAxis[0]] = aabb.getMin(otherAxis[0]);
+      B1[otherAxis[0]] = aabb.getMax(otherAxis[0]);
+    }
+    if ( b1 ) {
+      B0[otherAxis[1]] = aabb.getMax(otherAxis[1]);
+      B1[otherAxis[1]] = aabb.getMin(otherAxis[1]);
+    } else {
+      B0[otherAxis[1]] = aabb.getMin(otherAxis[1]);
+      B1[otherAxis[1]] = aabb.getMax(otherAxis[1]);
+    }
+
+    float m1 = ( s1 - B0 ) * normal;
+    float m2 = ( s1 - B1 ) * normal;
+
+    if ( !(0x80000000 & (unsigned int&)(m1) ^ ( 0x80000000 & (unsigned int&)(m2)))) {
+      float q1 = ( alone - B0 ) * normal;
+      return  (aloneOnleft ^ !(0x80000000 & (unsigned int&)(m1) ^ ( 0x80000000 & (unsigned int&)(q1)))) ? LEFT_ONLY : RIGHT_ONLY;
+    } else 
+      return BOTH;
+   }
+
+}
+
+KdTreeBase::Overlap KdTreeBase::classifyVague(unsigned int primitiveID, const KdTreeBase::SplitCandidate split, const AABB &aabb) {
+  const AABB primAABB = getAABBForPrimitiv(primitiveID);
+  if ( primAABB.getMax(split.axis) <= split.pos)  // completely in left node
+    return LEFT_ONLY;
+  else  if ( primAABB.getMin(split.axis) >= split.pos)  // completely in right node
+    return RIGHT_ONLY;
+  return BOTH;
+}
+

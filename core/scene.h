@@ -83,7 +83,7 @@ public:
       @return the camera the scene should be rendered from
     **/
     const Camera& getCamera() const;
-
+    Camera& getCamera();
     /**
       Determines the point where a ray intersect the first time
       an object of the scene.
@@ -183,6 +183,11 @@ inline const Vec3& Scene::getVertex(const size_t i) const {
 inline const Camera& Scene::getCamera() const {
   return cam;
 }
+
+inline Camera& Scene::getCamera() {
+  return cam;
+}
+
 
 inline size_t Scene::getLightCount() const {
   return lights.size();

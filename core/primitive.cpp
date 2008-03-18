@@ -98,7 +98,7 @@ const Intersection Primitive::getIntersection( const RaySegment& r) const {
      return Intersection::getEmpty();
 
    const float t = (this->v * qvec) * inv_det;
-   if (!( (t > r.getTMin()) && (t <= r.getTMax()) ))
+   if (!( /*(t > r.getTMin()) &&*/ (t <= r.getTMax()) ))
     return Intersection::getEmpty();
 
    return Intersection(r.getOrigin() + t * r.getDirection(), u, v, t, *this);

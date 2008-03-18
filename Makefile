@@ -17,9 +17,10 @@ ifeq ($(shell uname -m),i686)
 	ARCH = pentium3
 endif
 
-OPTIMIZATION = -O3 -march=$(ARCH) -falign-functions=4 -ffast-math -fforce-addr -fprefetch-loop-arrays -funroll-loops -fomit-frame-pointer
+#OPTIMIZATION = -O3 -march=$(ARCH) -falign-functions=4 -ffast-math -fforce-addr -fprefetch-loop-arrays -funroll-loops -fomit-frame-pointer
+OPTIMIZATION = -O3 -march=$(ARCH) -falign-functions=4 -fprefetch-loop-arrays -funroll-loops -fomit-frame-pointer
 
-CPPFLAGS = -I./ -I./acceleration -I./core -I./renderer -I./shader -I./util 
+CPPFLAGS = -I./ -I./acceleration -I./core -I./renderer -I./shader -I./util -fno-strict-aliasing
 ifeq ($(ENVIR),DEBUG)
 	CFLAGS = -ggdb -Wall -Wextra -Wno-unused-parameter -ansi -pedantic
 else
