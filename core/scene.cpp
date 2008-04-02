@@ -31,6 +31,7 @@
 #include "kdtreesahnaive.h"
 #include "kdtreesahnlog2n.h"
 #include "kdtreesahnlogn.h"
+#include "bvhsimple.h"
 
 using namespace Occluder;
 
@@ -108,6 +109,8 @@ const bool Scene::loadFromFile ( const std::string& filename ) {
           geometry = new KdTreeSahNlog2N( *this );
         else if ( value == "kd4" )
           geometry = new KdTreeSahNlogN( *this );
+        else if ( value == "BVHsimple" )
+          geometry = new BvhSimple( *this );
         else {
                 std::cout << "Accelerationstruct " << value << " not available. Falling back to default(list). Choose { grid, bih, kd }" << std::endl;
                 geometry = new PrimitiveList ( *this );

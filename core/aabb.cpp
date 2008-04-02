@@ -26,6 +26,15 @@ void AABB::update(const Vec3& v) {
 }
 
 
+AABB AABB::operator+(const AABB &op) const {
+const Vec3 min(fminf(minima[0], op.minima[0]),
+               fminf(minima[1], op.minima[1]),
+               fminf(minima[2], op.minima[2]));
+const Vec3 max(fmaxf(maxima[0], op.maxima[0]),
+               fmaxf(maxima[1], op.maxima[1]),
+               fmaxf(maxima[2], op.maxima[2]));
+return AABB(min, max);
+}
 
 
 /********************************************************/

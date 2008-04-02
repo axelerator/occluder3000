@@ -1,6 +1,6 @@
 TARGET    = occluder3000
 
-SOURCES = $(wildcard *.cpp) $(wildcard acceleration/*.cpp)  $(wildcard core/*.cpp) $(wildcard renderer/*.cpp) $(wildcard shader/*.cpp)  $(wildcard util/*.cpp)
+SOURCES = $(wildcard *.cpp) $(wildcard acceleration/*.cpp)  $(wildcard core/*.cpp) $(wildcard renderer/*.cpp) $(wildcard shader/*.cpp)  $(wildcard util/*.cpp) $(wildcard acceleration/bvh/*.cpp)
 
 OBJECTS = $(SOURCES:.cpp=.o)
 
@@ -20,7 +20,7 @@ endif
 #OPTIMIZATION = -O3 -march=$(ARCH) -falign-functions=4 -ffast-math -fforce-addr -fprefetch-loop-arrays -funroll-loops -fomit-frame-pointer
 OPTIMIZATION = -O3 -march=$(ARCH) -falign-functions=4 -fprefetch-loop-arrays -funroll-loops -fomit-frame-pointer
 
-CPPFLAGS = -I./ -I/usr/local/include -I./acceleration -I./core -I./renderer -I./shader -I./util -fno-strict-aliasing
+CPPFLAGS = -I./ -I/usr/local/include -I./acceleration -I./core -I./renderer -I./shader -I./util -I./acceleration/bvh -fno-strict-aliasing
 ifeq ($(ENVIR),DEBUG)
 	CFLAGS = -ggdb -Wall -Wextra -Wno-unused-parameter -ansi -pedantic
 else

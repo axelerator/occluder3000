@@ -83,6 +83,12 @@ public:
       @return the surface area of this box
      **/
     float getSurfaceArea() const;
+
+    /**
+      @return the AABB that contains this and the given
+              aabb
+     **/
+    AABB operator+(const AABB &op) const;
 private:
   Vec3 minima;
   Vec3 maxima;

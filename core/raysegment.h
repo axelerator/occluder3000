@@ -33,6 +33,11 @@ public:
     bool trim(const AABB& aabb);
     RaySegment trim(const AABB& aabb) const;
 
+    /**
+      @return if this ray hits the given AABB
+     **/
+    bool intersects(const AABB& aabb) const;
+
     const Vec3& getDirection() const ;
     const Vec3& getInvDirection() const;
     const Vec3& getOrigin() const ;
@@ -91,6 +96,12 @@ inline RaySegment RaySegment::trim(const AABB& aabb) const {
   RaySegment result(*this);
   result.trim(aabb);
   return result;
+}
+
+
+inline bool RaySegment::intersects(const AABB& aabb) const {
+  RaySegment result(*this);
+  return result.trim(aabb);
 }
 
 inline void RaySegment::setDirection(const Vec3& dir) {
