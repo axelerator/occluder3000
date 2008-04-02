@@ -84,7 +84,7 @@ const Intersection RegularGrid::getFirstIntersection(const RaySegment& ray) cons
   float tMax[3]; // these values indicate how much we can travel through the current Voxel
   //  into direction of one component until we hit the next voxel in that direction.
   // (in units of the direction vector of r)
-  std::vector<int>::const_iterator iter;
+  List<int>::const_iterator iter;
   unsigned char component, i;
   float smallestT;
   Vec3 position( clippedRay.getOrigin() );
@@ -147,7 +147,7 @@ void RegularGrid::construct() {
     // allocate mem for pointers to prim lists for each cell
     const unsigned int gridsize = resolution * resolution * resolution;
     grid = new std::vector<int>*[gridsize];
-    memset ( grid, 0, gridsize * sizeof ( std::vector<int>* ) );
+    memset ( grid, 0, gridsize * sizeof ( List<int>* ) );
     for ( unsigned int g = 0; g < gridsize; ++g ) {
       grid[g] = &emptyList;
     }
@@ -178,7 +178,7 @@ void RegularGrid::construct() {
                     if ( currGridCell.intersects( primitive ) ) {
                         const unsigned int cellIdx = z * slabSize + y * resolution + x;
                         if ( grid[cellIdx]->size() == 0 )
-                            grid[cellIdx] = new std::vector<int>;
+                            grid[cellIdx] = new List<int>;
                         grid[cellIdx]->push_back(i);
                     }
                 }

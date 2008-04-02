@@ -244,14 +244,16 @@ void KdTreeSahNlogN::subdivide( unsigned int *memBlock, unsigned int primitiveCo
     const unsigned int currentPrimitiveId = primitiveIds[i];
     const AABB& aabb = getAABBForPrimitiv(currentPrimitiveId);
     if ( overlap[currentPrimitiveId] == BOTH ) {
-      E_BL.push_back(Event(aabb.getMin(split.axis)     , START, split.axis, currentPrimitiveId));
+      E_BL.push_back(Event(fmaxf(nodeBox.getMin(split.axis), aabb.getMin(split.axis))     , START, split.axis, currentPrimitiveId));
       E_BL.push_back(Event(split.pos                   , END  , split.axis, currentPrimitiveId));
       E_BR.push_back(Event(split.pos                   , START, split.axis, currentPrimitiveId));
-      E_BR.push_back(Event(aabb.getMax(split.axis)     , END  , split.axis, currentPrimitiveId));
+      E_BR.push_back(Event(fminf(nodeBox.getMax(split.axis), aabb.getMax(split.axis))     , END  , split.axis, currentPrimitiveId));
 
       for ( unsigned char otherAxis = (split.axis + 1) % 3 ; otherAxis != split.axis; otherAxis = (otherAxis + 1) % 3) {
-        E_BL.push_back(Event(aabb.getMin(otherAxis)  , START  , otherAxis, currentPrimitiveId));
-        E_BR.push_back(Event(aabb.getMax(otherAxis)  , END, otherAxis, currentPrimitiveId));
+        E_BL.push_back(Event(fmaxf(nodeBox.getMin(otherAxis), aabb.getMin(otherAxis))  , START  , otherAxis, currentPrimitiveId));
+        E_BL.push_back(Event(fminf(nodeBox.getMax(otherAxis), aabb.getMax(otherAxis))  , END, otherAxis, currentPrimitiveId));
+        E_BR.push_back(Event(fmaxf(nodeBox.getMin(otherAxis), aabb.getMin(otherAxis))  , START  , otherAxis, currentPrimitiveId));
+        E_BR.push_back(Event(fminf(nodeBox.getMax(otherAxis), aabb.getMax(otherAxis))  , END, otherAxis, currentPrimitiveId));
       }
     }
   }

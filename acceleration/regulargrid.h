@@ -35,12 +35,12 @@ public:
     virtual void determineFirstIntersection(const RaySegmentSSE& ray, IntersectionSSE& result) const;
     virtual void getAllIntersections(const RaySegment& ray, List< const Intersection >& results) const;
 private:
-    std::vector<int> **grid;
-    float cellsize[3]; // edgelength of one gridcell (till now always cubes)
+    List<int> **grid;
+    float cellsize[3]; // edgelength of one gridcell
     float cellsizeInvert[3]; // 1/cellsize
     const unsigned int resolution;
     const unsigned int slabSize; // basically a cache for how many cells are in one plane
-    std::vector<int> emptyList;
+    List<int> emptyList;
 };
 
 }

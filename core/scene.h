@@ -151,8 +151,8 @@ private:
     List<Primitive> primitives;
     List<Vec3> vertices;
     std::map<std::string, const Shader*> shaderMap;
-    std::vector<Shader*> shader;
-    std::vector<Light*> lights;
+    List<Shader*> shader;
+    List<Light*> lights;
 
     AABB aabb;
     AccelerationStructure *geometry;

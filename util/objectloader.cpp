@@ -32,7 +32,7 @@ ObjectLoader::~ObjectLoader() {
 bool ObjectLoader::loadOBJ(const std::string& filename, Scene& scene ) {
     std::string currentMat = "default";
 
-    std::vector<std::string> file;
+    List<std::string> file;
     std::string line;
     file.clear();
     std::ifstream infile (filename.c_str(), std::ios_base::in);
@@ -49,7 +49,7 @@ bool ObjectLoader::loadOBJ(const std::string& filename, Scene& scene ) {
     std::string faceRE = "f (\\d+)\\/(\\d*)\\/(\\d*) (\\d+)\\/(\\d*)\\/(\\d*) (\\d+)\\/(\\d*)\\/(\\d*)";
 
 //     std::vector<Vec3> vertices;
-    std::vector<Vec3> normals;
+    List<Vec3> normals;
     boost::regex re;
     boost::regex facere;
     boost::regex normalre;
@@ -67,7 +67,7 @@ bool ObjectLoader::loadOBJ(const std::string& filename, Scene& scene ) {
 
     int currentLine;
     currentLine = 0;
-    for (std::vector<std::string>::iterator it = file.begin(); it!=file.end(); ++it) {
+    for (List<std::string>::iterator it = file.begin(); it!=file.end(); ++it) {
         std::string& line = *it;
         if ( !line.empty()) {
             if ( ( line[0] == 'v' ) &&  ( line[1] == 'n' )) {

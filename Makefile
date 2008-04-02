@@ -20,7 +20,7 @@ endif
 #OPTIMIZATION = -O3 -march=$(ARCH) -falign-functions=4 -ffast-math -fforce-addr -fprefetch-loop-arrays -funroll-loops -fomit-frame-pointer
 OPTIMIZATION = -O3 -march=$(ARCH) -falign-functions=4 -fprefetch-loop-arrays -funroll-loops -fomit-frame-pointer
 
-CPPFLAGS = -I./ -I./acceleration -I./core -I./renderer -I./shader -I./util -fno-strict-aliasing
+CPPFLAGS = -I./ -I/usr/local/include -I./acceleration -I./core -I./renderer -I./shader -I./util -fno-strict-aliasing
 ifeq ($(ENVIR),DEBUG)
 	CFLAGS = -ggdb -Wall -Wextra -Wno-unused-parameter -ansi -pedantic
 else
@@ -32,14 +32,14 @@ endif
 # Linker flags
 LDFLAGS_LINUX    = -L/usr/X11R6/lib 
 LDFLAGS_LINUX64  = -L/usr/X11R6/lib64
-LDFLAGS_COMMON   = 
+LDFLAGS_COMMON   = -L/usr/local/lib
 LDFLAGS          = $(LDFLAGS_COMMON) $(LDFLAGS_$(OS))
 
 # Linker libraries
 XLIBS            = -lXmu -lXi -lX11
 GLLIBS           = -lGLEW -lGLU -lGL -lSDL
 #LDLIBS           = $(GLLIBS) $(XLIBS) -lm -lboost_regex -lboost_thread -lSDL_ttf
-LDLIBS           = $(GLLIBS) -lm -lboost_regex
+LDLIBS           = $(GLLIBS) -lm -lboost_regex -lustl
 ifeq ($(findstring Linux,$(shell uname -s)),Linux)
   OS = LINUX
   ifeq ($(shell uname -m),x86_64)

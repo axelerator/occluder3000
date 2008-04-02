@@ -39,12 +39,12 @@ geometry(new PrimitiveList(*this)), defaultShader( std::string("default"), *this
 
 
 Scene::~Scene() {
-    std::vector<Shader*>::iterator shaderIter;
+    List<Shader*>::iterator shaderIter;
     for ( shaderIter = shader.begin(); shaderIter != shader.end(); ++ shaderIter )
         delete *shaderIter;
     shader.clear();
 
-    std::vector<Light*>::iterator lightIter;
+    List<Light*>::iterator lightIter;
     for ( lightIter = lights.begin(); lightIter != lights.end(); ++ lightIter )
         delete *lightIter;
     lights.clear();
@@ -54,7 +54,7 @@ Scene::~Scene() {
 }
 
 const bool Scene::loadFromFile ( const std::string& filename ) {
-    std::vector<std::string> file;
+    List<std::string> file;
     std::string line;
     file.clear();
     std::ifstream infile ( filename.c_str(), std::ios_base::in );
@@ -77,7 +77,7 @@ const bool Scene::loadFromFile ( const std::string& filename ) {
     }
 
     // parse global scene settings
-    std::vector<std::string>::iterator it = file.begin();
+    List<std::string>::iterator it = file.begin();
     boost::cmatch matches;
     unsigned int linenr = 0;
     std::string geometryfile = "";
