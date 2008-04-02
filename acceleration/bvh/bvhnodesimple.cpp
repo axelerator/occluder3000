@@ -41,6 +41,9 @@ const Intersection BvhSimpleLeaf::getFirstIntersection(const RaySegment& ray) co
   return primitive.getIntersection(ray);
 }
 
+bool BvhSimpleLeaf::hasIntersection(const RaySegment& ray) const {
+  return primitive.intersects(ray);
+}
 
 // Implementation of methods of BvhSimpleInner --------------------------------
 
@@ -78,3 +81,6 @@ const Intersection BvhSimpleInner::getFirstIntersection(const RaySegment& ray) c
   return Intersection::getEmpty();
 }
 
+bool BvhSimpleInner::hasIntersection(const RaySegment& ray) const {
+  return left->hasIntersection(ray) || right->hasIntersection(ray);
+}

@@ -25,7 +25,7 @@ BvhSimple::~BvhSimple() {
 
 
 bool BvhSimple::hasIntersection(const RaySegment& ray) const {
-  return false;
+  return root->hasIntersection(ray);
 }
 
 const Intersection BvhSimple::getFirstIntersection(const RaySegment& ray) const {

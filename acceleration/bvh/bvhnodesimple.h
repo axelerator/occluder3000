@@ -35,7 +35,19 @@ class BvhNodeSimple {
     virtual unsigned int leafCount() const = 0;
     virtual unsigned int treeDepth() const = 0;
 
+    /**
+      Searches the first intersection of the ray with the scene.
+      Needed for primary ray and the photon tracing stage.
+      @return An intersection object ( containing info about location ,u,v of hit). 
+              Can be the 'empty' intersection.
+    **/
     virtual const Intersection getFirstIntersection(const RaySegment& ray) const = 0;
+    /**
+      Determines if the raysegment is intersected by any primitiv.
+      Primararily used for shadow rays.
+      @return true if the ray hit a primitive between tmin and tmax.
+    **/
+    virtual bool hasIntersection(const RaySegment& ray) const = 0;
 };
 
 
@@ -52,6 +64,7 @@ class BvhSimpleLeaf : public BvhNodeSimple {
     virtual unsigned int leafCount() const;
     virtual unsigned int treeDepth() const;
     virtual const Intersection getFirstIntersection(const RaySegment& ray) const;
+    virtual bool hasIntersection(const RaySegment& ray) const;
   private:
     /**
       Index of the contained primitive
@@ -72,6 +85,7 @@ class BvhSimpleInner : public BvhNodeSimple {
     virtual unsigned int leafCount() const;
     virtual unsigned int treeDepth() const;
     virtual const Intersection getFirstIntersection(const RaySegment& ray) const;
+    virtual bool hasIntersection(const RaySegment& ray) const;
 
   private:
     /**
