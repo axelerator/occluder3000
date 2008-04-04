@@ -21,13 +21,17 @@ endif
 OPTIMIZATION = -O3 -march=$(ARCH) -falign-functions=4 -fprefetch-loop-arrays -funroll-loops -fomit-frame-pointer
 
 CPPFLAGS = -I./ -I/usr/local/include -I./acceleration -I./core -I./renderer -I./shader -I./util -I./acceleration/bvh -fno-strict-aliasing
+
+ifdef SIMPLETRIANGLETEST
+	TRIANGLEMACRO = -DSIMPLETRIANGLETEST
+endif
+
 ifeq ($(ENVIR),DEBUG)
-	CFLAGS = -ggdb -Wall -Wextra -Wno-unused-parameter -ansi -pedantic
+	CFLAGS = -ggdb -Wall -Wextra -Wno-unused-parameter -ansi -pedantic $(TRIANGLEMACRO)
 else
-CFLAGS = $(OPTIMIZATION) -Wall -Wextra -Werror -Wno-unused-parameter -ansi -pedantic -DNDEBUG=true
+	CFLAGS = $(OPTIMIZATION) -Wall -Wextra -Werror -Wno-unused-parameter -ansi -pedantic -DNDEBUG=true $(TRIANGLEMACRO)
 endif
 #CFLAGS = -ggdb -Wall -Wextra -Werror -Wno-unused-parameter -ansi -pedantic
-
 
 # Linker flags
 LDFLAGS_LINUX    = -L/usr/X11R6/lib 
@@ -51,6 +55,7 @@ all : $(TARGET)
 
 $(TARGET) : $(OBJECTS)
 	$(LD) $(LDFLAGS) $(OBJECTS) $(LDLIBS) -o $(TARGET)
+	echo "using simple(and slow) triangle test"
 
 %.o: %.cpp
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $*.o $*.cpp

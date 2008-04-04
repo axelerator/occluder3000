@@ -78,32 +78,6 @@ bool Primitive::intersects(const RaySegmentIgnore& r) const {
    return ( (t > r.getTMin()) && (t <= r.getTMax()) && ( this != &(r.getIgnoredPrimitve())));
 }
 
-const Intersection Primitive::getIntersection( const RaySegment& r) const {
-   const Vec3 pvec(r.getDirection() % this->v);
-   const float det = this->u * pvec;
-
-   if (det > -EPSILON && det < EPSILON)
-     return Intersection::getEmpty();
-   const float inv_det = 1.0 / det;
-
-   const Vec3 tvec = r.getOrigin() - scene.getVertex(p0);
-
-   const float u = (tvec * pvec) * inv_det;
-   if (u < 0.0 || u > 1.0)
-     return Intersection::getEmpty();
-
-   const Vec3 qvec = tvec % this->u;
-   const float v = (r.getDirection() * qvec) * inv_det;
-   if (v < 0.0 || u + v > 1.0)
-     return Intersection::getEmpty();
-
-   const float t = (this->v * qvec) * inv_det;
-   if (!( /*(t > r.getTMin()) &&*/ (t <= r.getTMax()) ))
-    return Intersection::getEmpty();
-
-   return Intersection(r.getOrigin() + t * r.getDirection(), u, v, t, *this);
-}
-
 Float4 Primitive::intersect(const RaySegmentSSE& rays) const {
    const Vec3SSE p04(scene.getVertex(p0));
    const Vec3SSE tvec(rays.getOrigin() - p04);
@@ -196,3 +170,63 @@ const Vec3& Primitive::getVertex(unsigned int v) const {
   }
 return scene.getVertex(p0);
 }
+
+#ifdef SIMPLETRIANGLETEST
+const Intersection Primitive::getIntersection( const RaySegment& r) const {
+  const Vec3 &A = getVertex(0);
+  const Vec3 &B = getVertex(1);
+  const Vec3 &C = getVertex(2);
+
+  const Vec3 a = B - A;
+  const Vec3 b = C - B;
+  const Vec3 c = A - C;
+  const Vec3 n = a % b;
+
+  const float t = ( n * ( A - r.getOrigin()) ) / ( n * r.getDirection());
+  const Vec3 S(r.getOrigin() + ( r.getDirection() * t));
+
+  const Vec3 d = A - S;
+  const Vec3 e = B - S;
+  const Vec3 f = C - S;
+  
+  const float A_triangle = (a % b).length();
+
+  const float u =  (d % a).length() / A_triangle;
+  const float v =  (e % b).length() / A_triangle;
+  const float w =  (f % c).length() / A_triangle;
+
+  if ( ( u < 1.0f ) && ( v < 1.0f ) &&  ( w < 1.0f ) 
+        && ( fabs((u + v + w) - 1.0) < 0.00001 ) 
+        && t <= r.getTMax() )
+    return Intersection(S, u, v, t, *this);
+  else
+    return Intersection::getEmpty();
+}
+#else
+const Intersection Primitive::getIntersection( const RaySegment& r) const {
+   const Vec3 pvec(r.getDirection() % this->v);
+   const float det = this->u * pvec;
+
+   if (det > -EPSILON && det < EPSILON)
+     return Intersection::getEmpty();
+   const float inv_det = 1.0 / det;
+
+   const Vec3 tvec = r.getOrigin() - scene.getVertex(p0);
+
+   const float u = (tvec * pvec) * inv_det;
+   if (u < 0.0 || u > 1.0)
+     return Intersection::getEmpty();
+
+   const Vec3 qvec = tvec % this->u;
+   const float v = (r.getDirection() * qvec) * inv_det;
+   if (v < 0.0 || u + v > 1.0)
+     return Intersection::getEmpty();
+
+   const float t = (this->v * qvec) * inv_det;
+   if (!( /*(t > r.getTMin()) &&*/ (t <= r.getTMax()) ))
+    return Intersection::getEmpty();
+
+   return Intersection(r.getOrigin() + t * r.getDirection(), u, v, t, *this);
+}
+#endif
+
