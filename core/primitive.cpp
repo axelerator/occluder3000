@@ -195,9 +195,7 @@ const Intersection Primitive::getIntersection( const RaySegment& r) const {
   const float v =  (e % b).length() / A_triangle;
   const float w =  (f % c).length() / A_triangle;
 
-  if ( ( u < 1.0f ) && ( v < 1.0f ) &&  ( w < 1.0f ) 
-        && ( fabs((u + v + w) - 1.0) < 0.00001 ) 
-        && t <= r.getTMax() )
+  if ( ( fabs((u + v + w) - 1.0) < 0.00001 ) && t <= r.getTMax() )
     return Intersection(S, u, v, t, *this);
   else
     return Intersection::getEmpty();
