@@ -104,7 +104,7 @@ void KdTreeBase::construct() {
   subdivide(memBlock, primCount, scene.getAABB(), size / sizeof(unsigned int));
   const KdNode *root = (const KdNode *)memBlock;
   root->analyze();
-  writeToDisk();
+//   writeToDisk();
 }
 
 void KdTreeBase::subdivide( unsigned int *memBlock, unsigned int primitiveCount, const AABB nodeBox, unsigned int size) {

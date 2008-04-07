@@ -30,6 +30,7 @@ Vec3 SpecularShader::getRadiance(const Vec3& direction, const Intersection& inte
     const Vec3 direct( (reflectivity < 1.0f)? DirectShader::getRadiance(direction, intersection, depth) : 0.0f);
 
     // compute reflection
+
     const Vec3 reflectedDirection( direction.reflect( intersection.getNormal() ) );
     const RaySegment reflectedRay( intersection.getLocation() + 0.00001f * reflectedDirection,  reflectedDirection);
     const Intersection reflectedIntersection = scene.trace( reflectedRay );

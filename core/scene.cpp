@@ -92,22 +92,22 @@ const bool Scene::loadFromFile ( const std::string& filename ) {
                 if ( geometry )
                     delete geometry;
         if ( value == "grid" )
-          geometry = new RegularGrid (2, *this );
+          geometry = new RegularGrid (5, *this );
         else if ( value == "bih" )
           geometry = new Bih ( *this, 1 );
         else if ( value == "bihcompact" )
           geometry = new BihCompact ( *this, 1 );
         else if ( value == "bihiter" )
           geometry = new BihIterative ( *this, 1 );
-        else if ( value == "kd" )
+        else if ( value == "kdSimple" )
           geometry = new KdTreeSimple ( *this, 2, 2 );
-        else if ( value == "kd1" )
+        else if ( value == "kdBase" )
           geometry = new KdTreeBase ( *this );
-        else if ( value == "kd2" )
+        else if ( value == "kdSAHnaive" )
           geometry = new KdTreeSAHNaive ( *this );
-        else if ( value == "kd3" )
+        else if ( value == "kdSAHnLog2n" )
           geometry = new KdTreeSahNlog2N( *this );
-        else if ( value == "kd4" )
+        else if ( value == "kdSAHnLogn" )
           geometry = new KdTreeSahNlogN( *this );
         else if ( value == "BVHsimple" )
           geometry = new BvhSimple( *this );
