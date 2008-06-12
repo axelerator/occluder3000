@@ -8,6 +8,7 @@
 //
 // Copyright: See COPYING file that comes with this distribution
 #include <sys/time.h>
+
 namespace Occluder {
 class Timer {
   public:
