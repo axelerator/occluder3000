@@ -1,0 +1,430 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://web.resource.org/cc/"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="508.29636"
+   height="208.95122"
+   id="svg2"
+   sodipodi:version="0.32"
+   inkscape:version="0.45.1"
+   version="1.0"
+   sodipodi:docbase="/home/axel/fh/master/ausarbeitung/images"
+   sodipodi:docname="pipeline.svg"
+   inkscape:output_extension="org.inkscape.output.svg.inkscape">
+  <defs
+     id="defs4">
+    <marker
+       inkscape:stockid="Arrow1Lend"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="Arrow1Lend"
+       style="overflow:visible">
+      <path
+         id="path4221"
+         d="M 0,0 L 5,-5 L -12.5,0 L 5,5 L 0,0 z "
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;marker-start:none"
+         transform="matrix(-0.8,0,0,-0.8,-10,0)" />
+    </marker>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     gridtolerance="10000"
+     guidetolerance="10"
+     objecttolerance="10"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.3066257"
+     inkscape:cx="271.44263"
+     inkscape:cy="268.6586"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     width="15cm"
+     height="15cm"
+     units="cm"
+     showgrid="true"
+     inkscape:window-width="1053"
+     inkscape:window-height="947"
+     inkscape:window-x="221"
+     inkscape:window-y="50" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-7.4728372,-252.02042)">
+    <rect
+       style="opacity:1;fill:#ffe9b6;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1.0487833;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect4425"
+       width="87.475616"
+       height="36.751942"
+       x="192.52438"
+       y="252.02042" />
+    <rect
+       y="252.02042"
+       x="192.52438"
+       height="208.95122"
+       width="49.351215"
+       id="rect4417"
+       style="opacity:1;fill:#ffe9b6;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1.0487833;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.94235164px;stroke-linecap:butt;stroke-linejoin:miter;marker-end:url(#Arrow1Lend);stroke-opacity:1"
+       d="M 7.944013,425.49603 L 407.55599,425.49603"
+       id="path2162" />
+    <rect
+       style="opacity:1;fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.40000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect2164"
+       width="50"
+       height="30"
+       x="42.200001"
+       y="391.29602" />
+    <rect
+       y="391.29602"
+       x="91.800003"
+       height="30"
+       width="50"
+       id="rect3136"
+       style="opacity:1;fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.40000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+    <rect
+       style="opacity:1;fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.40000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect3138"
+       width="50"
+       height="30"
+       x="141.8"
+       y="391.29602" />
+    <rect
+       y="391.29602"
+       x="191.8"
+       height="30"
+       width="50"
+       id="rect3140"
+       style="opacity:1;fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.40000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+    <text
+       xml:space="preserve"
+       style="font-size:23.54812813px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="54.878647"
+       y="414.66272"
+       id="text3142"><tspan
+         sodipodi:role="line"
+         id="tspan3144"
+         x="54.878647"
+         y="414.66272">LD</tspan></text>
+    <text
+       id="text3146"
+       y="414.66272"
+       x="100.50492"
+       style="font-size:23.54812813px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       xml:space="preserve"><tspan
+         y="414.66272"
+         x="100.50492"
+         id="tspan3148"
+         sodipodi:role="line">DE</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:23.54812813px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="149.1154"
+       y="414.66272"
+       id="text3150"><tspan
+         sodipodi:role="line"
+         id="tspan3152"
+         x="149.1154"
+         y="414.66272">EX</tspan></text>
+    <text
+       id="text3154"
+       y="414.66272"
+       x="198.86186"
+       style="font-size:23.54812813px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       xml:space="preserve"><tspan
+         y="414.66272"
+         x="198.86186"
+         id="tspan3156"
+         sodipodi:role="line">ST</tspan></text>
+    <rect
+       y="361.69604"
+       x="92.199997"
+       height="30"
+       width="50"
+       id="rect3158"
+       style="opacity:1;fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.40000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+    <rect
+       style="opacity:1;fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.40000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect3160"
+       width="50"
+       height="30"
+       x="141.8"
+       y="361.69604" />
+    <rect
+       y="361.69604"
+       x="191.8"
+       height="30"
+       width="50"
+       id="rect3162"
+       style="opacity:1;fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.40000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+    <rect
+       style="opacity:1;fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.40000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect3164"
+       width="50"
+       height="30"
+       x="241.79999"
+       y="361.69604" />
+    <text
+       id="text3166"
+       y="385.06274"
+       x="104.87865"
+       style="font-size:23.54812813px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       xml:space="preserve"><tspan
+         y="385.06274"
+         x="104.87865"
+         id="tspan3168"
+         sodipodi:role="line">LD</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:23.54812813px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="150.50491"
+       y="385.06274"
+       id="text3170"><tspan
+         sodipodi:role="line"
+         id="tspan3172"
+         x="150.50491"
+         y="385.06274">DE</tspan></text>
+    <text
+       id="text3174"
+       y="385.06274"
+       x="199.1154"
+       style="font-size:23.54812813px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       xml:space="preserve"><tspan
+         y="385.06274"
+         x="199.1154"
+         id="tspan3176"
+         sodipodi:role="line">EX</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:23.54812813px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="248.86185"
+       y="385.06274"
+       id="text3178"><tspan
+         sodipodi:role="line"
+         id="tspan3180"
+         x="248.86185"
+         y="385.06274">ST</tspan></text>
+    <rect
+       y="331.29602"
+       x="142.2"
+       height="30"
+       width="50"
+       id="rect3182"
+       style="opacity:1;fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.40000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+    <rect
+       style="opacity:1;fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.40000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect3184"
+       width="50"
+       height="30"
+       x="191.8"
+       y="331.29602" />
+    <rect
+       y="331.29602"
+       x="241.79999"
+       height="30"
+       width="50"
+       id="rect3186"
+       style="opacity:1;fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.40000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+    <rect
+       style="opacity:1;fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.40000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect3188"
+       width="50"
+       height="30"
+       x="291.79999"
+       y="331.29602" />
+    <text
+       id="text3190"
+       y="354.66272"
+       x="154.87865"
+       style="font-size:23.54812813px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       xml:space="preserve"><tspan
+         y="354.66272"
+         x="154.87865"
+         id="tspan3192"
+         sodipodi:role="line">LD</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:23.54812813px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="200.50491"
+       y="354.66272"
+       id="text3194"><tspan
+         sodipodi:role="line"
+         id="tspan3196"
+         x="200.50491"
+         y="354.66272">DE</tspan></text>
+    <text
+       id="text3198"
+       y="354.66272"
+       x="249.11539"
+       style="font-size:23.54812813px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       xml:space="preserve"><tspan
+         y="354.66272"
+         x="249.11539"
+         id="tspan3200"
+         sodipodi:role="line">EX</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:23.54812813px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="298.86185"
+       y="354.66272"
+       id="text3202"><tspan
+         sodipodi:role="line"
+         id="tspan3204"
+         x="298.86185"
+         y="354.66272">ST</tspan></text>
+    <rect
+       style="opacity:1;fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.40000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect3206"
+       width="50"
+       height="30"
+       x="192.2"
+       y="301.69604" />
+    <rect
+       y="301.69604"
+       x="241.79999"
+       height="30"
+       width="50"
+       id="rect3208"
+       style="opacity:1;fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.40000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+    <rect
+       style="opacity:1;fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.40000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect3210"
+       width="50"
+       height="30"
+       x="291.79999"
+       y="301.69604" />
+    <rect
+       y="301.69604"
+       x="341.79999"
+       height="30"
+       width="50"
+       id="rect3212"
+       style="opacity:1;fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.40000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+    <text
+       xml:space="preserve"
+       style="font-size:23.54812813px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="204.87865"
+       y="325.06274"
+       id="text3214"><tspan
+         sodipodi:role="line"
+         id="tspan3216"
+         x="204.87865"
+         y="325.06274">LD</tspan></text>
+    <text
+       id="text3218"
+       y="325.06274"
+       x="250.50491"
+       style="font-size:23.54812813px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       xml:space="preserve"><tspan
+         y="325.06274"
+         x="250.50491"
+         id="tspan3220"
+         sodipodi:role="line">DE</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:23.54812813px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="299.11539"
+       y="325.06274"
+       id="text3222"><tspan
+         sodipodi:role="line"
+         id="tspan3224"
+         x="299.11539"
+         y="325.06274">EX</tspan></text>
+    <text
+       id="text3226"
+       y="325.06274"
+       x="348.86185"
+       style="font-size:23.54812813px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       xml:space="preserve"><tspan
+         y="325.06274"
+         x="348.86185"
+         id="tspan3228"
+         sodipodi:role="line">ST</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:23.54812813px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="420.59933"
+       y="325.06274"
+       id="text3230"><tspan
+         sodipodi:role="line"
+         id="tspan3232"
+         x="420.59933"
+         y="325.06274">4.Befehl</tspan></text>
+    <text
+       id="text3234"
+       y="356.44128"
+       x="420.59933"
+       style="font-size:23.54812813px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       xml:space="preserve"><tspan
+         y="356.44128"
+         x="420.59933"
+         id="tspan3236"
+         sodipodi:role="line">3.Befehl</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:23.54812813px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="420.59933"
+       y="384.75848"
+       id="text3238"><tspan
+         sodipodi:role="line"
+         id="tspan3240"
+         x="420.59933"
+         y="384.75848">2.Befehl</tspan></text>
+    <text
+       id="text3242"
+       y="413.61584"
+       x="420.59933"
+       style="font-size:23.54812813px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       xml:space="preserve"><tspan
+         y="413.61584"
+         x="420.59933"
+         id="tspan3244"
+         sodipodi:role="line">1.Befehl</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="399.67773"
+       y="441.49603"
+       id="text4413"><tspan
+         sodipodi:role="line"
+         id="tspan4415"
+         x="399.67773"
+         y="441.49603">t</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="201.90625"
+       y="265.99994"
+       id="text4419"><tspan
+         sodipodi:role="line"
+         id="tspan4421"
+         x="201.90625"
+         y="265.99994">parallele</tspan><tspan
+         sodipodi:role="line"
+         x="201.90625"
+         y="280.99994"
+         id="tspan4423">Ausführung</tspan></text>
+  </g>
+</svg>

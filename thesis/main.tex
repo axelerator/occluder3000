@@ -1,0 +1,290 @@
+% main.tex
+%
+% Copyright (c) 2008 Axel Tetzlaff
+% All rights reserved
+%
+% This file is part of the document
+
+% Einseitig A4, 11 Punkt Schriftgrßße, Index, Literaturverzeichnis und Index im Inhaltsverzeichnis
+% Kopf- und Fußzeile zßhlen zum Rand und nicht zum Textkßrper, Bindekorrektur von 5 mm
+\documentclass[a4paper,11pt,oneside,headsepline,footsepline,plainfootsepline, headexclude, bibtotoc, idxtotoc, footexclude,BCOR2mm]{scrbook}
+
+\usepackage{asymptote}
+%
+% Umlaute kßnnen direkt als Umlaute geschrieben werden
+\usepackage[utf8]{inputenc}
+% Korrekte Silbentrennung fßr Umlaute
+\usepackage[T1]{fontenc}
+% Silbentrennung etc. in neuer deutscher Rechtschreibung
+\usepackage{ngerman}
+% Zusßtzliche Symbole
+\usepackage{textcomp}
+% Schickerer Satzspiegel mit KOMA-Script
+\usepackage{scrpage2}
+% Zum setzen des Zeilenabstands
+\usepackage{setspace}
+
+% Fßr Grafiken
+\usepackage[pdftex]{graphicx}
+% Fßr Listings
+\usepackage{listings}
+% Euro-Symbol
+\usepackage{eurosym}
+% Literaturhinweise
+\usepackage{natbib}
+% Verlinkung
+
+%\usepackage[left=3.0cm,right=4cm,top=1.5cm,bottom=4cm,includeheadfoot,rmargin=3cm]{geometry}
+\usepackage[marginparwidth=4cm]{geometry}
+
+
+\usepackage{color}
+\definecolor{verylightgray}{rgb}{0.9,0.9,0.9}
+\definecolor{lightgray}{rgb}{0.6,0.6,0.6}
+\definecolor{darkblue}{rgb}{0,0,.5}
+\definecolor{orange}{rgb}{1.0,0.7,0.5}
+\definecolor{darkgreen}{rgb}{0,0.5,0}
+\definecolor{maintype}{rgb}{0.3,0.3,0.7}
+\usepackage[bookmarks,colorlinks,linkcolor=darkblue,plainpages=false,pdfpagelabels,citecolor=darkgreen]{hyperref}
+% Abkßrzungsverzeichnis
+\usepackage[intoc]{nomencl}
+\usepackage[revrange,nofancy]{svninfo}
+
+
+\usepackage {array}
+\svnInfo $Id: main.tex 73 2008-04-06 18:03:04Z axel $
+% Befehle fßr Abkßrzungsverzeichnis
+\let\abbrev\nomenclature
+\renewcommand{\nomname}{Abkürzungsverzeichnis}
+\setlength{\nomlabelwidth}{.25\hsize}
+\setlength{\nomitemsep}{-\parsep}
+
+\newcommand{\srcref}[3]{
+  \marginline{
+    \begin{spacing}{0.8}
+      \textsf{\includegraphics[width=7pt]{images/package.pdf}
+      \tiny{\textcolor{lightgray}{#1\\}}
+      \includegraphics[width=6pt]{images/class.pdf}
+      \tiny{\textcolor{lightgray}{#2\\}}
+     \includegraphics[width=6pt]{images/method.pdf}
+      \tiny{\textcolor{lightgray}{#3\\}}
+      }
+    \end{spacing}
+  }
+} 
+
+% \newenvironment{list2}{
+%   \begin{list}{}{%
+%       \setlength{\itemsep}{0in}
+%       \setlength{\parsep}{0in} \setlength{\parskip}{0in}
+%       \setlength{\topsep}{0in} \setlength{\partopsep}{0in} 
+%       \setlength{\leftmargin}{0in}}}{\end{list}}
+% 
+% \newcommand{\srcref}[3]{
+% %   \marginline{
+% %     \begin{spacing}{0.8}
+% %       \textsf{
+%         % use packages: array
+% %         \begin{array}{ll}
+% %         \includegraphics[width=7pt]{images/package.pdf} &  \\ 
+% %         \\ 
+% %         & \tiny{\textcolor{lightgray}{#3}}
+% %         \end{array}
+% %       }
+% %     \end{spacing}
+% \begin{spacing}{0.8}
+%  
+% 
+% \footnotesize{
+% \begin{list2}
+% \item \includegraphics[width=7pt]{images/package.pdf} \footnotesize{\textcolor{lightgray}{#1}} 
+% \item \includegraphics[width=6pt]{images/class.pdf} \tiny{\textcolor{lightgray}{#2\\}}
+% \item \tiny{\textcolor{lightgray}{#3}}
+% \end{list2}
+% }
+% \end{spacing}
+%   }
+% % } 
+
+\newcommand{\classref}[2]{
+  \marginline{
+    \begin{spacing}{0.8}
+      \textsf{\includegraphics[width=7pt]{images/package.pdf}
+      \tiny{\textcolor{lightgray}{#1\\}}
+      \includegraphics[width=7pt]{images/class.pdf}
+      \tiny{\textcolor{lightgray}{#2}}
+      }
+    \end{spacing}
+  }
+} 
+
+
+\makenomenclature 
+
+% Zeilenabstand auf 1,5 erhßhen und Satzspiegel neu berechnen
+\onehalfspacing
+\typearea[current]{10}
+\geometry{marginparwidth=5cm}
+
+% Bildunterschriften klein und kursiv
+\addtokomafont{caption}{\small\itshape\sffamily}
+% Nummerierung der Bildunterschriften fett und serifenlos
+\setkomafont{captionlabel}{\sffamily\bfseries}
+% Teilweise hßngender Einzug fßr Bildunterschriften
+\setcapindent{1em}
+
+% Standardseiten mit Kopfzeile ausgeben
+\pagestyle{scrheadings}
+
+% Etwas hßhere Strafen fßr Schusterjungen/Hurenkinder
+\clubpenalty = 99
+\widowpenalty = 9999
+
+% Hier gehts los!
+\begin{document}
+
+\begin{asydef}
+// Global Asymptote definitions can be put here.
+usepackage("bm");
+\end{asydef}
+
+% Listings sind in C/C++
+\lstset{language=C++,basicstyle=\small,frame=tb,framexleftmargin=5pt,framextopmargin=5pt,framexbottommargin=5pt,backgroundcolor=\color{verylightgray},lineskip=-1pt,flexiblecolumns=truekeywordstyle=\color{gray},captionpos=t,morekeywords={foreach, in,List},classoffset=1,morekeywords={AABB,Primitive,Axis,Ray,Intersection},keywordstyle=\color{maintype},commentstyle=\color{lightgray}}
+
+
+
+% Die Titelei
+\titlehead{
+\centering
+% Name der Hochschule und des Fachbereiches
+\includegraphics[width=0.3\textwidth]{images/fhw.pdf}\\
+\textsc{\large Fachbereich Medieninformatik}
+}
+% Was ist das hier ßberhaupt? :)
+\subject{\vspace{0.5cm}Masterthesis}
+% Thema der Diplomarbeit
+\title{Verfahren zur photorealistischen Bildsynthese in Echtzeit}
+% Autor (Diplomand) mit Adresse
+\author{
+\begin{minipage}{7cm}
+\centering
+{\normalsize Eingereicht von:}\\Axel Tetzlaff\\{\normalsize Bussardweg 24\\22527 Hamburg\\E-Mail: axel.tetzlaff@gmx.de}
+\end{minipage}
+}
+% Datum mit Semesterangabe
+\date{{\normalsize Abgegeben am:}\\8. April 2008}
+% Referent und eventueller, externer Betreuer
+\publishers{
+\vspace{1cm}
+% Referent mit Adresse und Telefon
+\begin{minipage}{7cm}
+\centering
+{\small Referent:}\\\large Prof. Dr. Christian-A. Bohn\\{\normalsize Fachhochschule Wedel\\Feldstraße 143\\22880 Wedel\\Tel: (04103) 804840\\E-Mail: bo@fh-wedel.de}
+\end{minipage}
+}
+
+
+% Alle Kopf- und Fußzeilen lßschen
+\clearscrheadings
+\clearscrplain
+\clearscrheadfoot
+
+% Automatische Kopfzeile konfigureren mit Kapitelnamen
+\automark{chapter}
+
+
+% Rechts unten immer Seitenzahl ausgeben
+\ofoot[\pagemark]{\pagemark}
+% In der Fußzeile immer etwas ausgeben
+\ifoot[Echtzeitraytracing]{Echtzeitraytracing}
+% In der Kopfzeile nur auf Seiten ohne neuen Kapitelanfang
+\ohead[]{\rightmark}
+
+
+
+\renewcommand{\headfont}{%
+  \normalfont\sffamily
+}
+
+\renewcommand{\pnumfont}{%
+  \normalfont\sffamily
+}
+
+\renewcommand{\lstlistlistingname}{%
+Quelltextbeispiele
+}
+\renewcommand{\lstlistingname}{%
+Quelltext
+}
+
+%    %%%%%%%%%%%%%%%%%%%%%%%%%%%% Setting to control figure placement
+%    % These determine the rules used to place floating objects like figures 
+%    % They are only guides, but read the manual to see the effect of each.
+%    \renewcommand{\topfraction}{.9}
+%    \renewcommand{\bottomfraction}{.9}
+%    \renewcommand{\textfraction}{.1}
+
+\setcounter{topnumber}{2}
+
+% Titelblatt und Verzeichnisse mit normalem Zeilenabstand
+ \begin{spacing}{1}
+
+% Teil vor dem eigentlichen Text
+\frontmatter
+
+% Titelblatt ausgeben
+\maketitle
+
+% Inhalts- und Abbildungsverzeichnis ausgeben
+{\large
+\tableofcontents
+\listoffigures
+\lstlistoflistings
+
+
+}
+%\printglossary
+
+
+
+% Ab hier gehts wieder mit anderthalb Zeilen Abstand weiter
+ \end{spacing}
+
+% Neue Seite fßr korrekte Seitenzahlen
+\newpage
+\input{abstract}
+% \footnotetext{Revision {\svnInfoMaxRevision} vom {\svnInfoLongDate}}
+\newpage
+
+% Hauptteil
+\mainmatter
+
+
+% Hier kommt der Text
+
+
+\input{einleitung}
+\input{raytracing}
+\input{hardware}
+\input{praxis}
+
+\backmatter
+\input{anhang}
+% Literaturverzeichnis und Index mit normalem Zeilenabstand
+\begin{spacing}{1}
+
+% Literaturverzeichnis nach DIN 1505
+\bibliographystyle{natdin}
+% Literaturverzeichnis ausgeben
+\bibliography{thesis}
+
+\printnomenclature
+
+
+% Wieder mit anderthalb Zeilen Abstand weiter
+\end{spacing}
+
+\input{eidesstatt}
+
+
+\end{document}

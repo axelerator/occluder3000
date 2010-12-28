@@ -1,0 +1,555 @@
+@Proceedings{ EGSR06-proc,
+	editor = {Tomas Akenine-M{\"o}ller and Wolfgang Heidrich},
+	title = "Eurographics Workshop/ Symposium on Rendering",
+	year = "2006",
+	isbn = "3-905673-35-5",
+	issn = "1727-3463",
+	address = "Nicosia, Cyprus",
+	publisher = "Eurographics Association"
+}
+
+@PhDThesis{ Wald04,
+	title = "{Realtime} {Ray} {Tracing} {and} {Interactive} {Global} {Illumination}",
+	author = " Ingo Wald ",
+	year = "2004 ",
+	journal = " PhD thesis, Saarland University ",
+	url = "http://www.sci.utah.edu/~wald/Publications/2004///WaldPhD/download//phd.pdf"
+}
+
+@PHDTHESIS{ Strasser74,
+	author = "W. Stra{\ss}er",
+	title = {Schnelle Kurven- und Fl{\"a}chendarstellung auf graphischen Sichtger{\"a}ten},
+	year = 1974,
+	keywords = "GRIS",
+	school = {Technische Universit{\"a}t Berlin},
+	otherbibkeys = "strasser74"
+}
+
+@Article{ Whitted80,
+	author = "Turner Whitted",
+	title = "An Improved Illumination Model for Shaded Display",
+	journal = j-CACM,
+	volume = "23",
+	number = "6",
+	pages = "343--349",
+	month = jun,
+	year = "1980",
+	CODEN = "CACMA2",
+	ISSN = "0001-0782",
+	bibdate = "Wed Aug 24 21:14:52 1994",
+	bibsource = "ftp://ftp.ira.uka.de/pub/bibliography/Graphics/imager/imager.80.bib",
+	acknowledgement = ack-nhfb,
+	annote = "Also appears in {\bf Tutorial: Computer Graphics: Image Synthesis}, Kenneth I. Joy, Charles W. Grant, Nelson L. Max, and Lansing Hatfield (eds.), Computer Society Press, Washington, 1988, p. 132-138. \\ The classic paper on ray tracing. Describes a global shading model and extensions to the original ray tracing model. He notes that up to 95\% of the time is spent calculating ray-surface intersections and that there must be a way to speed things up. \\ To accurately render a two-dimensional image of a three-dimensional scene, global illumination information that affects the intensity of each pixel of the image must be known at the time the intensity is calculated. In a simplified form, this information is stored in a tree of ``rays'' extending from the viewer to the first surface encountered and from there to other surfaces and to the light sources. A visible surface algorithm creates this tree for each pixel of the display and passes it to determine the intensity of the light received by the shader to accurately simulate true reflection, shadows, and refraction, as well as the effects simulated by conventional shaders. Anti-aliasing is included as an integral part of the visibility calculations. Surfaces displayed include curved as well as polygonal surfaces.",
+	keywords = "Algorithmic Aspects shading; parallel processing; ray tracing; Three-Dimensional Graphics realism"
+}
+
+@Book{ Glassner89,
+	title = "An Introduction to Ray Tracing",
+	author = "Andrew Glassner",
+	publisher = "Morgan Kaufmann",
+	year = "1989"
+}
+
+@InCollection{ Amanatides87,
+	author = "John Amanatides and Andrew Woo",
+	title = "A Fast Voxel Traversal Algorithm for Ray Tracing",
+	booktitle = "Eurographics '87",
+	publisher = "Elsevier Science Publishers",
+	address = "Amsterdam, North-Holland",
+	pages = "3--10",
+	year = "1987",
+	url = "citeseer.ist.psu.edu/amanatides87fast.html"
+}
+
+@Article{ Glassner88,
+	author = "Andrew Glassner",
+	title = "Space subdivision for fast ray tracing",
+	book = "Tutorial: computer graphics; image synthesis",
+	year = "1988",
+	isbn = "0-8186-8854-4",
+	pages = "160--167",
+	publisher = "Computer Science Press, Inc.",
+	address = "New York, NY, USA"
+}
+
+@Article{ Fuchs80,
+	author = "Henry Fuchs and Zvi M. Kedem and Bruce F. Naylor",
+	title = "On visible surface generation by a priori tree structures",
+	journal = "SIGGRAPH Comput. Graph.",
+	volume = "14",
+	number = "3",
+	year = "1980",
+	issn = "0097-8930",
+	pages = "124--133",
+	doi = "http://doi.acm.org/10.1145/965105.807481",
+	publisher = "ACM",
+	address = "New York, NY, USA"
+}
+
+@InProceedings{ Williams05,
+	author = "Amy Williams and Steve Barrus and R. Keith Morley and Peter Shirley",
+	title = "An efficient and robust ray-box intersection algorithm",
+	booktitle = "SIGGRAPH '05: ACM SIGGRAPH 2005 Courses",
+	year = "2005",
+	pages = "9",
+	location = "Los Angeles, California",
+	doi = "http://doi.acm.org/10.1145/1198555.1198748",
+	publisher = "ACM",
+	address = "New York, NY, USA"
+}
+
+@PhDThesis{ Havran00,
+	author = "Vlastimil Havran",
+	title = "Heuristic Ray Shooting Algorithms",
+	school = "Department of Computer Science and Engineering, Faculty of Electrical Engineering, Czech Technical University in Prague",
+	type = "Ph.D. Thesis",
+	year = "2000",
+	month = "November",
+	url = "http://www.cgg.cvut.cz/~havran/phdthesis.html",
+	annote = {Global illumination research aiming at the photo-realistic image synthesis pushes forward research in computer graphics as a whole. The computation of visually plausible images is time-consuming and far from being realtime at present. A significant part of computation in global illumination algorithms involves repetitive computing of visibility queries. In the thesis, we describe our results in ray shooting, which is a well-known problem in the field of visibility. The problem is difficult in spite of its simple definition: For a given oriented half-line and a set of objects, find out the first object intersected by the half-line if such an object exists. A na\"{\i}ve algorithm has the time complexity $O(N)$, where $N$ is the number of objects. The na\"{\i}ve algorithm is practically inapplicable in global illumination applications for a scene with a high number of objects, due its huge time requirements. In this thesis we deal with heuristic ray shooting algorithms that use additional spatial data structures. We put stress on average-case complexity and we particularly investigate the ray shooting algorithms based on spatial hierarchies. In the thesis we deal with two major topics. In the first part of the thesis, we introduce a ray shooting computation model and performance model. Based on these two models we develop a methodology for comparing various ray shooting algorithms for a set of experiments performed on a set of scenes. Consecutively, we compare common heuristic ray shooting algorithms based on BSP trees, kd-trees, octrees, bounding volume hierarchies, uniform grids, and three types of hierarchical grids using a set of 30 scenes from Standard Procedural Database. We show that for this set of scenes the ray shooting algorithm based on the kd-tree is the winning candidate among all tested ray shooting algorithms. The second and major part of the thesis presents several techniques for decreasing the time and space complexity for ray shooting algorithms based on kd-tree. We deal with both kd-tree construction and ray traversal algorithms. In the context of kd-tree construction, we present new methods for adaptive construction of the kd-tree using empty spatial regions in the scene, termination criteria, general cost model for the kd-tree, and modified surface area heuristics for a restricted set of rays. Further, we describe a new version of the recursive ray traversal algorithm. In context of the recursive ray traversal algorithm based on the kd-tree, we develop the concept of the largest common traversal sequence. This reduces the number of hierarchical traversal steps in the kd-tree for certain ray sets. We also describe one technique closely related to computer architecture, namely mapping kd-tree nodes to memory to increase the cache hit ratio for processors with a large cache line. Most of the techniques proposed in the thesis can be used in combination. In practice, the average time complexity of the ray shooting algorithms based on the kd-tree, as presented in this thesis, is about $O(log N)$, where the hidden multiplicative factor depends on the input data. However, at present it is not known to have been proved theoretically for scenes with general distribution of objects. For these reasons our findings are supported by a set of experiments for the above-mentioned set of 30 scenes.}
+}
+
+@Article{ HavBit02,
+	author = "Vlastimil Havran and Jiri Bittner",
+	title = "{LCTS}: Ray Shooting using Longest Common Traversal Sequences",
+	journal = "Computer Graphics Forum (Proc. Eurographics '2000)",
+	pages = "C59--C70",
+	year = "2000",
+	month = "Aug",
+	volume = "19",
+	number = "3",
+	coden = "CGFODY",
+	ISSN = "0167-7055",
+	editor = "M. Gross and F.R.A. Hopgood",
+	publisher = "Eurographics Association and Blackwell Publishers Ltd 1999",
+	address = "Computer Graphics Forum, c/o Mercury Airfreight International Ltd Inc, 365 Blair Road, Avenel, MI 48106, USA",
+	organization = "Eurographics Association",
+	keywords = "ray shooting, ray casting, BSP tree, traversal coherence, hidden surface removal"
+}
+
+@Article{ Reshetov05,
+	author = "Alexander Reshetov and Alexei Soupikov and Jim Hurley",
+	title = "Multi-level ray tracing algorithm",
+	journal = "ACM Trans. Graph.",
+	volume = "24",
+	number = "3",
+	year = "2005",
+	issn = "0730-0301",
+	pages = "1176--1185",
+	doi = "http://doi.acm.org/10.1145/1073204.1073329",
+	publisher = "ACM",
+	address = "New York, NY, USA"
+}
+
+@PhDThesis{ Benthin06,
+	title = "Realtime Ray Tracing on current CPU Architectures",
+	author = "Carsten Benthin",
+	school = "Saarland University",
+	year = "2006"
+}
+
+@TechReport{ Drepper07,
+	title = "What Every Programmer Should Know About Memory",
+	author = "Ulrich Drepper",
+	institution = "Red Hat, Inc.",
+	year = "2007"
+}
+
+@TechReport{ Bikker06,
+	title = "Interactive Ray Tracing",
+	author = "Jacco Bikker",
+	institution = "Intel Corporation",
+	month = sep,
+	year = "2006"
+}
+
+@Article{ WBS07,
+	author = "Ingo Wald and Solomon Boulos and Peter Shirley",
+	title = "Ray tracing deformable scenes using dynamic bounding volume hierarchies",
+	journal = "ACM Trans. Graph.",
+	volume = "26",
+	number = "1",
+	year = "2007",
+	issn = "0730-0301",
+	pages = "6",
+	doi = "http://doi.acm.org/10.1145/1189762.1206075",
+	publisher = "ACM",
+	address = "New York, NY, USA"
+}
+
+@InProceedings{ BIH06,
+	author = {Carsten W{\"a}chter and Alexander Keller},
+	title = "Instant Ray Tracing: The Bounding Interval Hierarchy",
+	year = 2006,
+	booktitle = "Rendering Techniques 2006 (Proc. of 17th Eurographics Symposium on Rendering)",
+	editor = {T. Akenine-M{\"o}ller and W. Heidrich},
+	pages = "139--149"
+}
+
+@InBook{ RechPom,
+	title = "Informatikhandbuch",
+	author = "Peter Rechenberg and Gustav Pomberger",
+	publisher = "Hanser Verlag",
+	pages = "307--308",
+	edition = "3",
+	chapter = "C2.4",
+	year = "2002"
+}
+
+@PhDThesis{ Waechter08,
+	title = "Quasi-Monte Carlo Light Transport Simulation by Efficient Ray Tracing",
+	author = {Carsten W{\"a}chter},
+	school = {Universit{\"a}t Ulm},
+	year = "2008"
+}
+
+@Article{ Havran2002wscg,
+	AUTHOR = "Havran, Vlastimil and Bittner, Jiri",
+	JOURNAL = "Journal of WSCG",
+	TITLE = "On Improving KD-Trees for Ray Shooting",
+	ADDRESS = "Czech Republic",
+	NUMBER = "1",
+	PUBLISHER = "University of West Bohemia",
+	MONTH = "February",
+	VOLUME = "10",
+	ISBN = "1213-6972",
+	YEAR = "2002",
+	PAGES = "209--216",
+	ABSTRACT = "Efficient ray shooting algorithm is inherently required by many computer graphics algorithms, particularly in image synthesis. Practical ray shooting algorithms aiming at the average-case complexity use some underlying spatial data structure such as $kd$-tree. We show the new termination criteria algorithm that improves the space and time complexity of the $kd$-tree construction. It provides efficient ray-shooting queries and does not require any specific constants from a user. Further, we show how to apply a novel clipping algorithm into the $kd$-tree within construction phase in order to improve its properties.",
+	url = "http://www.cgg.cvut.cz/~havran/ARTICLES/wscg2002.pdf"
+}
+
+@TechReport{ HHS2006,
+	AUTHOR = "Havran, Vlastimil and Herzog, Robert and Seidel, Hans-Peter",
+	TITLE = "On Fast Construction of Spatial Hierarchies for Ray Tracing",
+	TYPE = "Research Report",
+	INSTITUTION = {Max-Planck-Institut f{\"u}r Informatik},
+	ADDRESS = {Stuhlsatzenhausweg 85, 66123 Saarbr{\"u}cken, Germany},
+	NUMBER = "MPI-I-2006-4-004",
+	MONTH = "June",
+	YEAR = "2006",
+	ISSN = "0946-011X",
+	url = "citeseer.ist.psu.edu/758008.html"
+}
+
+@Article{ WaldHavran06,
+	author = "Ingo Wald and Vlastimil Havran",
+	title = "On building fast kd-trees for ray tracing, and on doing that in O(N log N)",
+	booktitle = "Proceedings of IEEE Symposium on Interactive Ray Tracing 2006",
+	date = "18-20",
+	year = "2006",
+	month = Sep,
+	pages = "61--69",
+	keywords = "ray shooting, ray tracing, animation, spatial subdivision, hierarchical data structures, spatial sorting, approximate algorithms",
+	editors = "Ingo Wald and Steven G. Parker",
+	url = "http://www.cgg.cvut.cz/members/havran/ARTICLES/ingo06rtKdtree.pdf"
+}
+
+@Article{ wald:06:IT,
+	title = "{Realtime} {Ray} {Tracing} {and} {Interactive} {Global} {Illumination}",
+	author = " Ingo Wald ",
+	year = "2006 ",
+	journal = " IT - Information Technology ",
+	number = "4 ",
+	note = " (invited article, in german) ",
+	url = "http://www.sci.utah.edu/~wald/Publications/2006///IT2006/download//it2006.pdf"
+}
+
+@Article{ WIKKP06,
+	title = "{Ray} {Tracing} {Animated} {Scenes} {using} {Coherent} {Grid} {Traversal}",
+	author = " Ingo Wald and Thiago Ize and Andrew Kensler and Aaron Knoll and Steven G Parker ",
+	year = "2006 ",
+	pages = "485--493 ",
+	journal = " ACM Transactions on Graphics ",
+	note = " (Proceedings of ACM SIGGRAPH 2006) ",
+	url = "http://www.sci.utah.edu/~wald/Publications/2006///Grid/download//grid.pdf"
+}
+
+@Article{ COOK84,
+	author = "Robert L. Cook and Thomas Porter and Loren Carpenter",
+	title = "Distributed ray tracing",
+	journal = "SIGGRAPH Comput. Graph.",
+	volume = "18",
+	number = "3",
+	year = "1984",
+	issn = "0097-8930",
+	pages = "137--145",
+	doi = "http://doi.acm.org/10.1145/964965.808590",
+	publisher = "ACM",
+	address = "New York, NY, USA"
+}
+
+@Article{ AkenineMoller01,
+	author = {Tomas Akenine-M{\"o}ller},
+	title = "Fast 3D Triangle-Box Overlap Testing",
+	journal = "journal of graphics tools",
+	volume = "6",
+	number = "1",
+	pages = "29--33",
+	year = "2001",
+	url = "http://jgt.akpeters.com/papers/AkenineMoller01/"
+}
+
+@Article{ Smits98,
+	author = "Brian Smits",
+	title = "Efficiency issues for ray tracing",
+	journal = "J. Graph. Tools",
+	volume = "3",
+	number = "2",
+	year = "1998",
+	issn = "1086-7651",
+	pages = "1--14",
+	publisher = "A. K. Peters, Ltd.",
+	address = "Natick, MA, USA"
+}
+
+@InProceedings{ Eisemann07,
+	author = "Martin Eisemann and T.~Grosch and M.~Magnor and S.~Mueller",
+	title = "{Automatic Creation of Object Hierarchies for Ray Tracing Dynamic Scenes}",
+	booktitle = "WSCG Short Papers Post-Conference Proceedings",
+	year = "2007",
+	month = "1",
+	editor = "Vaclav Skala",
+	publisher = "WSCG"
+}
+
+@MastersThesis{ Eisemann06,
+	author = "Martin Eisemann",
+	title = "{Ray Tracing mit dynamischer Bounding Volume Hierarchie}",
+	school = "Institute for Computational Visualistics, Computer Graphics Group, University of Koblenz-Landau",
+	year = "2006",
+	address = {Universit{\"a}tsstr. 1, 56070 Koblenz, Germany},
+	month = "January"
+}
+
+@InProceedings{ YCM07,
+	author = "Sung-Eui Yoon and Sean Curtis and Dinesh Manocha",
+	title = "Ray tracing dynamic scenes using selective restructuring",
+	booktitle = "SIGGRAPH '07: ACM SIGGRAPH 2007 sketches",
+	year = "2007",
+	pages = "55",
+	location = "San Diego, California",
+	doi = "http://doi.acm.org/10.1145/1278780.1278847",
+	publisher = "ACM",
+	address = "New York, NY, USA"
+}
+
+@InProceedings{ Wald07,
+	title = "{On} {fast} {Construction} {of} {SAH} {based} {Bounding} {Volume} {Hierarchies}",
+	author = " Ingo Wald ",
+	booktitle = " {Proceedings} {of} {the} {2007} {Eurographics/IEEE} {Symposium} {on} {Interactive} {Ray} {Tracing} ",
+	year = "2007"
+}
+
+@Article{ GoldsmithSalmon87,
+	author = "Jeffrey Goldsmith and John Salmon",
+	title = "Automatic Creation of Object Hierarchies for Ray Tracing",
+	journal = "IEEE Comput. Graph. Appl.",
+	volume = "7",
+	number = "5",
+	year = "1987",
+	issn = "0272-1716",
+	pages = "14--20",
+	doi = "http://dx.doi.org/10.1109/MCG.1987.276983",
+	publisher = "IEEE Computer Society Press",
+	address = "Los Alamitos, CA, USA"
+}
+
+@Article{ ZunigaUhlmann06,
+	author = "Miguel R. Zuniga and Jeffrey K. Uhlmann",
+	title = "Ray Queries with Wide Object Isolation and the DE-Tree",
+	journal = "journal of graphics tools",
+	volume = "11",
+	number = "3",
+	pages = "27--45",
+	year = "2006"
+}
+
+@Misc{ BART,
+	author = "Jonas Lext and Ulf Assarsson and Thomas Moeller",
+	title = "BART: A benchmark for animated ray tracing",
+	text = "Jonas Lext, Ulf Assarsson, and Tomas Moeller. BART: A benchmark for animated ray tracing. Technical report, Department of Computer Engineering, Chalmers University of Technology, Goeteborg, Sweden, May 2000. Available at http://www.ce.chalmers.se/BART/.",
+	year = "2000",
+	url = "citeseer.ist.psu.edu/lext00bart.html"
+}
+
+@Misc{ NVIDIA03,
+	title = "Using Vertex Buffer Objects (VBOs)",
+	author = "NVIDIA",
+	year = "2003",
+	url = "http://developer.nvidia.com/object/using_VBOs.html"
+}
+
+@Article{ GU06,
+	author = {Johannes G{\"u}nther and Heiko Friedrich and Ingo Wald and Hans-Peter Seidel and Philipp Slusallek},
+	title = "Ray Tracing Animated Scenes using Motion Decomposition",
+	journal = "Computer Graphics Forum",
+	year = 2006,
+	volume = 25,
+	number = 3,
+	pages = "517--525",
+	month = sep,
+	note = "(Proceedings of Eurographics)",
+	url = "http://www.mpi-inf.mpg.de/~guenther/modecomp/",
+	location = "Vienna, Austria",
+	publisher = "The Eurographics Association and Blackwell Publishing Ltd"
+}
+
+@InProceedings{ RTDEFORM,
+	title = "RT-DEFORM: Interactive Ray Tracing of Dynamic Scenes using BVHs",
+	booktitle = "IEEE Symposium on Interactive Ray Tracing 2006",
+	author = "Christian Lauterbach and Sung-Eui Yoon and David Tuft and Dinesh Manocha",
+	year = "2006"
+}
+
+@TechReport{ RAZOR07,
+	author = "Peter Djeu and Warren Hunt and Rui Wang and Ikrima Elhassan and Gordon Stoll and William R. Mark",
+	title = "Razor: An Architecture for Dynamic Multiresolution Ray Tracing",
+	number = "TR-07-52",
+	month = "January 24",
+	year = "2007",
+	institution = "The University of Texas at Austin, Department of Computer Sciences"
+}
+
+@Book{ PBRT,
+	title = "Physically Based Rendering",
+	author = "Matt Pharr and Greg Humphreys",
+	publisher = "Morgan Kaufmann",
+	year = "2004",
+	isbn = "012553180X",
+	url = "http://www.pbrt.org/",
+	pages = "203--214"
+}
+
+@TechReport{ BWS06,
+	title = "{Geometric} {and} {Arithmetic} {Culling} {Methods} {for} {Entire} {Ray} {Packets}",
+	author = "Solomon Boulos and Ingo Wald and Peter Shirley ",
+	year = "2006 ",
+	number = " {UUCS-06-010} ",
+	institution = "{School} {of} {Computing,} {University} {of} {Utah}"
+}
+
+@TechReport{ DHS04,
+	AUTHOR = "Dmitriev, Kirill and Havran, Vlastimil and Seidel, Hans-Peter",
+	TITLE = "Faster Ray Tracing with SIMD Shaft Culling",
+	INSTITUTION = {Max-Planck-Institut f{\"u}r Informatik},
+	TYPE = "Research Report",
+	ADDRESS = {Saarbr{\"u}cken, Germany},
+	NUMBER = "MPI-I-2004-4-006",
+	MONTH = "December",
+	ISBN = "0946-011X",
+	YEAR = "2004",
+	PAGES = "13",
+	ABSTRACT = "This paper presents a generic technique for acceleration of ray tracing of polygonal scenes. We propose scheduling rays in a way that forms pyramidal shafts. We show that under certain conditions fulfilled by the corner rays of a shaft, it is possible to immediately and conservatively answer visibility queries for the inner rays without expensive ray traversal through acceleration data structures (kd-tree in our case). We show that the presented technique is suitable for primary, secondary, and shadow rays."
+}
+
+@Book{ Meyers06,
+	title = "BookEffective C++",
+	author = "Scott Meyers",
+	publisher = "Addison-Wesley",
+	edition = "3",
+	month = "July",
+	year = "2006"
+}
+
+@TechReport{ Intel07,
+	title = "Maximum FPS: Reducing Pipeline Stalls",
+	author = "Intel® Software Network",
+	institution = "Intel Corporation",
+	month = jul,
+	year = "2007",
+	url = "http://softwarecommunity.intel.com/articles/eng/2466.htm"
+}
+
+@TechReport{ Fog08,
+	title = "Optimizing software in C++",
+	author = "Agner Fog",
+	institution = "Copenhagen University College of Engineering",
+	month = jan,
+	year = "2008"
+}
+
+@TechReport{ Fog08ASM,
+	title = "Optimizing subroutines in assembly",
+	author = "Agner Fog",
+	institution = " Copenhagen University College of Engineering",
+	month = "January",
+	year = "2008",
+	url = "http://agner.org/optimize/"
+}
+
+@Misc{ Lantzman07,
+	title = "Iterative vs. Recursive approaches",
+	author = "Eyal Lantzman",
+	month = nov,
+	year = "2007",
+	url = "http://www.codeproject.com/KB/recipes/Iterative_vs_Recursive.aspx"
+}
+
+@InProceedings{ WK07,
+	title = "Terminating Spatial Hierarchies by A Priori Bounding Memory",
+	booktitle = "Interactive Ray Tracing, 2007. RT '07. IEEE Symposium on",
+	author = {Carsten W{\"a}chter and Alexander Keller},
+	month = sep,
+	year = "2007"
+}
+
+@Manual{ Intel08,
+	title = "Intel® 64 and IA-32 Architectures Software Developer’s Manual ",
+	organization = "Intel Corporation",
+	edition = "253665-026US",
+	month = feb,
+	year = "2008",
+	address = " "
+}
+
+@Misc{ AMD06,
+	title = "AMD Athlon™ 64 Processor Product Data Sheet ",
+	organization = "Advanced Micro Devices, Inc",
+	month = sep,
+	year = "2006"
+}
+
+@Manual{ IntelOpt07,
+	title = "Intel® 64 and IA-32 Architectures Optimization Reference Manual",
+	organization = "Intel Corporation",
+	edition = "248966-016",
+	month = nov,
+	year = "2007",
+	url = "http://developer.intel.com/design/processor/manuals/248966.pdf",
+	address = "Santa Clara, USA"
+}
+
+@InProceedings{ HWS06,
+	author = "Warren Hunt and William R. Mark and Gordon Stoll",
+	title = "Fast kd-tree Construction with an Adaptive Error-Bounded Heuristic",
+	booktitle = "2006 IEEE Symposium on Interactive Ray Tracing",
+	publisher = "IEEE",
+	month = sep,
+	year = "2006"
+}
+
+@InProceedings{ PGSS06,
+	AUTHOR = {Popov, Stefan and G{\"u}nther, Johannes and Seidel, Hans-Peter and Slusallek, Philipp},
+	EDITOR = "Wald, Ingo and Parker, Steven G.",
+	TITLE = "Experiences with Streaming Construction of {SAH} KD-Trees",
+	BOOKTITLE = "Proceedings of the 2006 IEEE Symposium on Interactive Ray Tracing",
+	PUBLISHER = "IEEE",
+	YEAR = "2006",
+	ORGANIZATION = "IEEE",
+	PAGES = "89--94",
+	ADDRESS = "Salt Lake City, USA",
+	MONTH = "September",
+	ISBN = "1-4244-0693-5",
+	NOTE = "Best Paper Award"
+}
+
+@InProceedings{ Appel68,
+	author = "Arthur Appel",
+	title = "Some Techniques for Shading Machine Renderings of Solids",
+	booktitle = "AFIPS 1968 Spring Joint Computer Conf.",
+	pages = "37--45",
+	volume = "32",
+	year = "1968"
+}
+
